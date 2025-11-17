@@ -122,7 +122,7 @@ $role = $_SESSION['role'] ?? 'Kasir';
             align-items: center;
             gap: 12px;
             padding: 12px 15px;
-            color: #2e7d32;
+            color: #009844;
             text-decoration: none;
             border-radius: 8px;
             transition: all 0.3s ease;
@@ -170,7 +170,7 @@ $role = $_SESSION['role'] ?? 'Kasir';
         
         /* Header */
         .header {
-            background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);
+            background: linear-gradient(135deg, #009844 0%, #009844 100%);
             padding: 25px 40px;
             color: white;
             display: flex;
@@ -244,7 +244,7 @@ $role = $_SESSION['role'] ?? 'Kasir';
         }
         
         .menu-card {
-            background: #2e7d32;
+            background: linear-gradient(to top, #009844, #00320E);
             border-radius: 15px;
             padding: 36px 28px;
             width: 260px; /* fixed width to control layout like example */
@@ -259,7 +259,7 @@ $role = $_SESSION['role'] ?? 'Kasir';
         .menu-card:hover {
             transform: translateY(-10px);
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            background: #2e7d32;
+            background: linear-gradient(to top, #009844, #00320E);
         }
         
         .menu-card-icon {
