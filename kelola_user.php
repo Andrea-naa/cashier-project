@@ -17,7 +17,7 @@ if ($resr && mysqli_num_rows($resr) > 0) {
     if (!empty($rr['role'])) $role = $rr['role'];
 }
 
-if (stripos($role, 'admin') === false) {
+if (stripos($role, 'Administrator') === false) {
     // hanya admin yang boleh akses
     echo "Akses ditolak. Hanya untuk admin.";
     exit();

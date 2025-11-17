@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once 'config/conn_db.php';
 
 // Jika sudah login, redirect ke dashboard
@@ -26,6 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['nama_lengkap'] = $user['nama_lengkap'];
+            // simpan role ke session jika ada
+            $_SESSION['role'] = isset($user['role']) ? $user['role'] : 'Kasir';
             
             // Log audit
             log_audit($user['id'], $user['username'], 'Login berhasil');

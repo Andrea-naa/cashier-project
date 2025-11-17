@@ -33,16 +33,8 @@ if (!$config) {
 
 $nama_perusahaan = $config['nama_perusahaan'] ?? 'PT. Mitra Saudara Lestari';
 
-// ngammbil role user yang   tersedia (default: Kasir)
-$role = 'Kasir';
-$query_role = "SELECT role FROM users WHERE id = '$user_id' LIMIT 1";
-$res_role = mysqli_query($conn, $query_role);
-if ($res_role && mysqli_num_rows($res_role) > 0) {
-    $r = mysqli_fetch_assoc($res_role);
-    if (!empty($r['role'])) {
-        $role = $r['role'];
-    }
-}
+// Ambil role user dari session (default: Kasir)
+$role = $_SESSION['role'] ?? 'Kasir';
 ?>
 
 <!DOCTYPE html>
@@ -420,13 +412,13 @@ if ($res_role && mysqli_num_rows($res_role) > 0) {
                     <span>Home</span>
                 </a>
             </li>
+            <?php if ($role === 'Administrator'): ?>
             <li class="menu-item">
                 <a href="audit_log.php">
                     <span class="menu-icon">📋</span>
                     <span>Audit Log</span>
                 </a>
             </li>
-            <?php if (stripos($role, 'admin') !== false): ?>
             <li class="menu-item">
                 <a href="kelola_user.php">
                     <span class="menu-icon">👥</span>
