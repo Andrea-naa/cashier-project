@@ -1,26 +1,26 @@
 <?php
 session_start();
 
-// Cek apakah user sudah login
+// cek login
 if (!isset($_SESSION['user_id'])) {
     header("Location: index.php");
     exit();
 }
 
-// Koneksi database
+// Koneksi ke database
 require_once 'config/conn_db.php';
 
-// Get user info
+// dapetin info dari sesi
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
 $nama_lengkap = $_SESSION['nama_lengkap'];
 
-// Get konfigurasi perusahaan
+// dapetin konfigurasi dari database 
 $query_config = "SELECT * FROM konfigurasi LIMIT 1";
 $result_config = mysqli_query($conn, $query_config);
 $config = mysqli_fetch_assoc($result_config);
 
-// Jika belum ada konfigurasi, insert default
+// Jika belum ada konfigurasi, set default
 if (!$config) {
     $insert_config = "INSERT INTO konfigurasi (nama_perusahaan, alamat, kota, telepon, email) 
                       VALUES ('PT. Kalimantan Sawit Kusuma', 'Jl. W.R Supratman No. 42 Pontianak', 
@@ -32,6 +32,9 @@ if (!$config) {
 }
 
 $nama_perusahaan = $config['nama_perusahaan'] ?? 'PT. Mitra Saudara Lestari';
+
+// Ambil role user dari session (default: Kasir)
+$role = $_SESSION['role'] ?? 'Kasir';
 ?>
 
 <!DOCTYPE html>
@@ -62,6 +65,16 @@ $nama_perusahaan = $config['nama_perusahaan'] ?? 'PT. Mitra Saudara Lestari';
             display: flex;
             flex-direction: column;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        /* Collapsed sidebar for burger toggle */
+        .sidebar.collapsed {
+            width: 64px;
+            overflow: hidden;
+        }
+        .sidebar.collapsed .menu-title,
+        .sidebar.collapsed .menu-item span:nth-child(2),
+        .sidebar.collapsed .company-title {
+            display: none;
         }
         
         .sidebar-header {
@@ -127,9 +140,23 @@ $nama_perusahaan = $config['nama_perusahaan'] ?? 'PT. Mitra Saudara Lestari';
         }
         
         .menu-icon {
-            width: 20px;
-            height: 20px;
+            width: 28px;
+            height: 28px;
             display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        /* Burger button */
+        .burger {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            margin-right: 18px;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
         }
@@ -194,25 +221,39 @@ $nama_perusahaan = $config['nama_perusahaan'] ?? 'PT. Mitra Saudara Lestari';
         .content-area {
             flex: 1;
             padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* center the menu grid horizontally */
         }
-        
+
         .menu-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            width: 100%;
+            max-width: 980px; /* control overall width */
+            margin-top: 10px; /* small gap under header */
+        }
+
+        .menu-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 30px;
-            max-width: 1000px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 60px; /* larger gap between the two columns */
+            justify-items: center; /* center cards in each column */
+            align-items: start;
         }
         
         .menu-card {
-            background: #1b5e20;
+            background: #2e7d32;
             border-radius: 15px;
-            padding: 40px 30px;
+            padding: 36px 28px;
+            width: 260px; /* fixed width to control layout like example */
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
             color: white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.18);
         }
         
         .menu-card:hover {
@@ -222,15 +263,15 @@ $nama_perusahaan = $config['nama_perusahaan'] ?? 'PT. Mitra Saudara Lestari';
         }
         
         .menu-card-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 20px;
-            border: 3px solid rgba(255,255,255,0.5);
+            width: 84px;
+            height: 84px;
+            margin: 0 auto 18px;
+            border: 3px solid rgba(255,255,255,0.45);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
+            font-size: 44px;
         }
         
         .menu-card-title {
@@ -242,9 +283,9 @@ $nama_perusahaan = $config['nama_perusahaan'] ?? 'PT. Mitra Saudara Lestari';
         
         /* Footer */
         .footer {
-            background: linear-gradient(135deg, #66bb6a 0%, #81c784 100%);
+            background: linear-gradient(180deg, #66bb6a 0%, #1b5e20 100%);
             padding: 30px 40px;
-            color: #1b5e20;
+            color: #e8f5e9;
         }
         
         .footer-content {
@@ -277,18 +318,18 @@ $nama_perusahaan = $config['nama_perusahaan'] ?? 'PT. Mitra Saudara Lestari';
         .footer-company-name {
             font-size: 16px;
             font-weight: bold;
-            color: #1b5e20;
+            color: #e8f5e9;
         }
         
         .footer-tagline {
             font-size: 11px;
-            color: #2e7d32;
+            color: #dfeee0;
         }
         
         .footer-description {
             font-size: 12px;
             line-height: 1.6;
-            color: #1b5e20;
+            color: #e8f5e9;
             text-align: justify;
         }
         
@@ -371,12 +412,20 @@ $nama_perusahaan = $config['nama_perusahaan'] ?? 'PT. Mitra Saudara Lestari';
                     <span>Home</span>
                 </a>
             </li>
+            <?php if ($role === 'Administrator'): ?>
             <li class="menu-item">
                 <a href="audit_log.php">
                     <span class="menu-icon">📋</span>
                     <span>Audit Log</span>
                 </a>
             </li>
+            <li class="menu-item">
+                <a href="kelola_user.php">
+                    <span class="menu-icon">👥</span>
+                    <span>Kelola User</span>
+                </a>
+            </li>
+            <?php endif; ?>
             <li class="menu-item">
                 <a href="logout.php">
                     <span class="menu-icon">🚪</span>
@@ -390,40 +439,46 @@ $nama_perusahaan = $config['nama_perusahaan'] ?? 'PT. Mitra Saudara Lestari';
     <div class="main-content">
         <!-- Header -->
         <div class="header">
-            <div class="welcome-text">SELAMAT DATANG!</div>
-            <div class="user-info">
-                <div class="user-avatar">
-                    <?php echo strtoupper(substr($nama_lengkap, 0, 1)); ?>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="welcome-text">SELAMAT DATANG!</div>
                 </div>
-                <div class="user-details">
-                    <div class="user-name"><?php echo htmlspecialchars($nama_perusahaan); ?></div>
-                    <div class="user-role">Kasir</div>
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <?php echo strtoupper(substr($nama_lengkap, 0, 1)); ?>
+                    </div>
+                    <div class="user-details">
+                        <div class="user-name"><?php echo htmlspecialchars($nama_lengkap); ?></div>
+                        <div class="user-role"><?php echo htmlspecialchars(ucfirst($role)); ?></div>
+                    </div>
                 </div>
             </div>
-        </div>
         
         <!-- Content Area -->
         <div class="content-area">
             <div class="menu-grid">
-                <a href="kas_masuk.php" class="menu-card">
-                    <div class="menu-card-icon">📁</div>
-                    <div class="menu-card-title">KAS MASUK</div>
-                </a>
-                
-                <a href="kas_keluar.php" class="menu-card">
-                    <div class="menu-card-icon">📁</div>
-                    <div class="menu-card-title">KAS KELUAR</div>
-                </a>
-                
-                <a href="stok_opname.php" class="menu-card">
-                    <div class="menu-card-icon">📁</div>
-                    <div class="menu-card-title">STOK OPNAME</div>
-                </a>
-                
-                <a href="buku_kas.php" class="menu-card">
-                    <div class="menu-card-icon">📁</div>
-                    <div class="menu-card-title">BUKU KAS</div>
-                </a>
+                <div class="menu-row">
+                    <a href="kas_masuk.php" class="menu-card">
+                        <div class="menu-card-icon">📁</div>
+                        <div class="menu-card-title">KAS MASUK</div>
+                    </a>
+
+                    <a href="kas_keluar.php" class="menu-card">
+                        <div class="menu-card-icon">📁</div>
+                        <div class="menu-card-title">KAS KELUAR</div>
+                    </a>
+                </div>
+
+                <div class="menu-row">
+                    <a href="stok_opname.php" class="menu-card">
+                        <div class="menu-card-icon">📁</div>
+                        <div class="menu-card-title">STOK OPNAME</div>
+                    </a>
+
+                    <a href="buku_kas.php" class="menu-card">
+                        <div class="menu-card-icon">📁</div>
+                        <div class="menu-card-title">BUKU KAS</div>
+                    </a>
+                </div>
             </div>
         </div>
         
@@ -470,5 +525,17 @@ $nama_perusahaan = $config['nama_perusahaan'] ?? 'PT. Mitra Saudara Lestari';
             </div>
         </div>
     </div>
+    <script>
+        // Toggle sidebar collapse when burger clicked
+        (function(){
+            var btn = document.getElementById('toggleSidebar');
+            var sidebar = document.querySelector('.sidebar');
+            var main = document.querySelector('.main-content');
+            if (!btn) return;
+            btn.addEventListener('click', function(){
+                sidebar.classList.toggle('collapsed');
+            });
+        })();
+    </script>
 </body>
 </html>
