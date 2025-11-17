@@ -33,16 +33,8 @@ if (!$config) {
 
 $nama_perusahaan = $config['nama_perusahaan'] ?? 'PT. Mitra Saudara Lestari';
 
-// ngammbil role user yang   tersedia (default: Kasir)
-$role = 'Kasir';
-$query_role = "SELECT role FROM users WHERE id = '$user_id' LIMIT 1";
-$res_role = mysqli_query($conn, $query_role);
-if ($res_role && mysqli_num_rows($res_role) > 0) {
-    $r = mysqli_fetch_assoc($res_role);
-    if (!empty($r['role'])) {
-        $role = $r['role'];
-    }
-}
+// Ambil role user dari session (default: Kasir)
+$role = $_SESSION['role'] ?? 'Kasir';
 ?>
 
 <!DOCTYPE html>
@@ -274,7 +266,7 @@ if ($res_role && mysqli_num_rows($res_role) > 0) {
             width: 84px;
             height: 84px;
             margin: 0 auto 18px;
-            border: 3px solid rgba(255,255,255,0.45);
+            /* border: 3px solid rgba(255,255,255,0.45); */
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -416,27 +408,27 @@ if ($res_role && mysqli_num_rows($res_role) > 0) {
         <ul class="menu-list">
             <li class="menu-item active">
                 <a href="dashboard.php">
-                    <span class="menu-icon">🏠</span>
+                    <img src="assets/gambar/icon/homescreen.png" class="menu-icon">
                     <span>Home</span>
                 </a>
             </li>
+            <?php if ($role === 'Administrator'): ?>
             <li class="menu-item">
                 <a href="audit_log.php">
-                    <span class="menu-icon">📋</span>
+                    <img src="assets/gambar/icon/audit_log.png" class="menu-icon">
                     <span>Audit Log</span>
                 </a>
             </li>
-            <?php if (stripos($role, 'admin') !== false): ?>
             <li class="menu-item">
                 <a href="kelola_user.php">
-                    <span class="menu-icon">👥</span>
+                    <img src="assets/gambar/icon/kelola_user.png" class="menu-icon">
                     <span>Kelola User</span>
                 </a>
             </li>
             <?php endif; ?>
             <li class="menu-item">
                 <a href="logout.php">
-                    <span class="menu-icon">🚪</span>
+                    <img src="assets/gambar/icon/logout.png" class="menu-icon">
                     <span>Logout</span>
                 </a>
             </li>
@@ -466,24 +458,24 @@ if ($res_role && mysqli_num_rows($res_role) > 0) {
             <div class="menu-grid">
                 <div class="menu-row">
                     <a href="kas_masuk.php" class="menu-card">
-                        <div class="menu-card-icon">📁</div>
+                        <img src="assets/gambar/icon/folder.png" class="menu-card-icon">
                         <div class="menu-card-title">KAS MASUK</div>
                     </a>
 
                     <a href="kas_keluar.php" class="menu-card">
-                        <div class="menu-card-icon">📁</div>
+                        <img src="assets/gambar/icon/folder.png" class="menu-card-icon">
                         <div class="menu-card-title">KAS KELUAR</div>
                     </a>
                 </div>
 
                 <div class="menu-row">
                     <a href="stok_opname.php" class="menu-card">
-                        <div class="menu-card-icon">📁</div>
+                        <img src="assets/gambar/icon/folder.png" class="menu-card-icon">
                         <div class="menu-card-title">STOK OPNAME</div>
                     </a>
 
                     <a href="buku_kas.php" class="menu-card">
-                        <div class="menu-card-icon">📁</div>
+                        <img src="assets/gambar/icon/folder.png" class="menu-card-icon">
                         <div class="menu-card-title">BUKU KAS</div>
                     </a>
                 </div>

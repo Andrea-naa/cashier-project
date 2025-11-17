@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once 'config/conn_db.php';
 
 // Jika sudah login, redirect ke dashboard
@@ -246,7 +247,7 @@ $show_login = isset($_GET['login']) || $_SERVER['REQUEST_METHOD'] == 'POST';
         }
         
         .btn-submit {
-            font-family: 'monsterat';
+            font-family: 'montserrat';
             width: 100%;
             background: white;
             color: black;
@@ -341,7 +342,7 @@ $show_login = isset($_GET['login']) || $_SERVER['REQUEST_METHOD'] == 'POST';
                      onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22%3E%3Crect width=%2260%22 height=%2260%22 fill=%22%232d7c3e%22 rx=%2210%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2224%22 fill=%22white%22 font-weight=%22bold%22%3EKSK%3C/text%3E%3C/svg%3E'">
                 <div class="company-info">
                     <h3>KALIMANTAN SAWIT KUSUMA GROUP</h3>
-                    <p>SYSTEM CASHIER BY WICAK</p>
+                    <p>SYSTEM CASHIER BY WICAKSONO</p>
                 </div>
             </div>
             
@@ -371,7 +372,7 @@ $show_login = isset($_GET['login']) || $_SERVER['REQUEST_METHOD'] == 'POST';
                 </form>
                 
                 <div class="back-link">
-                    <a href="index.php">← Kembali</a>
+                    <a href="index.php">Kembali</a>
                 </div>
             </div>
         </div>

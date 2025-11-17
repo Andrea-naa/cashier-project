@@ -2,31 +2,32 @@
 session_start();
 require_once 'config/conn_db.php';
 
-// hanya untuk admin
+// Hanya untuk admin
 if (!isset($_SESSION['user_id'])) {
     header('Location: index.php');
     exit();
 }
 
-// mengambil role user 
 $current_user_id = $_SESSION['user_id'];
 $role = 'Kasir';
-$resr = mysqli_query($conn, "SELECT role FROM users WHERE id='".intval($current_user_id)."' LIMIT 1");
+$resr = mysqli_query($conn, "SELECT role FROM users WHERE id='" . intval($current_user_id) . "' LIMIT 1");
 if ($resr && mysqli_num_rows($resr) > 0) {
     $rr = mysqli_fetch_assoc($resr);
     if (!empty($rr['role'])) $role = $rr['role'];
 }
 
-if (stripos($role, 'admin') === false) {
-    // hanya admin yang boleh akses
+if (stripos($role, 'Administrator') === false) {
     echo "Akses ditolak. Hanya untuk admin.";
     exit();
 }
 
-// script PHP untuk Action yang ada di page ini
+// Handle aksi
 $action = $_GET['action'] ?? '';
+$msg = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $act = $_POST['act'] ?? '';
+
     if ($act === 'add') {
         $username = clean_input($_POST['username']);
         $password = $_POST['password'];
@@ -36,8 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($username && $password) {
             $hash = password_hash($password, PASSWORD_DEFAULT);
-            $sql = "INSERT INTO users (username, password, nama_lengkap, role, created_at) VALUES ('".$username."', '".$hash."', '".$nama."', '".$role_in."', '".$created_at."')";
-            mysqli_query($conn, $sql);
+            mysqli_query($conn, "INSERT INTO users (username, password, nama_lengkap, role, created_at) VALUES ('$username', '$hash', '$nama', '$role_in', '$created_at')");
             header('Location: kelola_user.php');
             exit();
         }
@@ -51,9 +51,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($id && $username) {
             if (!empty($password)) {
                 $hash = password_hash($password, PASSWORD_DEFAULT);
-                $sql = "UPDATE users SET username='".$username."', password='".$hash."', nama_lengkap='".$nama."', role='".$role_in."' WHERE id='".$id."'";
+                $sql = "UPDATE users SET username='$username', password='$hash', nama_lengkap='$nama', role='$role_in' WHERE id='$id'";
             } else {
-                $sql = "UPDATE users SET username='".$username."', nama_lengkap='".$nama."', role='".$role_in."' WHERE id='".$id."'";
+                $sql = "UPDATE users SET username='$username', nama_lengkap='$nama', role='$role_in' WHERE id='$id'";
             }
             mysqli_query($conn, $sql);
             header('Location: kelola_user.php');
@@ -64,168 +64,528 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 if ($action === 'delete' && isset($_GET['id'])) {
     $id = intval($_GET['id']);
-    // jangan hapus akun sendiri
     if ($id === intval($current_user_id)) {
         $msg = 'Tidak dapat menghapus akun sendiri.';
     } else {
-        mysqli_query($conn, "DELETE FROM users WHERE id='".$id."'");
+        mysqli_query($conn, "DELETE FROM users WHERE id='$id'");
         header('Location: kelola_user.php');
         exit();
     }
 }
 
-// ambil semua users
 $users = mysqli_query($conn, "SELECT id, username, nama_lengkap, role, created_at FROM users ORDER BY id ASC");
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Kelola User - Sistem Kas Kebun</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root{--green:#2e7d32;--green-2:#66bb6a;--muted:#666}
-        body{font-family:Segoe UI, Tahoma, sans-serif; padding:22px; background:#fafafa;color:#222}
-        h2{margin-bottom:6px}
-        .page-actions{margin-bottom:18px}
-        .hidden{display:none}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        /* Buttons */
-        .btn{background:var(--green);color:#fff;padding:9px 14px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 4px 10px rgba(46,125,50,0.12);transition:all .18s ease}
-        .btn:hover{transform:translateY(-2px);box-shadow:0 10px 18px rgba(46,125,50,0.14)}
-        .btn-primary{background:var(--green)}
-        .btn-outline{background:#fff;color:var(--green);border:1px solid var(--green);box-shadow:none}
-        .btn-outline:hover{background:#f6fff6}
-        .btn-danger{background:#c62828}
-        .btn-sm{padding:6px 10px;border-radius:6px;font-size:13px}
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #e8f0e8;
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
 
-        /* Table */
-        .table-wrap{background:#fff;padding:14px;border-radius:10px;border:1px solid #eee;box-shadow:0 6px 20px rgba(0,0,0,0.04)}
-        table{border-collapse:collapse;width:100%;}
-        thead th{background:linear-gradient(180deg,var(--green),#176022);color:#fff;padding:12px;border-radius:6px}
-        th,td{padding:12px;text-align:left;border-bottom:1px solid #f0f0f0}
-        tbody tr:nth-child(odd){background:#fbfbfb}
-        tbody tr:hover{background:#f2fff2}
+        .container {
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
 
-        .small{font-size:13px;color:var(--muted)}
+        .top-header {
+            background: #2d7a3e;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
 
-        /* Form box */
-        .form-box{margin:12px 0;padding:16px;border-radius:10px;background:#fff;border:1px solid #eee;box-shadow:0 6px 18px rgba(0,0,0,0.04)}
-        .form-box h3{margin-top:0}
-        .form-row{margin:8px 0}
-        .form-row input[type=text], .form-row input[type=password]{width:100%;padding:10px;border-radius:6px;border:1px solid #ddd}
+        .top-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0;
+        }
 
-        /* Edit box */
-        .edit-box{margin-top:18px}
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-        /* Action buttons in table */
-        td .btn{display:inline-block;margin-right:8px}
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2d7a3e;
+            font-weight: 700;
+            font-size: 18px;
+        }
 
-        @media (max-width:700px){
-            .menu{padding:8px}
-            .table-wrap{padding:8px}
-            .form-box{padding:12px}
+        .user-details {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .user-role {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .content-wrapper {
+            padding: 40px;
+        }
+
+        .header {
+            background: white;
+            padding: 24px 30px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header h2 {
+            color: #2d7a3e;
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header h2 i {
+            color: #2d7a3e;
+        }
+
+        .page-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            background: #2d7a3e;
+            color: white;
+            box-shadow: 0 2px 8px rgba(45, 122, 62, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #236030;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 122, 62, 0.4);
+        }
+
+        .btn-outline {
+            background: white;
+            border: 2px solid #2d7a3e;
+            color: #2d7a3e;
+        }
+
+        .btn-outline:hover {
+            background: #2d7a3e;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #c53030 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 101, 101, 0.4);
+        }
+
+        .btn-sm {
+            font-size: 13px;
+            padding: 8px 16px;
+        }
+
+        .alert {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            color: #c53030;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-box {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .form-box h3 {
+            color: #2d7a3e;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-box h3 i {
+            color: #2d7a3e;
+        }
+
+        .form-box label {
+            display: block;
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 8px;
+            margin-top: 16px;
+            font-size: 14px;
+        }
+
+        .form-box input,
+        .form-box select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-box input:focus,
+        .form-box select:focus {
+            outline: none;
+            border-color: #2d7a3e;
+            box-shadow: 0 0 0 3px rgba(45, 122, 62, 0.1);
+        }
+
+        .form-actions {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .table-wrap {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow-x: auto;
+        }
+
+        .table-wrap h3 {
+            color: #2d7a3e;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .table-wrap h3 i {
+            color: #2d7a3e;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        thead th {
+            background: #2d7a3e;
+            color: white;
+            padding: 16px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        thead th:first-child {
+            border-radius: 8px 0 0 0;
+        }
+
+        thead th:last-child {
+            border-radius: 0 8px 0 0;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        tbody tr:hover {
+            background: #f7fafc;
+            transform: scale(1.01);
+        }
+
+        tbody td {
+            padding: 16px 12px;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .badge-admin {
+            background: #e6fffa;
+            color: #234e52;
+        }
+
+        .badge-kasir {
+            background: #fef5e7;
+            color: #7d6608;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .page-actions {
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .table-wrap {
+                padding: 16px;
+            }
+
+            table {
+                font-size: 13px;
+            }
+
+            thead th,
+            tbody td {
+                padding: 12px 8px;
+            }
         }
     </style>
 </head>
 <body>
-    <h2>Kelola User</h2>
-    <?php if (!empty($msg)): ?><div style="color:red;margin-bottom:8px"><?php echo htmlspecialchars($msg); ?></div><?php endif; ?>
-
-    <div class="page-actions" style="margin-bottom:18px;display:flex;gap:12px;align-items:center;">
-        <button id="btnShowAdd" class="btn btn-primary">Tambah User</button>
-        <a href="dashboard.php" class="btn btn-outline">Kembali ke Dashboard</a>
-    </div>
-
-    <div id="addForm" class="form-box hidden">
-        <h3>Tambah User Baru</h3>
-        <form method="post">
-            <input type="hidden" name="act" value="add">
-            <div class="form-row"><label>Username<br><input type="text" name="username" required></label></div>
-            <div class="form-row"><label>Password<br><input type="password" name="password" required></label></div>
-            <div class="form-row"><label>Nama Lengkap<br><input type="text" name="nama_lengkap"></label></div>
-            <div class="form-row"><label>Role<br><input type="text" name="role" placeholder="admin / kasir"></label></div>
-            <div style="margin-top:12px">
-                <button class="btn btn-primary" type="submit">Tambah</button>
-                <button type="button" id="btnCancelAdd" class="btn btn-outline" style="margin-left:8px">Batal</button>
+    <div class="container">
+        <div class="header">
+            <h2><i class="fas fa-users-cog"></i> Kelola User</h2>
+            <div class="page-actions">
+                <button id="btnShowAdd" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Tambah User
+                </button>
+                <a href="dashboard.php" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i> Kembali
+                </a>
             </div>
-        </form>
-    </div>
+        </div>
 
-    <h3>Daftar User</h3>
-    <div class="table-wrap">
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Username</th>
-                <th>Nama Lengkap</th>
-                <th>Role</th>
-                <th>Dibuat</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php while($u = mysqli_fetch_assoc($users)): ?>
-            <tr>
-                <td><?php echo $u['id']; ?></td>
-                <td><?php echo htmlspecialchars($u['username']); ?></td>
-                <td><?php echo htmlspecialchars($u['nama_lengkap']); ?></td>
-                <td><?php echo htmlspecialchars($u['role']); ?></td>
-                <td class="small"><?php echo $u['created_at']; ?></td>
-                <td>
-                    <a class="btn btn-outline btn-sm" href="kelola_user.php?action=edit&id=<?php echo $u['id']; ?>">Edit</a>
-                    <?php if ($u['id'] != $current_user_id): ?> 
-                      <a class="btn btn-danger btn-sm" href="kelola_user.php?action=delete&id=<?php echo $u['id']; ?>" onclick="return confirm('Hapus user ini?')">Hapus</a>
-                    <?php endif; ?>
-                </td>
-            </tr>
-            <?php endwhile; ?>
-        </tbody>
-    </table>
-    </div>
-
-<?php
-// jika edit mode, tampilkan form edit di bawah
-if (isset($_GET['action']) && $_GET['action'] === 'edit' && isset($_GET['id'])):
-    $id = intval($_GET['id']);
-    $res = mysqli_query($conn, "SELECT id, username, nama_lengkap, role FROM users WHERE id='".$id."' LIMIT 1");
-    $ed = mysqli_fetch_assoc($res);
-?>
-    <div class="form-box edit-box">
-        <h3>Edit User #<?php echo $ed['id']; ?></h3>
-        <form method="post">
-            <input type="hidden" name="act" value="edit">
-            <input type="hidden" name="id" value="<?php echo $ed['id']; ?>">
-            <div class="form-row"><label>Username<br><input type="text" name="username" value="<?php echo htmlspecialchars($ed['username']); ?>" required></label></div>
-            <div class="form-row"><label>Password baru (kosong = tidak diubah)<br><input type="password" name="password"></label></div>
-            <div class="form-row"><label>Nama Lengkap<br><input type="text" name="nama_lengkap" value="<?php echo htmlspecialchars($ed['nama_lengkap']); ?>"></label></div>
-            <div class="form-row"><label>Role<br><input type="text" name="role" value="<?php echo htmlspecialchars($ed['role']); ?>"></label></div>
-            <div style="margin-top:12px">
-                <button class="btn btn-primary" type="submit">Simpan</button>
-                <a class="btn btn-outline" href="kelola_user.php" style="margin-left:8px">Batal</a>
+        <?php if (!empty($msg)): ?>
+            <div class="alert">
+                <i class="fas fa-exclamation-circle"></i>
+                <?= htmlspecialchars($msg) ?>
             </div>
-        </form>
+        <?php endif; ?>
+
+        <div id="addForm" class="form-box hidden">
+            <h3><i class="fas fa-user-plus"></i> Tambah User Baru</h3>
+            <form method="post">
+                <input type="hidden" name="act" value="add">
+                
+                <label><i class="fas fa-user"></i> Username</label>
+                <input type="text" name="username" required placeholder="Masukkan username">
+                
+                <label><i class="fas fa-lock"></i> Password</label>
+                <input type="password" name="password" required placeholder="Masukkan password">
+                
+                <label><i class="fas fa-id-card"></i> Nama Lengkap</label>
+                <input type="text" name="nama_lengkap" placeholder="Masukkan nama lengkap">
+                
+                <label><i class="fas fa-user-tag"></i> Role</label>
+                <input type="text" name="role" placeholder="administrator / kasir">
+                
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-save"></i> Tambah User
+                    </button>
+                    <button type="button" id="btnCancelAdd" class="btn btn-outline">
+                        <i class="fas fa-times"></i> Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-wrap">
+            <h3><i class="fas fa-list"></i> Daftar User</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-hashtag"></i> ID</th>
+                        <th><i class="fas fa-user"></i> Username</th>
+                        <th><i class="fas fa-id-card"></i> Nama Lengkap</th>
+                        <th><i class="fas fa-user-tag"></i> Role</th>
+                        <th><i class="fas fa-calendar"></i> Dibuat</th>
+                        <th><i class="fas fa-cog"></i> Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($u = mysqli_fetch_assoc($users)): ?>
+                    <tr>
+                        <td><strong><?= $u['id'] ?></strong></td>
+                        <td><?= htmlspecialchars($u['username']) ?></td>
+                        <td><?= htmlspecialchars($u['nama_lengkap']) ?></td>
+                        <td>
+                            <span class="badge <?= stripos($u['role'], 'admin') !== false ? 'badge-admin' : 'badge-kasir' ?>">
+                                <?= htmlspecialchars($u['role']) ?>
+                            </span>
+                        </td>
+                        <td><?= date('d/m/Y H:i', strtotime($u['created_at'])) ?></td>
+                        <td>
+                            <a class="btn btn-outline btn-sm" href="kelola_user.php?action=edit&id=<?= $u['id'] ?>">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <?php if ($u['id'] != $current_user_id): ?>
+                                <a class="btn btn-danger btn-sm" href="kelola_user.php?action=delete&id=<?= $u['id'] ?>" onclick="return confirm('Apakah Anda yakin ingin menghapus user ini?')">
+                                    <i class="fas fa-trash"></i> Hapus
+                                </a>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <?php
+        if ($action === 'edit' && isset($_GET['id'])):
+            $id = intval($_GET['id']);
+            $res = mysqli_query($conn, "SELECT id, username, nama_lengkap, role FROM users WHERE id='$id' LIMIT 1");
+            $ed = mysqli_fetch_assoc($res);
+        ?>
+        <div class="form-box">
+            <h3><i class="fas fa-user-edit"></i> Edit User #<?= $ed['id'] ?></h3>
+            <form method="post">
+                <input type="hidden" name="act" value="edit">
+                <input type="hidden" name="id" value="<?= $ed['id'] ?>">
+                
+                <label><i class="fas fa-user"></i> Username</label>
+                <input type="text" name="username" value="<?= htmlspecialchars($ed['username']) ?>" required>
+                
+                <label><i class="fas fa-lock"></i> Password Baru</label>
+                <input type="password" name="password" placeholder="Kosongkan jika tidak ingin mengubah password">
+                
+                <label><i class="fas fa-id-card"></i> Nama Lengkap</label>
+                <input type="text" name="nama_lengkap" value="<?= htmlspecialchars($ed['nama_lengkap']) ?>">
+                
+                <label><i class="fas fa-user-tag"></i> Role</label>
+                <input type="text" name="role" value="<?= htmlspecialchars($ed['role']) ?>">
+                
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-save"></i> Simpan Perubahan
+                    </button>
+                    <a class="btn btn-outline" href="kelola_user.php">
+                        <i class="fas fa-times"></i> Batal
+                    </a>
+                </div>
+            </form>
+        </div>
+        <?php endif; ?>
     </div>
-<?php endif; ?>
 
     <script>
-        (function(){
-            var btn = document.getElementById('btnShowAdd');
-            var form = document.getElementById('addForm');
-            var btnCancel = document.getElementById('btnCancelAdd');
-            if (btn){
-                btn.addEventListener('click', function(){
-                    form.classList.remove('hidden');
-                    form.scrollIntoView({behavior:'smooth',block:'center'});
-                });
-            }
-            if (btnCancel){
-                btnCancel.addEventListener('click', function(){
-                    form.classList.add('hidden');
-                });
-            }
-        })();
+        document.getElementById('btnShowAdd').onclick = function () {
+            document.getElementById('addForm').classList.remove('hidden');
+            document.getElementById('addForm').scrollIntoView({ behavior: 'smooth' });
+        };
+        document.getElementById('btnCancelAdd').onclick = function () {
+            document.getElementById('addForm').classList.add('hidden');
+        };
     </script>
 </body>
 </html>
