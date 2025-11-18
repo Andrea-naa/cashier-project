@@ -533,10 +533,6 @@ $show_login = isset($_GET['login']) || $_SERVER['REQUEST_METHOD'] == 'POST';
     <!-- Welcome Screen -->
     <div class="welcome-screen">
         <div class="logo-container">
-<<<<<<< HEAD
-            <!-- logo KSK -->
-=======
->>>>>>> 3534b44e270ace00b70af867f33046146bb439e9
             <img src="assets/gambar/logoksk.jpg" alt="Logo KSK" 
                  onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Cdefs%3E%3ClinearGradient id=%22grad%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22%3E%3Cstop offset=%220%25%22 style=%22stop-color:%232d7c3e;stop-opacity:1%22 /%3E%3Cstop offset=%22100%25%22 style=%22stop-color:%233fb950;stop-opacity:1%22 /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%22200%22 height=%22200%22 fill=%22url(%23grad)%22 rx=%2230%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2280%22 fill=%22white%22 font-weight=%22bold%22%3EKSK%3C/text%3E%3C/svg%3E'">
         </div>
@@ -552,16 +548,6 @@ $show_login = isset($_GET['login']) || $_SERVER['REQUEST_METHOD'] == 'POST';
     <?php else: ?>
     <!-- Login Screen -->
     <div class="login-screen">
-<<<<<<< HEAD
-        <div class="login-box">
-            <div class="login-header">
-                <img src="assets/gambar/logoksk.jpg" alt="Logo KSK"
-                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22%3E%3Crect width=%2260%22 height=%2260%22 fill=%22%232d7c3e%22 rx=%2210%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2224%22 fill=%22white%22 font-weight=%22bold%22%3EKSK%3C/text%3E%3C/svg%3E'">
-                <div class="company-info">
-                    <h3>KALIMANTAN SAWIT KUSUMA GROUP</h3>
-                    <p>Oil Palm Plantation & Industries</p>
-                </div>
-=======
         <!-- Logo & Company Info - Top Left -->
         <div class="top-left-info">
             <img src="assets/gambar/logoksk.jpg" alt="Logo KSK"
@@ -569,7 +555,6 @@ $show_login = isset($_GET['login']) || $_SERVER['REQUEST_METHOD'] == 'POST';
             <div class="company-info">
                 <h3>KALIMANTAN SAWIT KUSUMA GROUP</h3>
                 <p>Oil Palm Plantation & Industries</p>
->>>>>>> 3534b44e270ace00b70af867f33046146bb439e9
             </div>
         </div>
         

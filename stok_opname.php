@@ -201,7 +201,7 @@
     width: 100%;
     padding: 30px 40px;
     background: linear-gradient(to right, #00984489, #003216DB);
-    color: #111;
+    color: #ffffff;
     border-top: 3px solid #333;
     font-family: 'Poppins', sans-serif;
 }
@@ -230,18 +230,20 @@
 .footer-text h2 {
     font-size: 18px;
     font-weight: 700;
+    color: #e8f5e9;
 }
 
 .footer-text .subtitle {
     font-size: 14px;
     margin-top: -4px;
-    color: #333;
+    color: #dfeee0;
 }
 
 .footer-text .description {
     font-size: 13px;
     margin-top: 10px;
     line-height: 1.5;
+    color: #e8f5e9;
 }
 
 /* Right Section */
@@ -256,6 +258,7 @@
     display: flex;
     align-items: start;
     gap: 10px;
+    color: #ffffff;
 }
 
 .footer-icon {
@@ -267,7 +270,7 @@
 
 .link-item {
     text-decoration: none;
-    color: inherit;
+    color: #ffffff;
 }
 
 .link-item:hover {

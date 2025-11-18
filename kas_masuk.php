@@ -1,48 +1,57 @@
 <?php
-// session_start();
+// Gunakan koneksi mysqli dari config
+require_once 'config/conn_db.php';
 
-// // Koneksi Database
-// $host = 'localhost';
-// $dbname = 'cashier';
-// $username = 'root';
-// $password = '';
+// pastikan session tersedia (config/conn_db.php memanggil session_start())
+    $user_id = $_SESSION['user_id'];
+    $username = $_SESSION['username'];
+    $nama_lengkap = $_SESSION['nama_lengkap'];
+// Proses Simpan Kas Masuk ke tabel `transaksi`
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
+    $keterangan = trim($_POST['keterangan'] ?? '');
+    $jumlah_raw = trim($_POST['jumlah'] ?? '0');
+    // Bersihkan format ribuan dan koma
+    $jumlah = str_replace(['.', ','], ['', '.'], $jumlah_raw);
+    $jumlah = floatval($jumlah);
 
-// try {
-//     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-//     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-// } catch(PDOException $e) {
-//     die("Koneksi gagal: " . $e->getMessage());
-// }
 
-// // Proses Simpan Kas Masuk
-// if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['simpan_kas'])) {
-//     $keterangan = $_POST['keterangan'];
-//     $jumlah = str_replace(['.', ','], ['', '.'], $_POST['jumlah']);
     
-//     $stmt = $pdo->prepare("INSERT INTO kas_masuk (keterangan, jumlah, tanggal) VALUES (?, ?, NOW())");
-//     $stmt->execute([$keterangan, $jumlah]);
-    
-//     header("Location: " . $_SERVER['PHP_SELF']);
-//     exit;
-// }
 
-// // Proses Update Tabel
-// if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_tabel'])) {
-//     foreach ($_POST['nomor_surat'] as $id => $nomor) {
-//         $keterangan = $_POST['keterangan_tabel'][$id];
-//         $jumlah = str_replace(['.', ','], ['', '.'], $_POST['jumlah_tabel'][$id]);
-        
-//         $stmt = $pdo->prepare("UPDATE kas_masuk SET nomor_surat = ?, keterangan = ?, jumlah = ? WHERE id = ?");
-//         $stmt->execute([$nomor, $keterangan, $jumlah, $id]);
-//     }
-    
-//     header("Location: " . $_SERVER['PHP_SELF']);
-//     exit;
-// }
 
-// // Ambil Data Kas Masuk
-// $stmt = $pdo->query("SELECT * FROM kas_masuk ORDER BY tanggal DESC");
-// $data_kas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt = mysqli_prepare($conn, "INSERT INTO transaksi (user_id, username, jenis_transaksi, nominal, keterangan, tanggal_transaksi) VALUES (?, ?, 'kas_terima', ?, ?, NOW())");
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, 'isds', $user_id, $username, $jumlah, $keterangan);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+    }
+
+    // Redirect agar form tidak submit ulang
+    header('Location: ' . $_SERVER['PHP_SELF']);
+    exit();
+}    
+  
+
+// Ambil role user dari session (default: Kasir)
+    $role = $_SESSION['role'] ?? 'Kasir';
+// Ambil daftar kas masuk terbaru untuk ditampilkan di tabel
+$data_kas = [];
+$res = mysqli_query($conn, "SELECT id, user_id, username, nominal, keterangan, tanggal_transaksi FROM transaksi WHERE jenis_transaksi = 'kas_terima' ORDER BY tanggal_transaksi ASC");
+if ($res) {
+    while ($r = mysqli_fetch_assoc($res)) {
+        $data_kas[] = $r;
+    }
+    mysqli_free_result($res);
+}
+
+// Nomor surat terakhir (jika ada)
+$last_nomor = '';
+if (!empty($data_kas)) {
+    $last = end($data_kas);
+    $dt = strtotime($last['tanggal_transaksi']);
+    $last_nomor = sprintf('%03d/KS/%02d/%04d', $last['id'], date('m', $dt), date('Y', $dt));
+    // reset internal pointer just in case
+    reset($data_kas);
+}
 ?>
 
 <!DOCTYPE html>
@@ -95,19 +104,35 @@
         .user-info {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 15px;
         }
-
+        
         .user-avatar {
-            width: 42px;
-            height: 42px;
-            background-color: white;
+            width: 45px;
+            height: 45px;
+            background: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #009844;
-            font-size: 16px;
+            font-weight: bold;
+            color: #2e7d32;
+            font-size: 18px;
+        }
+        
+        .user-details {
+            text-align: right;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .user-role {
+            
+            font-size: 12px;
+            opacity: 0.9;
         }
 
         .company-name {
@@ -212,12 +237,12 @@
             background-color: #007a36;
         }
 
-            /* Footer*/
+        /* ================= FOOTER ================= */
         .ksk-footer {
             width: 100%;
             padding: 30px 40px;
             background: linear-gradient(to right, #00984489, #003216DB);
-            color: #111;
+            color: #ffffff;
             border-top: 3px solid #333;
             font-family: 'Poppins', sans-serif;
         }
@@ -238,27 +263,30 @@
         }
 
         .footer-logo {
-            background: white;
-            width: 80px;
-            height: auto;
-            object-fit: contain;
+            width: 70px;
+            height: 70px;
+            /* background: white; */
+            padding: 8px;
+            border-radius: 10px;
         }
 
         .footer-text h2 {
             font-size: 18px;
             font-weight: 700;
+            color: black;
         }
 
         .footer-text .subtitle {
             font-size: 14px;
             margin-top: -4px;
-            color: #333;
+            color: black;
         }
 
         .footer-text .description {
             font-size: 13px;
             margin-top: 10px;
             line-height: 1.5;
+            color: black;
         }
 
         /* Right Section */
@@ -273,6 +301,7 @@
             display: flex;
             align-items: start;
             gap: 10px;
+            color: black    ;
         }
 
         .footer-icon {
@@ -284,7 +313,7 @@
 
         .link-item {
             text-decoration: none;
-            color: inherit;
+            color: black ;
         }
 
         .link-item:hover {
@@ -315,7 +344,6 @@
                 align-items: center;
             }
         }
-
         @media(max-width:768px){
             .container {
                 padding: 25px 20px;
@@ -331,20 +359,21 @@
 </head>
 
 <body>
-
     <div class="header">
         <div class="header-left">
             <span class="menu-icon">☰</span>
             <h1>KAS MASUK</h1>
         </div>
         <div class="user-info">
-            <div class="user-avatar">🏢</div>
-            <div>
-                <div class="company-name">PT. Mitra Saudara Lestari</div>
-                <div class="company-type">Kasir</div>
+                <div class="user-avatar">
+                    <?php echo strtoupper(substr($nama_lengkap, 0, 1)); ?>
+                </div>
+                <div class="user-details">
+                    <div class="user-name"><?php echo htmlspecialchars($nama_lengkap); ?></div>
+                    <div class="user-role"><?php echo htmlspecialchars(ucfirst($role)); ?></div>
+                </div>
             </div>
         </div>
-    </div>
 
     <div class="container">
         <form method="POST">
@@ -359,10 +388,52 @@
             </div>
 
             <div class="button-group">
-                <button class="btn btn-primary">Simpan Kas Masuk</button>
+                <button type="submit" name="simpan_kas" class="btn btn-primary">Simpan Kas Masuk</button>
                 <button type="button" class="btn btn-secondary" onclick="history.back()">Kembali</button>
             </div>
         </form>
+
+            <!-- Nomor surat terakhir (ditampilkan di atas tabel) -->
+            <?php if (!empty($last_nomor)): ?>
+                <div style="margin:12px 0; font-weight:700;">Nomor Surat Terakhir: <?php echo htmlspecialchars($last_nomor); ?></div>
+            <?php endif; ?>
+
+            <!-- Tabel menampilkan inputan kas masuk yang sudah tersimpan -->
+            <div class="form-group">
+                <label>Daftar Kas Masuk</label>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background:#f2f2f2;">
+                                <th style="border:1px solid #ddd; padding:10px; text-align:center; width:60px;">NO</th>
+                                <th style="border:1px solid #ddd; padding:10px; text-align:left;">Keterangan</th>
+                                <th style="border:1px solid #ddd; padding:10px; text-align:right; width:160px;">Jumlah</th>
+                                <th style="border:1px solid #ddd; padding:10px; text-align:center; width:160px;">Tanggal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php if (!empty($data_kas)): ?>
+                            <?php $i = 1; foreach ($data_kas as $row): ?>
+                                <?php
+                                    $dt = strtotime($row['tanggal_transaksi']);
+                                    $jumlah_fmt = number_format($row['nominal'], 0, ',', '.');
+                                ?>
+                                <tr>
+                                    <td style="border:1px solid #ddd; padding:10px; text-align:center;"><?php echo $i; ?></td>
+                                    <td style="border:1px solid #ddd; padding:10px;"><?php echo htmlspecialchars($row['keterangan']); ?></td>
+                                    <td style="border:1px solid #ddd; padding:10px; text-align:right;">Rp. <?php echo $jumlah_fmt; ?></td>
+                                    <td style="border:1px solid #ddd; padding:10px; text-align:center;"><?php echo date('d-M-Y H:i', strtotime($row['tanggal_transaksi'])); ?></td>
+                                </tr>
+                            <?php $i++; endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="4" style="border:1px solid #ddd; padding:14px; text-align:center;">Belum ada data kas masuk</td>
+                            </tr>
+                        <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
         <button class="btn-export">Export ke PDF</button>
     </div>

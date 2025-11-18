@@ -1,14 +1,12 @@
 <?php
-session_start();
 
+// Koneksi ke database
+require_once 'config/conn_db.php';
 // cek login
 if (!isset($_SESSION['user_id'])) {
     header("Location: index.php");
     exit();
 }
-
-// Koneksi ke database
-require_once 'config/conn_db.php';
 
 // dapetin info dari sesi
 $user_id = $_SESSION['user_id'];
@@ -35,6 +33,28 @@ $nama_perusahaan = $config['nama_perusahaan'] ?? 'PT. Mitra Saudara Lestari';
 
 // Ambil role user dari session (default: Kasir)
 $role = $_SESSION['role'] ?? 'Kasir';
+
+// Hitung saldo kas (Kas Masuk - Kas Keluar) dari tabel transaksi
+$saldo_kas = 0;
+
+// Hitung kas terima (masuk)
+$query_masuk = "SELECT COALESCE(SUM(nominal), 0) as total FROM transaksi WHERE jenis_transaksi = 'kas_terima'";
+$result_masuk = mysqli_query($conn, $query_masuk);
+if ($result_masuk) {
+    $row_masuk = mysqli_fetch_assoc($result_masuk);
+    $saldo_kas += $row_masuk['total'] ?? 0;
+}
+
+// Hitung kas keluar
+$query_keluar = "SELECT COALESCE(SUM(nominal), 0) as total FROM transaksi WHERE jenis_transaksi = 'kas_keluar'";
+$result_keluar = mysqli_query($conn, $query_keluar);
+if ($result_keluar) {
+    $row_keluar = mysqli_fetch_assoc($result_keluar);
+    $saldo_kas -= $row_keluar['total'] ?? 0;
+}
+
+// Format saldo kas dengan pemisah ribuan
+$saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
 ?>
 
 <!DOCTYPE html>
@@ -66,17 +86,6 @@ $role = $_SESSION['role'] ?? 'Kasir';
             flex-direction: column;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
         }
-        /* Collapsed sidebar for burger toggle */
-        .sidebar.collapsed {
-            width: 64px;
-            overflow: hidden;
-        }
-        .sidebar.collapsed .menu-title,
-        .sidebar.collapsed .menu-item span:nth-child(2),
-        .sidebar.collapsed .company-title {
-            display: none;
-        }
-        
         .sidebar-header {
             padding: 0 20px 20px 20px;
             border-bottom: 2px solid #c8e6c9;
@@ -200,6 +209,7 @@ $role = $_SESSION['role'] ?? 'Kasir';
         }
         
         .user-role {
+            
             font-size: 12px;
             opacity: 0.9;
         }
@@ -268,90 +278,100 @@ $role = $_SESSION['role'] ?? 'Kasir';
             letter-spacing: 0.5px;
         }
         
-        /* Footer */
-        .footer {
-<<<<<<< HEAD
+        /* ================= FOOTER ================= */
+        .ksk-footer {
             width: 100%;
-=======
-            background: linear-gradient(180deg, #54B559FF 0%, #1b5e20 100%);
->>>>>>> 3534b44e270ace00b70af867f33046146bb439e9
             padding: 30px 40px;
             background: linear-gradient(to right, #00984489, #003216DB);
             color: #ffffff;
             border-top: 3px solid #333;
             font-family: 'Poppins', sans-serif;
         }
-        
+
         .footer-content {
             display: flex;
             justify-content: space-between;
             align-items: start;
             gap: 30px;
         }
-        
+
+        /* Left Section */
         .footer-left {
-            flex: 1;
-            max-width: 500px;
-        }
-        
-        .footer-logo {
             display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
+            flex-direction: row;
+            gap: 20px;
+            width: 60%;
         }
-        
-        .footer-logo img {
-            width: 60px;
-            height: 60px;
-            background: white;
+
+        .footer-logo {
+            width: 70px;
+            height: 70px;
+            /* background: white; */
             padding: 8px;
             border-radius: 10px;
         }
-        
-        .footer-company-name {
-            font-size: 16px;
-            font-weight: bold;
-            color: #e8f5e9;
+
+        .footer-text h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: black;
         }
-        
-        .footer-tagline {
-            font-size: 11px;
-            color: #dfeee0;
+
+        .footer-text .subtitle {
+            font-size: 14px;
+            margin-top: -4px;
+            color: black;
         }
-        
-        .footer-description {
-            font-size: 12px;
-            line-height: 1.6;
-            color: #e8f5e9;
-            text-align: justify;
+
+        .footer-text .description {
+            font-size: 13px;
+            margin-top: 10px;
+            line-height: 1.5;
+            color: black;
         }
-        
+
+        /* Right Section */
         .footer-right {
             width: 40%;
             display: flex;
             flex-direction: column;
             gap: 18px;
-            color: white;
         }
-        
-        .footer-contact {
+
+        .footer-item {
             display: flex;
-            align-items: center;
+            align-items: start;
             gap: 10px;
-            font-size: 12px;
-            color: #ffffff;
+            color: black    ;
+        }
+
+        .footer-icon {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+            margin-top: 3px;
+        }
+
+        .link-item {
+            text-decoration: none;
+            color: black ;
+        }
+
+        .link-item:hover {
+            opacity: 0.7;
         }
         
-        .contact-icon {
-            width: 24px;
-            height: 24px;
-            background: white;
-            border-radius: 50%;
+        .header-left {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
+            align-items: flex-start;
+            gap: 0;
+            flex-direction: column;
+        }
+        
+        .saldo-kas-info {
+            font-size: 15px;
+            opacity: 0.95;
+            margin-top: -5px;
         }
         
         /* Responsive */
@@ -385,11 +405,31 @@ $role = $_SESSION['role'] ?? 'Kasir';
             .footer-content {
                 flex-direction: column;
             }
+
+            .footer-left, .footer-right {
+                width: 100%;
+            }
+
+            .footer-left {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer-logo {
+                margin: 0 auto;
+            }
+
+            .footer-right {
+                text-align: center;
+                align-items: center;
+            }
         }
+
+
     </style>
 </head>
 <body>
-    <!-- menu sidebar -->
+    <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
             <img src="assets/gambar/logoksk.jpg" alt="KSK Logo"
@@ -432,25 +472,26 @@ $role = $_SESSION['role'] ?? 'Kasir';
         </ul>
     </div>
     
-    <!-- Konten Utama -->
+    <!-- Main Content -->
     <div class="main-content">
         <!-- Header -->
         <div class="header">
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <div class="welcome-text">SELAMAT DATANG</div>
+            <div class="header-left">
+                <div class="welcome-text">Dashboard</div>
+                <div class="saldo-kas-info">Saldo Kas Saat Ini: <strong>Rp <?php echo $saldo_kas_formatted; ?></strong></div>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">
+                    <?php echo strtoupper(substr($nama_lengkap, 0, 1)); ?>
                 </div>
-                <div class="user-info">
-                    <div class="user-avatar">
-                        <?php echo strtoupper(substr($nama_lengkap, 0, 1)); ?>
-                    </div>
-                    <div class="user-details">
-                        <div class="user-name"><?php echo htmlspecialchars($nama_lengkap); ?></div>
-                        <div class="user-role"><?php echo htmlspecialchars(ucfirst($role)); ?></div>
-                    </div>
+                <div class="user-details">
+                    <div class="user-name"><?php echo htmlspecialchars($nama_lengkap); ?></div>
+                    <div class="user-role"><?php echo htmlspecialchars(ucfirst($role)); ?></div>
                 </div>
             </div>
+        </div>
         
-        <!-- Konten area -->
+        <!-- Content Area -->
         <div class="content-area">
             <div class="menu-grid">
                 <div class="menu-row">
@@ -479,52 +520,52 @@ $role = $_SESSION['role'] ?? 'Kasir';
             </div>
         </div>
         
-        <!-- Footer -->
-        <div class="footer">
-            <div class="footer-content">
-                <div class="footer-left">
-                    <div class="footer-logo">
-                        <img src="assets/gambar/logoksk.jpg" alt="KSK Logo"
-                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22%3E%3Crect width=%2260%22 height=%2260%22 fill=%22%232e7d32%22 rx=%2210%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2224%22 fill=%22white%22 font-weight=%22bold%22%3EKSK%3C/text%3E%3C/svg%3E'">
-                        <div>
-                            <div class="footer-company-name">KALIMANTAN SAWIT KUSUMA GROUP</div>
-                            <div class="footer-tagline">Oil Palm Plantation & Industries</div>
-                        </div>
-                    </div>
-                    <p class="footer-description">
-                        Kalimantan Sawit Kusuma (KSK) adalah sebuah grup perusahaan yang memiliki 
-                        beberapa perusahaan afiliasi yang bergerak di berbagai bidang usaha, yaitu 
-                        perkebunan kelapa sawit dan hortikultura, kontraktor dan alat berat dan 
-                        pembangunan perkebunan serta jasa transportasi laut.
-                    </p>
-                </div>
-                
-                <div class="footer-right">
-                    <div class="footer-contact">
-                        <span class="contact-icon">🌐</span>
-                        <span>kskgroup.co.id</span>
-                    </div>
-                    <div class="footer-contact">
-                        <span class="contact-icon">📞</span>
-                        <div>
-                            <div>T: (+62 561) 733 035 (hunting)</div>
-                            <div>F: (+62 561) 733 014</div>
-                        </div>
-                    </div>
-                    <div class="footer-contact">
-                        <span class="contact-icon">📍</span>
-                        <div>
-                            <div>W.R Supratman No. 42 Pontianak,</div>
-                            <div>Kalimantan Barat 78122</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <footer class="ksk-footer">
+  <div class="footer-content">
+
+    <!-- Left Section -->
+    <div class="footer-left">
+      <img src="assets/gambar/logoksk.jpg" alt="KSK Logo" class="footer-logo">
+
+      <div class="footer-text">
+        <h2>KALIMANTAN SAWIT KUSUMA GROUP</h2>
+        <p class="subtitle">Oil Palm Plantation & Industries</p>
+
+        <p class="description">
+          Kalimantan Sawit Kusuma (KSK) adalah sebuah grup perusahaan yang memiliki beberapa 
+          perusahaan afiliasi yang bergerak di berbagai bidang usaha, yaitu perkebunan kelapa 
+          sawit dan hortikultura, kontraktor alat berat dan pembangunan perkebunan serta jasa 
+          transportasi laut.
+        </p>
+      </div>
     </div>
-<<<<<<< HEAD
-=======
+
+<!-- Right Section -->
+<div class="footer-right">
+
+  <a href="https://kskgroup.co.id" target="_blank" class="footer-item link-item">
+    <img src="assets/gambar/icon/browser.png" class="footer-icon">
+    <span>kskgroup.co.id</span>
+  </a>
+
+  <a href="tel:+62561733035" class="footer-item link-item">
+    <img src="assets/gambar/icon/telfon.png" class="footer-icon">
+    <span>
+      T. (+62 561) 733 035 (hunting)<br>
+      F. (+62 561) 733 014
+    </span>
+  </a>
+
+  <a href="https://maps.app.goo.gl/MdtmPLQTTagexjF59" target="_blank" class="footer-item link-item">
+    <img src="assets/gambar/icon/lokasi.png" class="footer-icon">
+    <span>
+      Jl. W.R Supratman No. 42 Pontianak,<br>
+      Kalimantan Barat 78122
+    </span>
+  </a>
+
+</div>
+</footer>
     
->>>>>>> 3534b44e270ace00b70af867f33046146bb439e9
 </body>
 </html>
