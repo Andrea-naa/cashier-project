@@ -449,6 +449,47 @@ $users = mysqli_query($conn, "SELECT id, username, nama_lengkap, role, created_a
                 padding: 12px 8px;
             }
         }
+        /* Modal konfirmasi hapus */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            width: 420px;
+            max-width: calc(100% - 40px);
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+            text-align: left;
+        }
+
+        .modal h4 {
+            margin-bottom: 10px;
+            color: #2d7a3e;
+        }
+
+        .modal p {
+            color: #4a5568;
+            margin-bottom: 18px;
+            line-height: 1.4;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
@@ -530,10 +571,10 @@ $users = mysqli_query($conn, "SELECT id, username, nama_lengkap, role, created_a
                                 <i class="fas fa-edit"></i> Edit
                             </a>
                             <?php if ($u['id'] != $current_user_id): ?>
-                                <a class="btn btn-danger btn-sm" href="kelola_user.php?action=delete&id=<?= $u['id'] ?>" onclick="return confirm('Apakah Anda yakin ingin menghapus user ini?')">
-                                    <i class="fas fa-trash"></i> Hapus
-                                </a>
-                            <?php endif; ?>
+                                    <a class="btn btn-danger btn-sm btn-delete" href="#" data-id="<?= $u['id'] ?>" data-username="<?php echo htmlspecialchars($u['username'], ENT_QUOTES); ?>">
+                                        <i class="fas fa-trash"></i> Hapus
+                                    </a>
+                                <?php endif; ?>
                         </td>
                     </tr>
                     <?php endwhile; ?>
@@ -577,6 +618,17 @@ $users = mysqli_query($conn, "SELECT id, username, nama_lengkap, role, created_a
         </div>
         <?php endif; ?>
     </div>
+    <!-- Model Konfirmasi Hapus -->
+    <div id="modalOverlay" class="modal-overlay" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <h4 id="modalTitle">Konfirmasi Penghapusan</h4>
+            <p id="modalMessage">Apakah Anda yakin ingin menghapus user ini?</p>
+            <div class="modal-actions">
+                <button id="modalCancel" class="btn btn-outline">Batal</button>
+                <button id="modalConfirm" class="btn btn-danger">Hapus</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         document.getElementById('btnShowAdd').onclick = function () {
@@ -586,6 +638,50 @@ $users = mysqli_query($conn, "SELECT id, username, nama_lengkap, role, created_a
         document.getElementById('btnCancelAdd').onclick = function () {
             document.getElementById('addForm').classList.add('hidden');
         };
+
+        (function(){
+            var overlay = document.getElementById('modalOverlay');
+            var modalMessage = document.getElementById('modalMessage');
+            var modalConfirm = document.getElementById('modalConfirm');
+            var modalCancel = document.getElementById('modalCancel');
+            var targetId = null;
+
+            function openModal(id, username) {
+                targetId = id;
+                modalMessage.textContent = 'Apakah Anda yakin ingin menghapus akun "' + username + '"? Tindakan ini dapat dibatalkan.';
+                overlay.classList.add('active');
+                overlay.setAttribute('aria-hidden', 'false');
+            }
+
+            function closeModal() {
+                targetId = null;
+                overlay.classList.remove('active');
+                overlay.setAttribute('aria-hidden', 'true');
+            }
+
+            document.querySelectorAll('.btn-delete').forEach(function(btn){
+                btn.addEventListener('click', function(e){
+                    e.preventDefault();
+                    var id = this.getAttribute('data-id');
+                    var username = this.getAttribute('data-username') || '';
+                    openModal(id, username);
+                });
+            });
+
+            modalCancel.addEventListener('click', function(){
+                closeModal();
+            });
+
+            overlay.addEventListener('click', function(e){
+                if (e.target === overlay) closeModal();
+            });
+
+            modalConfirm.addEventListener('click', function(){
+                if (!targetId) return closeModal();
+                // mengalihkan ke tindakan hapus (server mengharapkan GET hapus)
+                window.location.href = 'kelola_user.php?action=delete&id=' + encodeURIComponent(targetId);
+            });
+        })();
     </script>
 </body>
 </html>

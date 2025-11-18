@@ -283,9 +283,12 @@ $role = $_SESSION['role'] ?? 'Kasir';
         
         /* Footer */
         .footer {
-            background: linear-gradient(180deg, #66bb6a 0%, #1b5e20 100%);
+            width: 100%;
             padding: 30px 40px;
-            color: #e8f5e9;
+            background: linear-gradient(to right, #00984489, #003216DB);
+            color: #ffffff;
+            border-top: 3px solid #333;
+            font-family: 'Poppins', sans-serif;
         }
         
         .footer-content {
@@ -334,9 +337,11 @@ $role = $_SESSION['role'] ?? 'Kasir';
         }
         
         .footer-right {
+            width: 40%;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 18px;
+            color: white;
         }
         
         .footer-contact {
@@ -344,7 +349,7 @@ $role = $_SESSION['role'] ?? 'Kasir';
             align-items: center;
             gap: 10px;
             font-size: 12px;
-            color: #1b5e20;
+            color: #ffffff;
         }
         
         .contact-icon {
@@ -393,7 +398,7 @@ $role = $_SESSION['role'] ?? 'Kasir';
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
+    <!-- menu sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
             <img src="assets/gambar/logoksk.jpg" alt="KSK Logo"
@@ -435,12 +440,12 @@ $role = $_SESSION['role'] ?? 'Kasir';
         </ul>
     </div>
     
-    <!-- Main Content -->
+    <!-- Konten Utama -->
     <div class="main-content">
         <!-- Header -->
         <div class="header">
                 <div style="display:flex; align-items:center; gap:12px;">
-                    <div class="welcome-text">SELAMAT DATANG!</div>
+                    <div class="welcome-text">SELAMAT DATANG</div>
                 </div>
                 <div class="user-info">
                     <div class="user-avatar">
@@ -453,7 +458,7 @@ $role = $_SESSION['role'] ?? 'Kasir';
                 </div>
             </div>
         
-        <!-- Content Area -->
+        <!-- Konten area -->
         <div class="content-area">
             <div class="menu-grid">
                 <div class="menu-row">
@@ -525,17 +530,5 @@ $role = $_SESSION['role'] ?? 'Kasir';
             </div>
         </div>
     </div>
-    <script>
-        // Toggle sidebar collapse when burger clicked
-        (function(){
-            var btn = document.getElementById('toggleSidebar');
-            var sidebar = document.querySelector('.sidebar');
-            var main = document.querySelector('.main-content');
-            if (!btn) return;
-            btn.addEventListener('click', function(){
-                sidebar.classList.toggle('collapsed');
-            });
-        })();
-    </script>
 </body>
 </html>
