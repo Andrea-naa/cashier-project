@@ -1,5 +1,4 @@
 <?php
-session_start();
 require_once 'config/conn_db.php';
 
 // Hanya untuk admin
