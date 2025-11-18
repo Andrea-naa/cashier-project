@@ -270,7 +270,7 @@ $role = $_SESSION['role'] ?? 'Kasir';
         
         /* Footer */
         .footer {
-            background: linear-gradient(180deg, #66bb6a 0%, #1b5e20 100%);
+            background: linear-gradient(180deg, #54B559FF 0%, #1b5e20 100%);
             padding: 30px 40px;
             color: #e8f5e9;
         }
