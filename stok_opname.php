@@ -222,9 +222,11 @@
         }
 
         .footer-logo {
-            width: 80px;
-            height: auto;
-            object-fit: contain;
+            width: 70px;
+            height: 70px;
+            /* background: white; */
+            padding: 8px;
+            border-radius: 10px;
         }
 
         .footer-text h2 {
@@ -258,7 +260,7 @@
             display: flex;
             align-items: start;
             gap: 10px;
-            color:  black;
+            color: black    ;
         }
 
         .footer-icon {
@@ -270,13 +272,13 @@
 
         .link-item {
             text-decoration: none;
-            color: black;
+            color: black ;
         }
 
         .link-item:hover {
             opacity: 0.7;
         }
-
+        
         /* RESPONSIVE */
         @media (max-width: 780px) {
             .footer-content {
