@@ -15,9 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
     $jumlah = floatval($jumlah);
 
 
-    
-
-
     $stmt = mysqli_prepare($conn, "INSERT INTO transaksi (user_id, username, jenis_transaksi, nominal, keterangan, tanggal_transaksi) VALUES (?, ?, 'kas_terima', ?, ?, NOW())");
     if ($stmt) {
         mysqli_stmt_bind_param($stmt, 'isds', $user_id, $username, $jumlah, $keterangan);

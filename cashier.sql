@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 17, 2025 at 03:53 AM
+-- Generation Time: Nov 18, 2025 at 09:29 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -24,6 +24,49 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `audit_log`
+--
+
+CREATE TABLE `audit_log` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `username` varchar(100) NOT NULL,
+  `action` varchar(255) NOT NULL,
+  `ip_address` varchar(50) DEFAULT NULL,
+  `timestamp` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `audit_log`
+--
+
+INSERT INTO `audit_log` (`id`, `user_id`, `username`, `action`, `ip_address`, `timestamp`) VALUES
+(1, 2, 'palihnges', 'Login berhasil', '::1', '2025-11-17 07:53:38'),
+(2, 2, 'palihnges', 'Login berhasil', '::1', '2025-11-17 07:54:01'),
+(3, 1, 'admin', 'Login berhasil', '::1', '2025-11-17 07:55:30'),
+(4, 2, 'palihnges', 'Login berhasil', '::1', '2025-11-17 07:58:49'),
+(5, 1, 'admin', 'Login berhasil', '::1', '2025-11-17 08:13:48'),
+(6, 1, 'admin', 'Login berhasil', '::1', '2025-11-17 08:13:54'),
+(7, 1, 'admin', 'Login berhasil', '::1', '2025-11-17 08:17:10'),
+(8, 2, 'palihnges', 'Login berhasil', '::1', '2025-11-17 08:17:22'),
+(9, 1, 'admin', 'Login berhasil', '::1', '2025-11-17 08:20:05'),
+(10, 1, 'admin', 'Login berhasil', '::1', '2025-11-17 08:25:17'),
+(11, 2, 'palihnges', 'Login berhasil', '::1', '2025-11-17 08:25:27'),
+(12, 1, 'admin', 'Login berhasil', '::1', '2025-11-17 09:44:01'),
+(13, 1, 'admin', 'Login berhasil', '::1', '2025-11-17 09:44:39'),
+(14, 1, 'admin', 'Login berhasil', '::1', '2025-11-18 01:40:25'),
+(15, 1, 'admin', 'Login berhasil', '::1', '2025-11-18 05:01:35'),
+(16, 1, 'admin', 'Login berhasil', '::1', '2025-11-18 05:04:15'),
+(17, 1, 'admin', 'Login berhasil', '::1', '2025-11-18 05:05:37'),
+(18, 1, 'admin', 'Login berhasil', '::1', '2025-11-18 05:06:26'),
+(19, 5, 'ngising', 'Akun dibuat: ngising (Role: Kasir)', NULL, '2025-11-18 11:14:44'),
+(20, 1, 'admin', 'Login berhasil', '::1', '2025-11-18 07:40:42'),
+(21, 5, 'ngising', 'Login berhasil', '::1', '2025-11-18 08:25:45'),
+(22, 1, 'admin', 'Login berhasil', '::1', '2025-11-18 08:26:13');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `konfigurasi`
 --
 
@@ -40,6 +83,13 @@ CREATE TABLE `konfigurasi` (
   `ttd_jabatan_4` varchar(100) DEFAULT 'Cashier',
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `konfigurasi`
+--
+
+INSERT INTO `konfigurasi` (`id`, `nama_perusahaan`, `alamat`, `kota`, `telepon`, `email`, `ttd_jabatan_1`, `ttd_jabatan_2`, `ttd_jabatan_3`, `ttd_jabatan_4`, `updated_at`) VALUES
+(1, 'PT. Kalimantan Sawit Kusuma', 'Jl. W.R Supratman No. 42 Pontianak', 'Kota Pontianak', '0778-123456', 'info@ksk.com', 'Finance Dept Head', 'Finance Sub Dept Head', 'Finance Div Head', 'Cashier', '2025-11-18 08:27:32');
 
 -- --------------------------------------------------------
 
@@ -115,11 +165,62 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `password`, `nama_lengkap`, `role`, `created_at`) VALUES
-(1, 'admin', '$2y$10$upcANdBwwfO7IZWJ0BvFve74wJQewUJ0aJ1Ykgd03UdlPocWzd.XW', 'Andreanoe Meitin', '', '2025-11-17 02:51:52');
+(1, 'admin', '$2y$10$upcANdBwwfO7IZWJ0BvFve74wJQewUJ0aJ1Ykgd03UdlPocWzd.XW', 'Andreanoe Meitin', 'Administrator', '2025-11-17 02:51:52'),
+(2, 'palihnges', '$2y$10$5KYqmbmP/3XEnYQsS/9q2OzpOLgAuI2ilpcyR5SoWk6J05XyfWG6O', 'Falih Pangestu', 'Kasir', '2025-11-17 00:51:50'),
+(5, 'ngising', '$2y$10$AXCuteFGWCj3wH7kZYOV4OU1cX567gK1VPNbprWw31aa60YhyzodG', 'Ngising Mampet', 'Kasir', '2025-11-17 22:14:44');
+
+--
+-- Triggers `users`
+--
+DELIMITER $$
+CREATE TRIGGER `trg_users_after_delete` AFTER DELETE ON `users` FOR EACH ROW BEGIN
+    INSERT INTO audit_log (user_id, username, action, ip_address, timestamp)
+    VALUES (OLD.id, OLD.username, CONCAT('Akun dihapus: ', OLD.username, ' (Role: ', OLD.role, ')'), NULL, NOW());
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `trg_users_after_insert` AFTER INSERT ON `users` FOR EACH ROW BEGIN
+    INSERT INTO audit_log (user_id, username, action, ip_address, timestamp)
+    VALUES (NEW.id, NEW.username, CONCAT('Akun dibuat: ', NEW.username, ' (Role: ', NEW.role, ')'), NULL, NOW());
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `trg_users_after_update` AFTER UPDATE ON `users` FOR EACH ROW BEGIN
+    DECLARE changed_fields VARCHAR(255) DEFAULT '';
+    
+    IF OLD.username <> NEW.username THEN
+        SET changed_fields = CONCAT(changed_fields, 'Username: ', OLD.username, ' → ', NEW.username, '; ');
+    END IF;
+    
+    IF OLD.nama_lengkap <> NEW.nama_lengkap THEN
+        SET changed_fields = CONCAT(changed_fields, 'Nama: ', OLD.nama_lengkap, ' → ', NEW.nama_lengkap, '; ');
+    END IF;
+    
+    IF OLD.role <> NEW.role THEN
+        SET changed_fields = CONCAT(changed_fields, 'Role: ', OLD.role, ' → ', NEW.role, '; ');
+    END IF;
+    
+    IF changed_fields <> '' THEN
+        INSERT INTO audit_log (user_id, username, action, ip_address, timestamp)
+        VALUES (NEW.id, NEW.username, CONCAT('Akun diupdate: ', changed_fields), NULL, NOW());
+    END IF;
+END
+$$
+DELIMITER ;
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `audit_log`
+--
+ALTER TABLE `audit_log`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_user_id` (`user_id`),
+  ADD KEY `idx_timestamp` (`timestamp`);
 
 --
 -- Indexes for table `konfigurasi`
@@ -160,10 +261,16 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT for table `audit_log`
+--
+ALTER TABLE `audit_log`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+
+--
 -- AUTO_INCREMENT for table `konfigurasi`
 --
 ALTER TABLE `konfigurasi`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `stok_opname`
@@ -187,7 +294,7 @@ ALTER TABLE `transaksi`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Constraints for dumped tables

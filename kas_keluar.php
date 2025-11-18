@@ -1,14 +1,16 @@
 <?php
 require_once 'config/conn_db.php';
 
+
+    $user_id = $_SESSION['user_id'];
+    $username = $_SESSION['username'];
+    $nama_lengkap = $_SESSION['nama_lengkap'];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
     $keterangan = trim($_POST['keterangan'] ?? '');
     $jumlah_raw = trim($_POST['jumlah'] ?? '0');
     $jumlah = str_replace(['.', ','], ['', '.'], $jumlah_raw);
     $jumlah = floatval($jumlah);
-
-    $user_id = $_SESSION['user_id'] ?? 0;
-    $username = $_SESSION['username'] ?? 'system';
 
     $stmt = mysqli_prepare($conn, "INSERT INTO transaksi (user_id, username, jenis_transaksi, nominal, keterangan, tanggal_transaksi) VALUES (?, ?, 'kas_keluar', ?, ?, NOW())");
     if ($stmt) {
@@ -20,6 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit();
 }
+// Ambil role user dari session (default: Kasir)
+    $role = $_SESSION['role'] ?? 'Kasir';
 
 $data_kas = [];
 $res = mysqli_query($conn, "SELECT id, user_id, username, nominal, keterangan, tanggal_transaksi FROM transaksi WHERE jenis_transaksi = 'kas_keluar' ORDER BY tanggal_transaksi ASC");
@@ -90,19 +94,35 @@ if (!empty($data_kas)) {
         .user-info {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 15px;
         }
-
+        
         .user-avatar {
-            width: 42px;
-            height: 42px;
-            background-color: white;
+            width: 45px;
+            height: 45px;
+            background: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #009844;
-            font-size: 16px;
+            font-weight: bold;
+            color: #2e7d32;
+            font-size: 18px;
+        }
+        
+        .user-details {
+            text-align: right;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .user-role {
+            
+            font-size: 12px;
+            opacity: 0.9;
         }
 
         .company-name {
@@ -337,13 +357,15 @@ if (!empty($data_kas)) {
             <h1>KAS KELUAR</h1>
         </div>
         <div class="user-info">
-            <div class="user-avatar">🏢</div>
-            <div>
-                <div class="company-name">PT. Mitra Saudara Lestari</div>
-                <div class="company-type">Kasir</div>
+                <div class="user-avatar">
+                    <?php echo strtoupper(substr($nama_lengkap, 0, 1)); ?>
+                </div>
+                <div class="user-details">
+                    <div class="user-name"><?php echo htmlspecialchars($nama_lengkap); ?></div>
+                    <div class="user-role"><?php echo htmlspecialchars(ucfirst($role)); ?></div>
+                </div>
             </div>
         </div>
-    </div>
 
     <div class="container">
         <form method="POST">
