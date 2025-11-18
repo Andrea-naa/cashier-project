@@ -17,35 +17,56 @@
         }
 
         .header {
-            background-color: #0e8c4a;
+            background-color: #009844;
             color: white;
-            padding: 15px 20px;
+            padding: 18px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .menu-icon {
+            font-size: 26px;
+            cursor: pointer;
+        }
+
         .header h1 {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: bold;
         }
 
         .user-info {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         .user-avatar {
-            width: 35px;
-            height: 35px;
+            width: 42px;
+            height: 42px;
             background-color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #0e8c4a;
+            color: #009844;
+            font-size: 16px;
+        }
+
+        .company-name {
+            font-size: 13px;
             font-weight: bold;
+        }
+
+        .company-type {
+            font-size: 11px;
+            opacity: .85;
         }
 
         .container {
@@ -377,15 +398,15 @@
     ?>
 
     <div class="header">
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <span style="font-size: 20px;">☰</span>
+        <div class="header-left">
+            <span class="menu-icon">☰</span>
             <h1>STOK OPNAME</h1>
         </div>
         <div class="user-info">
-            <div class="user-avatar">A</div>
+            <div class="user-avatar">🏢</div>
             <div>
-                <div style="font-size: 12px;">PT. Mitra Saudara Lestari</div>
-                <div style="font-size: 10px;">Kasir</div>
+                <div class="company-name">PT. Mitra Saudara Lestari</div>
+                <div class="company-type">Kasir</div>
             </div>
         </div>
     </div>
@@ -510,6 +531,19 @@
   </div>
 </footer>
 
+<script>
+        // Toggle sidebar collapse when burger clicked
+        (function(){
+            var btn = document.getElementById('toggleSidebar');
+            var sidebar = document.querySelector('.sidebar');
+            var main = document.querySelector('.main-content');
+            if (!btn) return;
+            btn.addEventListener('click', function(){
+                sidebar.classList.toggle('collapsed');
+            });
+        })();
+    </script>
+     
     <?php
     // Proses form jika di-submit
     if(isset($_POST['simpan'])) {

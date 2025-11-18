@@ -52,15 +52,15 @@ $role = $_SESSION['role'] ?? 'Kasir';
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f0f0;
+            background: #FFFFFFFF;
             display: flex;
             min-height: 100vh;
         }
         
         /* Sidebar */
         .sidebar {
-            width: 220px;
-            background: #e8f5e9;
+            width: 280px;
+            background: #E7E7E7FF;
             padding: 20px 0;
             display: flex;
             flex-direction: column;
@@ -103,7 +103,7 @@ $role = $_SESSION['role'] ?? 'Kasir';
             padding: 10px 20px;
             font-size: 12px;
             color: #666;
-            font-weight: 600;
+            font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -146,19 +146,6 @@ $role = $_SESSION['role'] ?? 'Kasir';
             align-items: center;
             justify-content: center;
             font-size: 16px;
-        }
-
-        /* Burger button */
-        .burger {
-            background: transparent;
-            border: none;
-            color: white;
-            font-size: 22px;
-            cursor: pointer;
-            margin-right: 18px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
         }
         
         /* Main Content */
@@ -283,7 +270,11 @@ $role = $_SESSION['role'] ?? 'Kasir';
         
         /* Footer */
         .footer {
+<<<<<<< HEAD
             width: 100%;
+=======
+            background: linear-gradient(180deg, #54B559FF 0%, #1b5e20 100%);
+>>>>>>> 3534b44e270ace00b70af867f33046146bb439e9
             padding: 30px 40px;
             background: linear-gradient(to right, #00984489, #003216DB);
             color: #ffffff;
@@ -404,7 +395,8 @@ $role = $_SESSION['role'] ?? 'Kasir';
             <img src="assets/gambar/logoksk.jpg" alt="KSK Logo"
                  onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%232e7d32%22 rx=%228%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2220%22 fill=%22white%22 font-weight=%22bold%22%3EKSK%3C/text%3E%3C/svg%3E'">
             <div class="company-title">
-                KALIMANTAN SAWIT<br>KUSUMA GROUP
+                <h4>KALIMANTAN SAWIT KUSUMA GROUP</h4>
+                <p>Oil Palm Plantation & Industries</p>
             </div>
         </div>
         
@@ -530,5 +522,9 @@ $role = $_SESSION['role'] ?? 'Kasir';
             </div>
         </div>
     </div>
+<<<<<<< HEAD
+=======
+    
+>>>>>>> 3534b44e270ace00b70af867f33046146bb439e9
 </body>
 </html>

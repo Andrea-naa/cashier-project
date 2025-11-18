@@ -415,7 +415,19 @@
 
   </div>
 </footer>
-
+<script>
+        // Toggle sidebar collapse when burger clicked
+        (function(){
+            var btn = document.getElementById('toggleSidebar');
+            var sidebar = document.querySelector('.sidebar');
+            var main = document.querySelector('.main-content');
+            if (!btn) return;
+            btn.addEventListener('click', function(){
+                sidebar.classList.toggle('collapsed');
+            });
+        })();
+    </script>
+    
 </body>
 </html>
 
