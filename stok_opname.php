@@ -663,10 +663,10 @@ if (isset($_POST['simpan'])) {
 
             <div class="button-group">
                 <button type="submit" name="simpan" class="btn btn-primary">Simpan Risk Opname</button>
-                <button type="button" class="btn btn-secondary">Kembali</button>
+                <button type="button" class="btn btn-secondary"onclick="window.location.href='dashboard.php'">Kembali</button>
             </div>
 
-            <button type="button" class="btn-table">Lihat Tabel</button>
+            <button type="button" class="btn-table" onclick="window.location.href='tabel_stok_opname.php'">Lihat Tabel</button>
         </form>
     </div>
 
