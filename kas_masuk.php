@@ -395,7 +395,7 @@ if (!empty($data_kas)) {
 
             <!-- Nomor surat terakhir (ditampilkan di atas tabel) -->
             <?php if (!empty($last_nomor)): ?>
-                <div style="margin:12px 0; font-weight:700;">Nomor Surat Terakhir: <?php echo htmlspecialchars($last_nomor); ?></div>
+                <div style="margin:12px 0; font-weight:700;">Nomor: <?php echo htmlspecialchars($last_nomor); ?></div>
             <?php endif; ?>
 
             <!-- Tabel menampilkan inputan kas masuk yang sudah tersimpan -->

@@ -22,15 +22,20 @@ function clean_input($data) {
     return $data;
 }
 
+// Fungsi untuk format rupiah
+function rupiah_fmt($n){
+    return 'Rp. '.number_format($n, 0, ',', '.');
+}
+
 // Fungsi untuk log audit
 function log_audit($user_id, $username, $action) {
     global $conn;
     $timestamp = date('Y-m-d H:i:s');
     $ip_address = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
-    
-    $query = "INSERT INTO audit_log (user_id, username, action, ip_address, timestamp) 
+
+    $query = "INSERT INTO audit_log (user_id, username, action, ip_address, timestamp)
               VALUES ('$user_id', '$username', '$action', '$ip_address', '$timestamp')";
-    
+
     mysqli_query($conn, $query);
 }
 ?>
