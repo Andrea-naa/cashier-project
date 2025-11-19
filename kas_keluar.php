@@ -427,7 +427,7 @@ if (!empty($data_kas)) {
                 </div>
             </div>
 
-        <button class="btn-export">Export ke PDF</button>
+        <a href="export_pdf.php?type=kas_keluar" target="_blank"><button class="btn-export">Export ke PDF</button></a>
     </div>
 
 <footer class="ksk-footer">
