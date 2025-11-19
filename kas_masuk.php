@@ -22,6 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
         mysqli_stmt_close($stmt);
     }
 
+    // Log audit
+    log_audit($user_id, $username, "Kas Masuk: " . rupiah_fmt($jumlah) . " - " . $keterangan);
+
     // Redirect agar form tidak submit ulang
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit();
@@ -432,7 +435,7 @@ if (!empty($data_kas)) {
                 </div>
             </div>
 
-        <button class="btn-export">Export ke PDF</button>
+        <a href="export_pdf.php?type=kas_masuk" target="_blank"><button class="btn-export">Export ke PDF</button></a>
     </div>
 
 <footer class="ksk-footer">
