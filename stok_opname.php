@@ -1,3 +1,111 @@
+<?php
+require_once 'config/conn_db.php';
+
+// mengambil data user login
+$user_id      = $_SESSION['user_id'];
+$username     = $_SESSION['username'];
+$nama_lengkap = $_SESSION['nama_lengkap'];
+
+// List pecahan uang
+$fisik_uang_kas = [
+    ['no'=>1,'uraian'=>'Seratus Ribuan Kertas','satuan'=>'Lembar','nominal'=>100000],
+    ['no'=>2,'uraian'=>'Lima Puluh Ribuan Kertas','satuan'=>'Lembar','nominal'=>50000],
+    ['no'=>3,'uraian'=>'Dua Puluh Ribuan Kertas','satuan'=>'Lembar','nominal'=>20000],
+    ['no'=>4,'uraian'=>'Sepuluh Ribuan Kertas','satuan'=>'Lembar','nominal'=>10000],
+    ['no'=>5,'uraian'=>'Lima Ribuan Kertas','satuan'=>'Lembar','nominal'=>5000],
+    ['no'=>6,'uraian'=>'Dua Ribuan Kertas','satuan'=>'Lembar','nominal'=>2000],
+    ['no'=>7,'uraian'=>'Satu Ribuan Kertas','satuan'=>'Lembar','nominal'=>1000],
+    ['no'=>8,'uraian'=>'Satu Ribuan Logam','satuan'=>'Keping','nominal'=>1000],
+    ['no'=>9,'uraian'=>'Lima Ratusan Logam','satuan'=>'Keping','nominal'=>500],
+    ['no'=>10,'uraian'=>'Dua Ratusan Logam','satuan'=>'Keping','nominal'=>200],
+    ['no'=>11,'uraian'=>'Satu Ratusan Logam','satuan'=>'Keping','nominal'=>100],
+];
+
+
+    // alur proses penyimpanan data stok opname
+
+if (isset($_POST['simpan'])) {
+
+    // Hitung total fisik uang kas
+    $subtotal_fisik = 0;
+    $jumlah_items   = [];
+
+    foreach ($fisik_uang_kas as $item) {
+        $field = "jumlah_" . $item['no'];
+        $jumlah = floatval($_POST[$field] ?? 0);
+
+        $jumlah_items[] = [
+            'no'      => $item['no'],
+            'uraian'  => $item['uraian'],
+            'satuan'  => $item['satuan'],
+            'jumlah'  => $jumlah,
+            'nilai'   => $item['nominal']
+        ];
+
+        $subtotal_fisik += ($jumlah * $item['nominal']);
+    }
+
+    // Data tambahan
+    $bon_sementara = floatval($_POST['bon_sementara'] ?? 0);
+    $uang_rusak    = floatval($_POST['uang_rusak'] ?? 0);
+    $materai       = floatval($_POST['material'] ?? 0);
+    $lain_lain     = floatval($_POST['lain_lain'] ?? 0);
+
+    // Hitung total saldo fisik
+    $fisik_total = $subtotal_fisik + $bon_sementara + $uang_rusak + $materai + $lain_lain;
+
+    // Hitung saldo sistem
+    $q_system = mysqli_query($conn,
+        "SELECT 
+            (SELECT IFNULL(SUM(nominal),0) FROM transaksi WHERE jenis_transaksi='kas_terima') -
+            (SELECT IFNULL(SUM(nominal),0) FROM transaksi WHERE jenis_transaksi='kas_keluar')
+         AS saldo_sistem"
+    );
+    $d = mysqli_fetch_assoc($q_system);
+    $saldo_sistem = $d['saldo_sistem'] ?? 0;
+
+    // Selisih
+    $selisih = $fisik_total - $saldo_sistem;
+
+ 
+    // menyimpan ke database tabel stok_opname
+
+    $stmt = mysqli_prepare($conn,
+        "INSERT INTO stok_opname 
+         (user_id, username, subtotal_fisik, bon_sementara, uang_rusak, materai, lainnya, fisik_total, saldo_sistem, selisih)
+         VALUES (?,?,?,?,?,?,?,?,?,?)"
+    );
+    mysqli_stmt_bind_param($stmt, 'isdddddddd',
+        $user_id, $username, $subtotal_fisik, $bon_sementara, $uang_rusak,
+        $materai, $lain_lain, $fisik_total, $saldo_sistem, $selisih
+    );
+    mysqli_stmt_execute($stmt);
+    $stok_opname_id = mysqli_insert_id($conn);
+    mysqli_stmt_close($stmt);
+
+  
+    // menyimpan ke database tabel stok_opname_detail
+
+    $stmt2 = mysqli_prepare($conn,
+        "INSERT INTO stok_opname_detail (stok_opname_id, no_urut, uraian, satuan, jumlah, nilai)
+         VALUES (?,?,?,?,?,?)"
+    );
+
+    foreach ($jumlah_items as $it) {
+        mysqli_stmt_bind_param($stmt2, 'iissid',
+            $stok_opname_id, $it['no'], $it['uraian'], $it['satuan'], $it['jumlah'], $it['nilai']
+        );
+        mysqli_stmt_execute($stmt2);
+    }
+    mysqli_stmt_close($stmt2);
+
+    // Redirect
+    header("Location: tabel_stok_opname.php?success=1");
+    exit;
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -196,7 +304,7 @@
             margin-right: auto;
         }
 
-        /* ================= FOOTER ================= */
+        /*  FOOTER  */
         .ksk-footer {
             width: 100%;
             padding: 30px 40px;
