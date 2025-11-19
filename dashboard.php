@@ -104,7 +104,7 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
         .company-title {
             font-size: 11px;
             font-weight: bold;
-            color: #1b5e20;
+            color: #000000FF;
             line-height: 1.3;
         }
         

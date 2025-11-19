@@ -141,6 +141,10 @@
             vertical-align: middle;
         }
 
+        td:nth-child(1) {
+            text-align: center;
+        }
+
         td:nth-child(2) {
             text-align: left;
         }
@@ -202,8 +206,8 @@
         }
 
         .btn {
-            flex: 1;                /* <— ini membuat semua tombol memiliki lebar sama */
-            padding: 14px 0;        /* buang padding horizontal */
+            flex: 1;
+            padding: 14px 0;
             border-radius: 7px;
             cursor: pointer;
             font-weight: 600;
@@ -260,7 +264,6 @@
         .footer-logo {
             width: 70px;
             height: 70px;
-            /* background: white; */
             padding: 8px;
             border-radius: 10px;
         }
@@ -296,7 +299,7 @@
             display: flex;
             align-items: start;
             gap: 10px;
-            color: black    ;
+            color: black;
         }
 
         .footer-icon {
@@ -308,7 +311,7 @@
 
         .link-item {
             text-decoration: none;
-            color: black ;
+            color: black;
         }
 
         .link-item:hover {
@@ -389,14 +392,16 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 80px;">NO</th>
-                        <th>Keterangan</th>
-                        <th style="width: 180px;">Jumlah</th>
-                        <th style="width: 150px;">Tanggal</th>
+                        <th style="width: 120px;">BUKTI KAS</th>
+                        <th>URAIAN</th>
+                        <th style="width: 180px;">DEBET</th>
+                        <th style="width: 180px;">KREDIT</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
-                    <!-- Data akan diisi dari database -->
+                    <tr>
+                        <td colspan="4" class="empty-state">Tidak ada transaksi. Data akan dimuat dari database.</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -405,8 +410,8 @@
             <div class="summary-row" style="border-top: 2px solid #333; padding-top: 15px;">
                 <span class="summary-label" style="font-size: 15px;">Jumlah Transaksi</span>
                 <div style="display: flex; gap: 100px;">
-                    <span class="summary-value" id="totalDebet" style="min-width: 180px; text-align: right;"></span>
-                    <span class="summary-value" id="totalKredit" style="min-width: 180px; text-align: right;"></span>
+                    <span class="summary-value" id="totalDebet" style="min-width: 180px; text-align: right;">-</span>
+                    <span class="summary-value" id="totalKredit" style="min-width: 180px; text-align: right;">-</span>
                 </div>
             </div>
             
@@ -414,15 +419,15 @@
                 <span class="summary-label" style="font-size: 15px;">Saldo Per Tanggal <span id="currentDate"></span></span>
                 <div style="display: flex; gap: 100px;">
                     <span class="summary-value" style="min-width: 180px;"></span>
-                    <span class="summary-value" id="saldo" style="min-width: 180px; text-align: right;"></span>
+                    <span class="summary-value" id="saldo" style="min-width: 180px; text-align: right;">-</span>
                 </div>
             </div>
             
             <div class="summary-row balance-row" style="border-top: 2px solid #333; padding-top: 15px; margin-top: 15px;">
                 <span class="summary-label" style="font-size: 16px;">Balance</span>
                 <div style="display: flex; gap: 100px;">
-                    <span class="summary-value" id="balanceDebet" style="min-width: 180px; text-align: right;"></span>
-                    <span class="summary-value" id="balanceKredit" style="min-width: 180px; text-align: right;"></span>
+                    <span class="summary-value" id="balanceDebet" style="min-width: 180px; text-align: right;">-</span>
+                    <span class="summary-value" id="balanceKredit" style="min-width: 180px; text-align: right;">-</span>
                 </div>
             </div>
         </div>
@@ -532,11 +537,11 @@
                 }
             });
 
-            // Hitung saldo (Debet - Kredit)
-            const saldo = totalDebet - totalKredit;
-
-            // Update tampilan hanya jika ada data
+            // Update tampilan
             if (hasData) {
+                // Hitung saldo (Debet - Kredit)
+                const saldo = totalDebet - totalKredit;
+                
                 document.getElementById('totalDebet').textContent = formatRupiah(totalDebet);
                 document.getElementById('totalKredit').textContent = formatRupiah(totalKredit);
                 document.getElementById('saldo').textContent = formatRupiah(saldo);
@@ -546,12 +551,12 @@
                 document.getElementById('balanceDebet').textContent = formatRupiah(balanceAmount);
                 document.getElementById('balanceKredit').textContent = formatRupiah(balanceAmount);
             } else {
-                // Kosongkan semua nilai jika tidak ada data
-                document.getElementById('totalDebet').textContent = '';
-                document.getElementById('totalKredit').textContent = '';
-                document.getElementById('saldo').textContent = '';
-                document.getElementById('balanceDebet').textContent = '';
-                document.getElementById('balanceKredit').textContent = '';
+                // Tampilkan tanda '-' jika tidak ada data
+                document.getElementById('totalDebet').textContent = '-';
+                document.getElementById('totalKredit').textContent = '-';
+                document.getElementById('saldo').textContent = '-';
+                document.getElementById('balanceDebet').textContent = '-';
+                document.getElementById('balanceKredit').textContent = '-';
             }
         }
 
@@ -561,7 +566,7 @@
             calculateTotals();
         });
 
-        // Fungsi untuk menambah data (untuk testing atau dari database)
+        // Fungsi untuk menambah data ke tabel (akan dipanggil dari database)
         function addTransaction(buktiKas, uraian, debet, kredit) {
             const tbody = document.getElementById('tableBody');
             
@@ -582,8 +587,41 @@
             calculateTotals();
         }
 
-        // Contoh penggunaan (bisa dihapus nanti):
-        // addTransaction('001/KT-MSL/XI/2025', 'Terima dana dari Pontianak untuk operasional R-II Oktober 2025', '4.058.500.000,00', '120.694.471,00');
+        // Fungsi untuk load data dari database (contoh)
+        // Fungsi ini akan dipanggil dari backend PHP dengan data dari database
+        function loadDataFromDatabase(data) {
+            // data adalah array dari database
+            // Contoh: [{bukti_kas: '001/KK-MSL/XI/2025', uraian: '...', debet: '', kredit: '50000'}, ...]
+            
+            data.forEach(item => {
+                addTransaction(item.bukti_kas, item.uraian, item.debet, item.kredit);
+            });
+        }
+
+        /* 
+        CARA PENGGUNAAN DENGAN DATABASE:
+        
+        1. Di file PHP, load data dari database
+        2. Convert ke format JSON
+        3. Panggil fungsi loadDataFromDatabase dengan data tersebut
+        
+        Contoh di PHP:
+        
+        <?php
+        // Ambil data dari database
+        $query = "SELECT bukti_kas, uraian, debet, kredit FROM transaksi WHERE tanggal = CURDATE()";
+        $result = mysqli_query($conn, $query);
+        $data = [];
+        while($row = mysqli_fetch_assoc($result)) {
+            $data[] = $row;
+        }
+        ?>
+        
+        <script>
+        // Load data ke tabel
+        loadDataFromDatabase(<?php echo json_encode($data); ?>);
+        </script>
+        */
     </script>
 
 </body>
