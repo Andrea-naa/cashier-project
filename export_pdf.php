@@ -73,15 +73,50 @@ if (empty($rows)) {
 // BUILD HTML
 $html = '<!doctype html><html><head><meta charset="utf-8">
 <style>
-body { font-family: DejaVu Sans, Arial, sans-serif; font-size:12px; color:#000; }
-.title { font-weight:700; font-size:16px; text-align:center; margin-bottom:5px; text-decoration:underline; }
-.table { width:100%; border-collapse:collapse; margin-top:6px; }
-.table th, .table td { border:1px solid #000; padding:6px; font-size:11px; }
-.right { text-align:right; }
-.center { text-align:center; }
-.keterangan { height:60px; border-bottom:1px dotted #000; margin-top:12px; }
-.ttd-wrap { width:100%; margin-top:30px; display:flex; justify-content:space-between; }
-.ttd-box { width:24%; text-align:center; font-size:11px; }
+    body { 
+        font-family: DejaVu Sans, Arial, sans-serif; 
+        font-size:12px; 
+        color:#000; 
+        }
+    .title { 
+        font-weight:700; 
+        font-size:16px; 
+        text-align:center; 
+        margin-bottom:5px; 
+        text-decoration:underline; 
+        }
+    .table { 
+        width:100%; 
+        border-collapse:collapse; 
+        margin-top:6px; 
+        }
+    .table th, .table td { 
+        border:1px solid #000; 
+        padding:6px; 
+        font-size:11px; 
+        }
+    .right { 
+        text-align:right; 
+        }
+    .center {
+        text-align:center;
+        }
+    .keterangan { 
+        height:60px; 
+        border-bottom:1px dotted #000; 
+        margin-top:12px; 
+        }
+    .ttd-wrap { 
+        width:100%; 
+        margin-top:30px; 
+        display:flex; 
+        justify-content:space-between; 
+        }
+    .ttd-box { 
+        width:24%; 
+        text-align:center; 
+        font-size:11px; 
+        }
 </style>
 </head><body>';
 
