@@ -398,9 +398,9 @@ if (!empty($data_kas)) {
                         <thead>
                             <tr style="background:#f2f2f2;">
                                 <th style="border:1px solid #ddd; padding:10px; text-align:center; width:60px;">NO</th>
-                                <th style="border:1px solid #ddd; padding:10px; text-align:left;">Keterangan</th>
-                                <th style="border:1px solid #ddd; padding:10px; text-align:right; width:160px;">Jumlah</th>
-                                <th style="border:1px solid #ddd; padding:10px; text-align:center; width:160px;">Tanggal</th>
+                                <th style="border:1px solid #ddd; padding:10px; text-align:center;">KETERANGAN</th>
+                                <th style="border:1px solid #ddd; padding:10px; text-align:center; width:160px;">JUMLAH</th>
+                                <th style="border:1px solid #ddd; padding:10px; text-align:center; width:160px;">TANGGAL</th>
                             </tr>
                         </thead>
                         <tbody>
