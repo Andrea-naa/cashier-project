@@ -527,7 +527,11 @@ $users = mysqli_query($conn, "SELECT id, username, nama_lengkap, role, created_a
                 <input type="text" name="nama_lengkap" placeholder="Masukkan nama lengkap">
                 
                 <label><i class="fas fa-user-tag"></i> Role</label>
-                <input type="text" name="role" placeholder="administrator / kasir">
+                <select name="role" required>
+                    <option value="">Pilih Role</option>
+                    <option value="Administrator">Administrator</option>
+                    <option value="Kasir">Kasir</option>
+                </select>
                 
                 <div class="form-actions">
                     <button class="btn btn-primary" type="submit">
@@ -603,7 +607,11 @@ $users = mysqli_query($conn, "SELECT id, username, nama_lengkap, role, created_a
                 <input type="text" name="nama_lengkap" value="<?= htmlspecialchars($ed['nama_lengkap']) ?>">
                 
                 <label><i class="fas fa-user-tag"></i> Role</label>
-                <input type="text" name="role" value="<?= htmlspecialchars($ed['role']) ?>">
+                <select name="role" required>
+                    <option value="">Pilih Role</option>
+                    <option value="Administrator" <?= $ed['role'] === 'Administrator' ? 'selected' : '' ?>>Administrator</option>
+                    <option value="Kasir" <?= $ed['role'] === 'Kasir' ? 'selected' : '' ?>>Kasir</option>
+                </select>
                 
                 <div class="form-actions">
                     <button class="btn btn-primary" type="submit">

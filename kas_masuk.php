@@ -1,41 +1,120 @@
 <?php
-// Gunakan koneksi mysqli dari config
 require_once 'config/conn_db.php';
 
-// pastikan session tersedia (config/conn_db.php memanggil session_start())
-    $user_id = $_SESSION['user_id'];
-    $username = $_SESSION['username'];
-    $nama_lengkap = $_SESSION['nama_lengkap'];
-// Proses Simpan Kas Masuk ke tabel `transaksi`
+check_login();
+
+$user_id = $_SESSION['user_id'];
+$username = $_SESSION['username'];
+$nama_lengkap = $_SESSION['nama_lengkap'];
+$role = $_SESSION['role'] ?? 'Kasir';
+
+$success_message = '';
+$edit_mode = false;
+$edit_data = [];
+
+// ===================================
+// HANDLE EDIT MODE
+// ===================================
+if (isset($_GET['edit']) && intval($_GET['edit']) > 0) {
+    $edit_id = intval($_GET['edit']);
+    $stmt = mysqli_prepare($conn, "SELECT * FROM transaksi WHERE id = ? AND jenis_transaksi = 'kas_terima' LIMIT 1");
+    mysqli_stmt_bind_param($stmt, 'i', $edit_id);
+    mysqli_stmt_execute($stmt);
+    $res = mysqli_stmt_get_result($stmt);
+    $edit_data = mysqli_fetch_assoc($res);
+    mysqli_stmt_close($stmt);
+    
+    if ($edit_data) {
+        $edit_mode = true;
+    } else {
+        $success_message = '<div class="alert alert-error">Data tidak ditemukan!</div>';
+    }
+}
+
+// ===================================
+// HANDLE SAVE/UPDATE
+// ===================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
-    $keterangan = trim($_POST['keterangan'] ?? '');
+    $keterangan = clean_input($_POST['keterangan'] ?? '');
     $jumlah_raw = trim($_POST['jumlah'] ?? '0');
-    // Bersihkan format ribuan dan koma
+    
     $jumlah = str_replace(['.', ','], ['', '.'], $jumlah_raw);
     $jumlah = floatval($jumlah);
-
-
-    $stmt = mysqli_prepare($conn, "INSERT INTO transaksi (user_id, username, jenis_transaksi, nominal, keterangan, tanggal_transaksi) VALUES (?, ?, 'kas_terima', ?, ?, NOW())");
-    if ($stmt) {
-        mysqli_stmt_bind_param($stmt, 'isds', $user_id, $username, $jumlah, $keterangan);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
+    
+    if ($jumlah > 0) {
+        
+        if ($edit_mode && isset($_POST['edit_id'])) {
+            // UPDATE MODE
+            $edit_id = intval($_POST['edit_id']);
+            $stmt = mysqli_prepare($conn, "UPDATE transaksi SET nominal = ?, keterangan = ? WHERE id = ? AND jenis_transaksi = 'kas_terima'");
+            mysqli_stmt_bind_param($stmt, 'dsi', $jumlah, $keterangan, $edit_id);
+            
+            if (mysqli_stmt_execute($stmt)) {
+                log_audit($user_id, $username, "Update Kas Masuk #$edit_id: " . rupiah_fmt($jumlah));
+                mysqli_stmt_close($stmt);
+                header('Location: kas_masuk.php?success=2');
+                exit();
+            }
+            mysqli_stmt_close($stmt);
+            
+        } else {
+            // INSERT MODE
+            
+            // Generate nomor surat GLOBAL
+            $nomor_data = get_next_nomor_surat('KT-MSL');
+            $nomor_surat = $nomor_data['nomor'];
+            
+            $stmt = mysqli_prepare($conn, "INSERT INTO transaksi (user_id, username, jenis_transaksi, nominal, keterangan, nomor_surat, tanggal_transaksi) VALUES (?, ?, 'kas_terima', ?, ?, ?, NOW())");
+            mysqli_stmt_bind_param($stmt, 'isdss', $user_id, $username, $jumlah, $keterangan, $nomor_surat);
+            
+            if (mysqli_stmt_execute($stmt)) {
+                log_audit($user_id, $username, "Kas Masuk #$nomor_surat: " . rupiah_fmt($jumlah));
+                mysqli_stmt_close($stmt);
+                header('Location: kas_masuk.php?success=1');
+                exit();
+            }
+            mysqli_stmt_close($stmt);
+        }
+    } else {
+        $success_message = '<div class="alert alert-error">Jumlah kas harus lebih dari 0!</div>';
     }
+}
 
-    // Log audit
-    log_audit($user_id, $username, "Kas Masuk: " . rupiah_fmt($jumlah) . " - " . $keterangan);
+// ===================================
+// HANDLE DELETE
+// ===================================
+if (isset($_GET['delete']) && intval($_GET['delete']) > 0) {
+    $delete_id = intval($_GET['delete']);
+    $stmt = mysqli_prepare($conn, "DELETE FROM transaksi WHERE id = ? AND jenis_transaksi = 'kas_terima'");
+    mysqli_stmt_bind_param($stmt, 'i', $delete_id);
+    
+    if (mysqli_stmt_execute($stmt)) {
+        log_audit($user_id, $username, "Hapus Kas Masuk #$delete_id");
+        mysqli_stmt_close($stmt);
+        header('Location: kas_masuk.php?success=3');
+        exit();
+    }
+    mysqli_stmt_close($stmt);
+}
 
-    // Redirect agar form tidak submit ulang
-    header('Location: ' . $_SERVER['PHP_SELF']);
-    exit();
-}    
-  
+// Success messages
+if (isset($_GET['success'])) {
+    switch ($_GET['success']) {
+        case '1':
+            $success_message = '<div class="alert alert-success">✓ Data kas masuk berhasil disimpan!</div>';
+            break;
+        case '2':
+            $success_message = '<div class="alert alert-success">✓ Data kas masuk berhasil diupdate!</div>';
+            break;
+        case '3':
+            $success_message = '<div class="alert alert-success">✓ Data kas masuk berhasil dihapus!</div>';
+            break;
+    }
+}
 
-// Ambil role user dari session (default: Kasir)
-    $role = $_SESSION['role'] ?? 'Kasir';
-// Ambil daftar kas masuk terbaru untuk ditampilkan di tabel
+// Ambil data kas masuk
 $data_kas = [];
-$res = mysqli_query($conn, "SELECT id, user_id, username, nominal, keterangan, tanggal_transaksi FROM transaksi WHERE jenis_transaksi = 'kas_terima' ORDER BY tanggal_transaksi ASC");
+$res = mysqli_query($conn, "SELECT * FROM transaksi WHERE jenis_transaksi = 'kas_terima' ORDER BY tanggal_transaksi DESC");
 if ($res) {
     while ($r = mysqli_fetch_assoc($res)) {
         $data_kas[] = $r;
@@ -43,15 +122,8 @@ if ($res) {
     mysqli_free_result($res);
 }
 
-// Nomor surat terakhir (jika ada)
-$last_nomor = '';
-if (!empty($data_kas)) {
-    $last = end($data_kas);
-    $dt = strtotime($last['tanggal_transaksi']);
-    $last_nomor = sprintf('%03d/KS/%02d/%04d', $last['id'], date('m', $dt), date('Y', $dt));
-    // reset internal pointer just in case
-    reset($data_kas);
-}
+// Nomor terakhir
+$last_nomor = get_last_nomor_surat();
 ?>
 
 <!DOCTYPE html>
@@ -59,447 +131,513 @@ if (!empty($data_kas)) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KAS MASUK</title>
+    <title>Kas Masuk - Sistem Kas Kebun</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
         }
-
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #E5FCED;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* ================= HEADER ================= */
-        .header {
-            background-color: #009844;
-            color: white;
-            padding: 18px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .menu-icon {
-            font-size: 26px;
-            cursor: pointer;
-        }
-
-        .header h1 {
-            font-size: 22px;
-            font-weight: bold;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #E5FCED; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
         }
         
-        .user-avatar {
-            width: 45px;
-            height: 45px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: #2e7d32;
-            font-size: 18px;
+        .header { 
+            background-color: #009844; 
+            color: white; 
+            padding: 18px 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .header-left { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+        }
+        .menu-icon { 
+            font-size: 26px; 
+            cursor: pointer; 
+        }
+        .header h1 { 
+            font-size: 22px; 
+            font-weight: bold; 
         }
         
-        .user-details {
-            text-align: right;
+        .user-info { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+        }
+        .user-avatar { 
+            width: 45px; 
+            height: 45px; 
+            background: white; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: bold; 
+            color: #2e7d32; 
+            font-size: 18px; 
+        }
+        .user-details { 
+            text-align: right; 
+        }
+        .user-name { 
+            font-weight: 600; 
+            font-size: 14px; 
+        }
+        .user-role { 
+            font-size: 12px; 
+            opacity: 0.9; 
         }
         
-        .user-name {
-            font-weight: 600;
-            font-size: 14px;
+        .alert { 
+            max-width: 860px; 
+            margin: 20px auto 0; 
+            padding: 15px 20px; 
+            border-radius: 8px; 
+            font-size: 14px; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            animation: slideDown 0.3s ease; 
+        }
+        @keyframes slideDown { 
+            from { 
+            opacity: 0; 
+            transform: translateY(-20px); 
+        } to {
+             opacity: 1; 
+             transform: translateY(0); 
+            } 
+        }
+        .alert-success { 
+            background: #d4edda; 
+            color: #155724; 
+            border: 1px solid #c3e6cb; 
+        }
+        .alert-error { 
+            background: #f8d7da; 
+            color: #721c24; 
+            border: 1px solid #f5c6cb; 
         }
         
-        .user-role {
-            
-            font-size: 12px;
-            opacity: 0.9;
+        .container { 
+            width: 90%; 
+            max-width: 900px; 
+            margin: 40px auto; 
+            background-color: white; 
+            padding: 40px; 
+            border-radius: 14px; 
+            box-shadow: 0 3px 10px rgba(0,0,0,0.12); 
+            flex: 1; 
+        }
+        
+        .form-group { 
+            margin-bottom: 25px; 
+        }
+        .form-group label { 
+            display: block; 
+            font-weight: 600; 
+            margin-bottom: 8px; 
+            font-size: 15px; }
+        .form-group input { 
+            width: 100%; 
+            padding: 13px 16px; 
+            border: 1px solid #ccc; 
+            border-radius: 6px; 
+            background-color: #f2f2f2; 
+            font-size: 14px; 
+        }
+        .form-group input:focus { 
+            background-color: white; 
+            outline: none; 
+            border-color: #009844; 
+        }
+        
+        .button-group { 
+            display: flex; 
+            gap: 15px; 
+            margin-top: 10px; 
+            margin-bottom: 30px; 
+        }
+        .btn { 
+            padding: 13px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            border: none; 
+            transition: 0.25s; 
+            flex: 1; 
+            font-size: 14px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
+            text-decoration: none; 
         }
 
-        .company-name {
-            font-size: 13px;
-            font-weight: bold;
+        .btn-primary { 
+            background-color: #009844; 
+            color: white; 
         }
 
-        .company-type {
-            font-size: 11px;
-            opacity: .85;
+        .btn-primary:hover { 
+            background-color: #017033FF; 
         }
 
-        /* ================= CONTAINER ================= */
-        .container {
-            width: 90%;
-            max-width: 900px;
-            margin: 40px auto;
-            background-color: white;
-            padding: 40px 40px;
-            border-radius: 14px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.12);
-            flex: 1;
+        .btn-secondary { 
+            background-color: #dcdcdc; 
+            color: #333; 
         }
 
-        .form-group {
-            margin-bottom: 25px;
+        .btn-secondary:hover { 
+            background-color: #c7c7c7; 
         }
 
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 15px;
+        .btn-sm { 
+            padding: 6px 12px; 
+            font-size: 12px; 
+            border-radius: 4px; 
+            flex: none; 
         }
 
-        .form-group input {
-            width: 100%;
-            padding: 13px 16px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            background-color: #f2f2f2;
+        .btn-pdf { 
+            background-color: #dc3545; 
+            color: white; 
         }
 
-        .form-group input:focus {
-            background-color: white;
-            outline: none;
-            border-color: #009844;
+        .btn-pdf:hover { 
+            background-color: #c82333; 
         }
 
-        /* ================= BUTTONS ================= */
-        .button-group {
-            display: flex;
-            gap: 15px;
-            margin-top: 10px;
-            margin-bottom: 30px;
+        .btn-warning { 
+            background-color: #ffc107; 
+            color: #000; 
         }
 
-        .btn {
-            padding: 13px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            border: none;
-            transition: 0.25s;
-            flex: 1;
+        .btn-warning:hover { 
+            background-color: #e0a800; 
         }
 
-        .btn-primary {
-            background-color: #009844;
-            color: white;
+        .btn-danger { 
+            background-color: #dc3545; color: white; 
         }
 
-        .btn-primary:hover {
-            background-color: #017033FF;
+        .btn-danger:hover { 
+            background-color: #c82333; 
+        }
+        
+        .table-wrapper { 
+            overflow-x: auto; 
+            margin-top: 20px; 
         }
 
-        .btn-secondary {
-            background-color: #dcdcdc;
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
         }
 
-        .btn-secondary:hover {
-            background-color: #c7c7c7;
+        thead { 
+            background: #f2f2f2; 
         }
 
-        .btn-export {
-            display: block;
-            margin: 40px auto 0;
-            padding: 14px 40px;
-            background-color: #009844;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
-            max-width: 300px;
-            width: 100%;
+        th { 
+            padding: 12px 10px; 
+            text-align: center; 
+            font-weight: 600; 
+            border: 1px solid #ddd; 
         }
 
-        .btn-export:hover {
-            background-color: #007a36;
+        td { 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            font-size: 13px; 
         }
 
-        /* ================= FOOTER ================= */
-        .ksk-footer {
-            width: 100%;
-            padding: 30px 40px;
-            background: linear-gradient(to right, #00984489, #003216DB);
-            color: #ffffff;
-            border-top: 3px solid #333;
-            font-family: 'Poppins', sans-serif;
+        tbody tr:hover { 
+            background: #f9f9f9; 
+        }
+        
+        .nomor-info { 
+            margin: 12px 0; 
+            font-weight: 700; 
+            color: #333; 
+        }
+        
+        .ksk-footer { 
+            width: 100%; 
+            padding: 30px 40px; 
+            background: linear-gradient(to right, #00984489, #003216DB); 
+            color: #ffffff; 
+            border-top: 3px solid #333; 
+            margin-top: auto; 
         }
 
-        .footer-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            gap: 30px;
+        .footer-content { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: start; 
+            gap: 30px; 
         }
 
-        /* Left Section */
-        .footer-left {
-            display: flex;
-            flex-direction: row;
-            gap: 20px;
-            width: 60%;
+        .footer-left { 
+            display: flex; 
+            flex-direction: row; 
+            gap: 20px; 
+            width: 60%; 
         }
 
-        .footer-logo {
-            width: 70px;
-            height: 70px;
-            /* background: white; */
-            padding: 8px;
-            border-radius: 10px;
+        .footer-logo { 
+            width: 70px; 
+            height: 70px; 
+            padding: 8px; 
+            border-radius: 10px; 
         }
 
-        .footer-text h2 {
-            font-size: 18px;
-            font-weight: 700;
-            color: black;
+        .footer-text h2 { 
+            font-size: 18px; 
+            font-weight: 700; 
+            color: black; 
         }
 
-        .footer-text .subtitle {
-            font-size: 14px;
-            margin-top: -4px;
-            color: black;
+        .footer-text .subtitle { 
+            font-size: 14px; 
+            margin-top: -4px; 
+            color: black; 
         }
 
-        .footer-text .description {
-            font-size: 13px;
-            margin-top: 10px;
-            line-height: 1.5;
-            color: black;
+        .footer-text .description { 
+            font-size: 13px; 
+            margin-top: 10px; 
+            line-height: 1.5; 
+            color: black; 
         }
 
-        /* Right Section */
-        .footer-right {
-            width: 40%;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
+        .footer-right { 
+            width: 40%; 
+            display: flex; 
+            flex-direction: 
+            column; 
+            gap: 18px; 
         }
 
-        .footer-item {
-            display: flex;
-            align-items: start;
-            gap: 10px;
-            color: black    ;
+        .footer-item { 
+            display: flex; 
+            align-items: start; 
+            gap: 10px; 
+            color: black; 
         }
 
-        .footer-icon {
-            width: 20px;
-            height: 20px;
-            object-fit: contain;
-            margin-top: 3px;
+        .footer-icon { 
+            width: 20px; 
+            height: 20px; 
+            object-fit: contain; 
+            margin-top: 3px; 
         }
 
-        .link-item {
-            text-decoration: none;
-            color: black ;
+        .link-item { 
+            text-decoration: none; 
+            color: black; 
         }
 
-        .link-item:hover {
-            opacity: 0.7;
+        .link-item:hover { 
+            opacity: 0.7; 
         }
-
-        /* RESPONSIVE */
+        
+        .edit-badge { 
+            background: #ffc107; 
+            color: #000; 
+            padding: 4px 12px; 
+            border-radius: 20px; 
+            font-size: 11px; 
+            margin-left: 10px; 
+        }
+        
         @media (max-width: 780px) {
-            .footer-content {
-                flex-direction: column;
+            .footer-content { 
+                flex-direction: column; 
             }
-
-            .footer-left, .footer-right {
-                width: 100%;
+            .footer-left, .footer-right { 
+                width: 100%; 
             }
-
-            .footer-left {
-                flex-direction: column;
-                text-align: center;
+            .footer-left { 
+                flex-direction: column; 
+                text-align: center; 
             }
-
-            .footer-logo {
-                margin: 0 auto;
+            .footer-logo { 
+                margin: 0 auto; 
             }
-
-            .footer-right {
-                text-align: center;
-                align-items: center;
+            .footer-right { 
+                text-align: center; 
+                align-items: center; 
             }
         }
+        
         @media(max-width:768px){
-            .container {
-                padding: 25px 20px;
+            .container { 
+                padding: 25px 20px; 
+            }
+            .button-group { 
+                flex-direction: column; 
             }
 
-            .button-group {
-                flex-direction: column;
-            }
         }
 
-
+        
     </style>
 </head>
 
 <body>
     <div class="header">
         <div class="header-left">
-            <span class="menu-icon">☰</span>
-            <h1>KAS MASUK</h1>
+            <i class="fas fa-bars menu-icon"></i>
+            <h1>KAS MASUK <?php if($edit_mode) echo '<span class="edit-badge">MODE EDIT</span>'; ?></h1>
         </div>
         <div class="user-info">
-                <div class="user-avatar">
-                    <?php echo strtoupper(substr($nama_lengkap, 0, 1)); ?>
-                </div>
-                <div class="user-details">
-                    <div class="user-name"><?php echo htmlspecialchars($nama_lengkap); ?></div>
-                    <div class="user-role"><?php echo htmlspecialchars(ucfirst($role)); ?></div>
-                </div>
+            <div class="user-avatar"><?php echo strtoupper(substr($nama_lengkap, 0, 1)); ?></div>
+            <div class="user-details">
+                <div class="user-name"><?php echo htmlspecialchars($nama_lengkap); ?></div>
+                <div class="user-role"><?php echo htmlspecialchars(ucfirst($role)); ?></div>
             </div>
         </div>
+    </div>
+
+    <?php if ($success_message): ?>
+        <?php echo $success_message; ?>
+    <?php endif; ?>
 
     <div class="container">
         <form method="POST">
+            <?php if ($edit_mode): ?>
+                <input type="hidden" name="edit_id" value="<?php echo $edit_data['id']; ?>">
+            <?php endif; ?>
+            
             <div class="form-group">
-                <label>Keterangan</label>
-                <input type="text" name="keterangan" placeholder="Masukkan keterangan">
+                <label><i class="fas fa-align-left"></i> Keterangan</label>
+                <input type="text" name="keterangan" placeholder="Masukkan keterangan" value="<?php echo htmlspecialchars($edit_data['keterangan'] ?? ''); ?>" required>
             </div>
 
             <div class="form-group">
-                <label>Jumlah</label>
-                <input type="text" name="jumlah" placeholder="Masukkan jumlah kas masuk">
+                <label><i class="fas fa-money-bill-wave"></i> Jumlah</label>
+                <input type="text" name="jumlah" placeholder="Masukkan jumlah kas masuk" value="<?php echo $edit_mode ? number_format($edit_data['nominal'], 0, ',', '.') : ''; ?>" required>
             </div>
 
             <div class="button-group">
-                <button type="submit" name="simpan_kas" class="btn btn-primary">Simpan Kas Masuk</button>
-                <button type="button" class="btn btn-secondary" onclick="history.back()">Kembali</button>
+                <button type="submit" name="simpan_kas" class="btn btn-primary">
+                    <i class="fas fa-save"></i> <?php echo $edit_mode ? 'Update' : 'Simpan'; ?> Kas Masuk
+                </button>
+                <?php if ($edit_mode): ?>
+                    <a href="kas_masuk.php" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Batal Edit
+                    </a>
+                <?php else: ?>
+                    <a href="dashboard.php" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Kembali
+                    </a>
+                <?php endif; ?>
             </div>
         </form>
 
-            <!-- Nomor surat terakhir (ditampilkan di atas tabel) -->
-            <?php if (!empty($last_nomor)): ?>
-                <div style="margin:12px 0; font-weight:700;">Nomor: <?php echo htmlspecialchars($last_nomor); ?></div>
-            <?php endif; ?>
+        <div class="nomor-info">
+            <i class="fas fa-file-alt"></i> Nomor: <?php echo htmlspecialchars($last_nomor); ?>
+        </div>
 
-            <!-- Tabel menampilkan inputan kas masuk yang sudah tersimpan -->
-            <div class="form-group">
-                <label>Daftar Kas Masuk</label>
-                <div style="overflow-x:auto;">
-                    <table style="width:100%; border-collapse: collapse;">
-                        <thead>
-                            <tr style="background:#f2f2f2;">
-                                <th style="border:1px solid #ddd; padding:10px; text-align:center; width:60px;">NO</th>
-                                <th style="border:1px solid #ddd; padding:10px; text-align:center;">KETERANGAN</th>
-                                <th style="border:1px solid #ddd; padding:10px; text-align:center; width:160px;">JUMLAH</th>
-                                <th style="border:1px solid #ddd; padding:10px; text-align:center; width:160px;">TANGGAL</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        <?php if (!empty($data_kas)): ?>
-                            <?php $i = 1; foreach ($data_kas as $row): ?>
-                                <?php
-                                    $dt = strtotime($row['tanggal_transaksi']);
-                                    $jumlah_fmt = number_format($row['nominal'], 0, ',', '.');
-                                ?>
-                                <tr>
-                                    <td style="border:1px solid #ddd; padding:10px; text-align:center;"><?php echo $i; ?></td>
-                                    <td style="border:1px solid #ddd; padding:10px;"><?php echo htmlspecialchars($row['keterangan']); ?></td>
-                                    <td style="border:1px solid #ddd; padding:10px; text-align:right;">Rp. <?php echo $jumlah_fmt; ?></td>
-                                    <td style="border:1px solid #ddd; padding:10px; text-align:center;"><?php echo date('d-M-Y H:i', strtotime($row['tanggal_transaksi'])); ?></td>
-                                </tr>
-                            <?php $i++; endforeach; ?>
-                        <?php else: ?>
+        <div class="form-group">
+            <label><i class="fas fa-list"></i> Daftar Kas Masuk</label>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">NO</th>
+                            <th style="width:130px;">NOMOR SURAT</th>
+                            <th>KETERANGAN</th>
+                            <th style="width:130px;">JUMLAH</th>
+                            <th style="width:130px;">TANGGAL</th>
+                            <th style="width:150px;">AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php if (!empty($data_kas)): ?>
+                        <?php $i = 1; foreach ($data_kas as $row): ?>
                             <tr>
-                                <td colspan="4" style="border:1px solid #ddd; padding:14px; text-align:center;">Belum ada data kas masuk</td>
+                                <td style="text-align:center;"><?php echo $i; ?></td>
+                                <td style="text-align:center;"><?php echo htmlspecialchars($row['nomor_surat'] ?? '-'); ?></td>
+                                <td><?php echo htmlspecialchars($row['keterangan']); ?></td>
+                                <td style="text-align:right;">Rp. <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
+                                <td style="text-align:center;"><?php echo date('d-M-Y', strtotime($row['tanggal_transaksi'])); ?></td>
+                                <td style="text-align:center;">
+                                    <a href="export_pdf.php?type=kas_masuk&id=<?php echo $row['id']; ?>" target="_blank" class="btn btn-pdf btn-sm" title="Export PDF">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                    <a href="kas_masuk.php?edit=<?php echo $row['id']; ?>" class="btn btn-warning btn-sm" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="kas_masuk.php?delete=<?php echo $row['id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin menghapus data ini?')" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
                             </tr>
-                        <?php endif; ?>
-                        </tbody>
-                    </table>
+                        <?php $i++; endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="6" style="text-align:center; padding:20px; color:#999;">
+                                <i class="fas fa-inbox"></i> Belum ada data kas masuk
+                            </td>
+                        </tr>
+                    <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer class="ksk-footer">
+        <div class="footer-content">
+            <div class="footer-left">
+                <img src="assets/gambar/logoksk.jpg" alt="KSK Logo" class="footer-logo">
+                <div class="footer-text">
+                    <h2>KALIMANTAN SAWIT KUSUMA GROUP</h2>
+                    <p class="subtitle">Oil Palm Plantation & Industries</p>
+                    <p class="description">
+                        Kalimantan Sawit Kusuma (KSK) adalah sebuah grup perusahaan yang memiliki beberapa 
+                        perusahaan afiliasi yang bergerak di berbagai bidang usaha, yaitu perkebunan kelapa 
+                        sawit dan hortikultura, kontraktor alat berat dan pembangunan perkebunan serta jasa 
+                        transportasi laut.
+                    </p>
                 </div>
             </div>
 
-        <a href="export_pdf.php?type=kas_masuk" target="_blank"><button class="btn-export">Export ke PDF</button></a>
-    </div>
+            <div class="footer-right">
+                <a href="https://kskgroup.co.id" target="_blank" class="footer-item link-item">
+                    <img src="assets/gambar/icon/browser.png" class="footer-icon">
+                    <span>kskgroup.co.id</span>
+                </a>
 
-<footer class="ksk-footer">
-  <div class="footer-content">
+                <a href="tel:+62561733035" class="footer-item link-item">
+                    <img src="assets/gambar/icon/telfon.png" class="footer-icon">
+                    <span>
+                        T. (+62 561) 733 035 (hunting)<br>
+                        F. (+62 561) 733 014
+                    </span>
+                </a>
 
-    <!-- Left Section -->
-    <div class="footer-left">
-      <img src="assets/gambar/logoksk.jpg" alt="KSK Logo" class="footer-logo">
-
-      <div class="footer-text">
-        <h2>KALIMANTAN SAWIT KUSUMA GROUP</h2>
-        <p class="subtitle">Oil Palm Plantation & Industries</p>
-
-        <p class="description">
-          Kalimantan Sawit Kusuma (KSK) adalah sebuah grup perusahaan yang memiliki beberapa 
-          perusahaan afiliasi yang bergerak di berbagai bidang usaha, yaitu perkebunan kelapa 
-          sawit dan hortikultura, kontraktor alat berat dan pembangunan perkebunan serta jasa 
-          transportasi laut.
-        </p>
-      </div>
-    </div>
-
-<!-- Right Section -->
-<div class="footer-right">
-
-  <a href="https://kskgroup.co.id" target="_blank" class="footer-item link-item">
-    <img src="assets/gambar/icon/browser.png" class="footer-icon">
-    <span>kskgroup.co.id</span>
-  </a>
-
-  <a href="tel:+62561733035" class="footer-item link-item">
-    <img src="assets/gambar/icon/telfon.png" class="footer-icon">
-    <span>
-      T. (+62 561) 733 035 (hunting)<br>
-      F. (+62 561) 733 014
-    </span>
-  </a>
-
-  <a href="https://maps.app.goo.gl/MdtmPLQTTagexjF59" target="_blank" class="footer-item link-item">
-    <img src="assets/gambar/icon/lokasi.png" class="footer-icon">
-    <span>
-      Jl. W.R Supratman No. 42 Pontianak,<br>
-      Kalimantan Barat 78122
-    </span>
-  </a>
-
-</div>
-
-  </div>
-</footer>
-
-<script>
-        // Toggle sidebar collapse when burger clicked
-        (function(){
-            var btn = document.getElementById('toggleSidebar');
-            var sidebar = document.querySelector('.sidebar');
-            var main = document.querySelector('.main-content');
-            if (!btn) return;
-            btn.addEventListener('click', function(){
-                sidebar.classList.toggle('collapsed');
-            });
-        })();
-    </script>
-
+                <a href="https://maps.app.goo.gl/MdtmPLQTTagexjF59" target="_blank" class="footer-item link-item">
+                    <img src="assets/gambar/icon/lokasi.png" class="footer-icon">
+                    <span>
+                        Jl. W.R Supratman No. 42 Pontianak,<br>
+                        Kalimantan Barat 78122
+                    </span>
+                </a>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
-
