@@ -354,7 +354,7 @@ if (isset($_POST['simpan'])) {
         }
 
         .btn-primary {
-            background-color: #0e8c4a;
+            background-color: #009844;
             color: white;
         }
 
@@ -364,9 +364,9 @@ if (isset($_POST['simpan'])) {
         }
 
         .btn-table {
-            background-color: #0e8c4a;
+            background-color: #009844;
             color: white;
-            padding: 12px 20px;
+            padding: 12px 2px;
             border: none;
             border-radius: 5px;
             font-size: 14px;
@@ -662,7 +662,7 @@ if (isset($_POST['simpan'])) {
             </div>
 
             <div class="button-group">
-                <button type="submit" name="simpan" class="btn btn-primary">Simpan Risk Opname</button>
+                <button type="submit" name="simpan" class="btn btn-primary">Simpan Stok Opname</button>
                 <button type="button" class="btn btn-secondary"onclick="window.location.href='dashboard.php'">Kembali</button>
             </div>
 

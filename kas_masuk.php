@@ -247,7 +247,8 @@ $last_nomor = get_last_nomor_surat();
             display: block; 
             font-weight: 600; 
             margin-bottom: 8px; 
-            font-size: 15px; }
+            font-size: 15px; 
+        }
         .form-group input { 
             width: 100%; 
             padding: 13px 16px; 
@@ -310,29 +311,49 @@ $last_nomor = get_last_nomor_surat();
         }
 
         .btn-pdf { 
-            background-color: #dc3545; 
-            color: white; 
+            background-color: #009844; 
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
         }
 
         .btn-pdf:hover { 
-            background-color: #c82333; 
+            background-color: #017033; 
         }
 
-        .btn-warning { 
-            background-color: #ffc107; 
-            color: #000; 
+        .btn-edit { 
+            background-color: #009844; 
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
         }
 
-        .btn-warning:hover { 
-            background-color: #e0a800; 
+        .btn-edit:hover { 
+            background-color: #017033; 
         }
 
-        .btn-danger { 
-            background-color: #dc3545; color: white; 
+        .btn-delete { 
+            background-color: #e0e0e0;
+            color: #000;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
         }
 
-        .btn-danger:hover { 
-            background-color: #c82333; 
+        .btn-delete:hover { 
+            background-color: #d0d0d0; 
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
         }
         
         .table-wrapper { 
@@ -521,37 +542,37 @@ $last_nomor = get_last_nomor_surat();
             <?php endif; ?>
             
             <div class="form-group">
-                <label><i class="fas fa-align-left"></i> Keterangan</label>
+                <label>Keterangan</label>
                 <input type="text" name="keterangan" placeholder="Masukkan keterangan" value="<?php echo htmlspecialchars($edit_data['keterangan'] ?? ''); ?>" required>
             </div>
 
             <div class="form-group">
-                <label><i class="fas fa-money-bill-wave"></i> Jumlah</label>
+                <label>Jumlah</label>
                 <input type="text" name="jumlah" placeholder="Masukkan jumlah kas masuk" value="<?php echo $edit_mode ? number_format($edit_data['nominal'], 0, ',', '.') : ''; ?>" required>
             </div>
 
             <div class="button-group">
                 <button type="submit" name="simpan_kas" class="btn btn-primary">
-                    <i class="fas fa-save"></i> <?php echo $edit_mode ? 'Update' : 'Simpan'; ?> Kas Masuk
+                    <?php echo $edit_mode ? 'Update' : 'Simpan'; ?> Kas Masuk
                 </button>
                 <?php if ($edit_mode): ?>
                     <a href="kas_masuk.php" class="btn btn-secondary">
-                        <i class="fas fa-times"></i> Batal Edit
+                        Batal Edit
                     </a>
                 <?php else: ?>
                     <a href="dashboard.php" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Kembali
+                        Kembali
                     </a>
                 <?php endif; ?>
             </div>
         </form>
 
         <div class="nomor-info">
-            <i class="fas fa-file-alt"></i> Nomor: <?php echo htmlspecialchars($last_nomor); ?>
+            Nomor: <?php echo htmlspecialchars($last_nomor); ?>
         </div>
 
         <div class="form-group">
-            <label><i class="fas fa-list"></i> Daftar Kas Masuk</label>
+            <label>Daftar Kas Masuk</label>
             <div class="table-wrapper">
                 <table>
                     <thead>
@@ -561,7 +582,7 @@ $last_nomor = get_last_nomor_surat();
                             <th>KETERANGAN</th>
                             <th style="width:130px;">JUMLAH</th>
                             <th style="width:130px;">TANGGAL</th>
-                            <th style="width:150px;">AKSI</th>
+                            <th style="width:220px;">AKSI</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -574,22 +595,24 @@ $last_nomor = get_last_nomor_surat();
                                 <td style="text-align:right;">Rp. <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
                                 <td style="text-align:center;"><?php echo date('d-M-Y', strtotime($row['tanggal_transaksi'])); ?></td>
                                 <td style="text-align:center;">
-                                    <a href="export_pdf.php?type=kas_masuk&id=<?php echo $row['id']; ?>" target="_blank" class="btn btn-pdf btn-sm" title="Export PDF">
-                                        <i class="fas fa-file-pdf"></i>
-                                    </a>
-                                    <a href="kas_masuk.php?edit=<?php echo $row['id']; ?>" class="btn btn-warning btn-sm" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <a href="kas_masuk.php?delete=<?php echo $row['id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin menghapus data ini?')" title="Hapus">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
+                                    <div class="action-buttons">
+                                        <a href="kas_masuk.php?edit=<?php echo $row['id']; ?>" class="btn btn-edit btn-sm" title="Edit">
+                                            Edit
+                                        </a>
+                                        <a href="kas_masuk.php?delete=<?php echo $row['id']; ?>" class="btn btn-delete btn-sm" onclick="return confirm('Yakin ingin menghapus data ini?')" title="Hapus">
+                                            Delete
+                                        </a>
+                                        <a href="export_pdf.php?type=kas_masuk&id=<?php echo $row['id']; ?>" target="_blank" class="btn btn-pdf btn-sm" title="Export PDF">
+                                            PDF
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         <?php $i++; endforeach; ?>
                     <?php else: ?>
                         <tr>
                             <td colspan="6" style="text-align:center; padding:20px; color:#999;">
-                                <i class="fas fa-inbox"></i> Belum ada data kas masuk
+                                Belum ada data kas masuk
                             </td>
                         </tr>
                     <?php endif; ?>
