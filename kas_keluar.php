@@ -1,8 +1,9 @@
 <?php
+// kas_keluar.php
 require_once 'config/conn_db.php';
 
 check_login();
-
+// mengambil data user login
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
 $nama_lengkap = $_SESSION['nama_lengkap'];
@@ -12,9 +13,7 @@ $success_message = '';
 $edit_mode = false;
 $edit_data = [];
 
-// ===================================
-// HANDLE EDIT MODE
-// ===================================
+// Bagian tombol aksi edit
 if (isset($_GET['edit']) && intval($_GET['edit']) > 0) {
     $edit_id = intval($_GET['edit']);
     $stmt = mysqli_prepare($conn, "SELECT * FROM transaksi WHERE id = ? AND jenis_transaksi = 'kas_keluar' LIMIT 1");
@@ -31,9 +30,7 @@ if (isset($_GET['edit']) && intval($_GET['edit']) > 0) {
     }
 }
 
-// ===================================
-// HANDLE SAVE/UPDATE
-// ===================================
+// Bagian tombol aksi simpan (insert/update)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
     $keterangan = clean_input($_POST['keterangan'] ?? '');
     $jumlah_raw = trim($_POST['jumlah'] ?? '0');
@@ -44,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
     if ($jumlah > 0) {
         
         if ($edit_mode && isset($_POST['edit_id'])) {
-            // UPDATE MODE
+            // bagian tombol update
             $edit_id = intval($_POST['edit_id']);
             $stmt = mysqli_prepare($conn, "UPDATE transaksi SET nominal = ?, keterangan = ? WHERE id = ? AND jenis_transaksi = 'kas_keluar'");
             mysqli_stmt_bind_param($stmt, 'dsi', $jumlah, $keterangan, $edit_id);
@@ -58,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
             mysqli_stmt_close($stmt);
             
         } else {
-            // INSERT MODE
+            // bagian tombol simpan
             
             // Generate nomor surat GLOBAL
             $nomor_data = get_next_nomor_surat('KK-MSL');
@@ -80,9 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
     }
 }
 
-// ===================================
-// HANDLE DELETE
-// ===================================
+// bagian tombol aksi delete
 if (isset($_GET['delete']) && intval($_GET['delete']) > 0) {
     $delete_id = intval($_GET['delete']);
     $stmt = mysqli_prepare($conn, "DELETE FROM transaksi WHERE id = ? AND jenis_transaksi = 'kas_keluar'");
@@ -97,7 +92,7 @@ if (isset($_GET['delete']) && intval($_GET['delete']) > 0) {
     mysqli_stmt_close($stmt);
 }
 
-// Success messages
+// pesan kalo berhasil
 if (isset($_GET['success'])) {
     switch ($_GET['success']) {
         case '1':
@@ -123,7 +118,7 @@ if ($res) {
 }
 
 // Nomor terakhir
-$last_nomor = get_last_nomor_surat();
+$last_nomor = get_last_nomor_surat('KK-MSL');
 ?>
 
 <!DOCTYPE html>
@@ -143,8 +138,123 @@ $last_nomor = get_last_nomor_surat();
             font-family: Arial, sans-serif; 
             background-color: #E5FCED; 
             min-height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
+            display: flex;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #E7E7E7FF;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            position: fixed;
+            left: -280px;
+            top: 0;
+            height: 100vh;
+            transition: left 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .sidebar.active {
+            left: 0;
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px 20px;
+            border-bottom: 2px solid #c8e6c9;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .sidebar-header img {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+        }
+        
+        .company-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #000000FF;
+            line-height: 1.3;
+        }
+        
+        .menu-title {
+            padding: 10px 20px;
+            font-size: 12px;
+            color: #666;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .menu-list {
+            list-style: none;
+            flex: 1;
+        }
+        
+        .menu-item {
+            margin: 5px 15px;
+        }
+        
+        .menu-item a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: #009844;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .menu-item a:hover {
+            background: #c8e6c9;
+            transform: translateX(5px);
+        }
+        
+        .menu-item.active a {
+            background: #a5d6a7;
+            font-weight: 600;
+        }
+        
+        .menu-icon {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        /* Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        /* Main Content Wrapper */
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
         }
         
         .header { 
@@ -155,18 +265,25 @@ $last_nomor = get_last_nomor_surat();
             justify-content: space-between; 
             align-items: center; 
         }
-        .header-left { 
-            display: flex; 
-            align-items: center; 
-            gap: 15px; 
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-        .menu-icon { 
-            font-size: 26px; 
-            cursor: pointer; 
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: bold;
         }
-        .header h1 { 
-            font-size: 22px; 
-            font-weight: bold; 
+        
+        .menu-burger {
+            font-size: 26px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .menu-burger:hover {
+            transform: scale(1.1);
         }
         
         .user-info { 
@@ -196,6 +313,12 @@ $last_nomor = get_last_nomor_surat();
         .user-role { 
             font-size: 12px; 
             opacity: 0.9; 
+        }
+        
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
         
         .alert { 
@@ -509,158 +632,225 @@ $last_nomor = get_last_nomor_surat();
             .button-group { 
                 flex-direction: column; 
             }
-
+            
+            .sidebar {
+                width: 100%;
+                left: -100%;
+            }
         }
-
-        
     </style>
 </head>
 
 <body>
-    <div class="header">
-        <div class="header-left">
-            <i class="fas fa-bars menu-icon"></i>
-            <h1>KAS KELUAR <?php if($edit_mode) echo '<span class="edit-badge">MODE EDIT</span>'; ?></h1>
-        </div>
-        <div class="user-info">
-            <div class="user-avatar"><?php echo strtoupper(substr($nama_lengkap, 0, 1)); ?></div>
-            <div class="user-details">
-                <div class="user-name"><?php echo htmlspecialchars($nama_lengkap); ?></div>
-                <div class="user-role"><?php echo htmlspecialchars(ucfirst($role)); ?></div>
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="assets/gambar/logoksk.jpg" alt="KSK Logo"
+                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%232e7d32%22 rx=%228%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2220%22 fill=%22white%22 font-weight=%22bold%22%3EKSK%3C/text%3E%3C/svg%3E'">
+            <div class="company-title">
+                <h4>KALIMANTAN SAWIT KUSUMA GROUP</h4>
+                <p>Oil Palm Plantation & Industries</p>
             </div>
         </div>
+        
+        <div class="menu-title">Dashboard Menu</div>
+        
+        <ul class="menu-list">
+            <li class="menu-item">
+                <a href="dashboard.php">
+                    <img src="assets/gambar/icon/homescreen.png" class="menu-icon">
+                    <span>Home</span>
+                </a>
+            </li>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="logout.php">
+                    <img src="assets/gambar/icon/logout.png" class="menu-icon">
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
     </div>
+    
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <div class="header">
+            <div class="header-left">
+                <i class="fas fa-bars menu-burger" id="menuBurger"></i>
+                <h1>KAS KELUAR <?php if($edit_mode) echo '<span class="edit-badge">MODE EDIT</span>'; ?></h1>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar"><?php echo strtoupper(substr($nama_lengkap, 0, 1)); ?></div>
+                <div class="user-details">
+                    <div class="user-name"><?php echo htmlspecialchars($nama_lengkap); ?></div>
+                    <div class="user-role"><?php echo htmlspecialchars(ucfirst($role)); ?></div>
+                </div>
+            </div>
+        </div>
 
-    <?php if ($success_message): ?>
-        <?php echo $success_message; ?>
-    <?php endif; ?>
-
-    <div class="container">
-        <form method="POST">
-            <?php if ($edit_mode): ?>
-                <input type="hidden" name="edit_id" value="<?php echo $edit_data['id']; ?>">
+        <div class="content-wrapper">
+            <?php if ($success_message): ?>
+                <?php echo $success_message; ?>
             <?php endif; ?>
-            
-            <div class="form-group">
-                <label>Keterangan</label>
-                <input type="text" name="keterangan" placeholder="Masukkan keterangan" value="<?php echo htmlspecialchars($edit_data['keterangan'] ?? ''); ?>" required>
-            </div>
 
-            <div class="form-group">
-                <label>Jumlah</label>
-                <input type="text" name="jumlah" placeholder="Masukkan jumlah kas keluar" value="<?php echo $edit_mode ? number_format($edit_data['nominal'], 0, ',', '.') : ''; ?>" required>
-            </div>
-
-            <div class="button-group">
-                <button type="submit" name="simpan_kas" class="btn btn-primary">
-                    <?php echo $edit_mode ? 'Update' : 'Simpan'; ?> Kas Keluar
-                </button>
-                <?php if ($edit_mode): ?>
-                    <a href="kas_keluar.php" class="btn btn-secondary">
-                        Batal Edit
-                    </a>
-                <?php else: ?>
-                    <a href="dashboard.php" class="btn btn-secondary">
-                        Kembali
-                    </a>
-                <?php endif; ?>
-            </div>
-        </form>
-
-        <div class="nomor-info">
-            Nomor: <?php echo htmlspecialchars($last_nomor); ?>
-        </div>
-
-        <div class="form-group">
-            <label>Daftar Kas Keluar</label>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width:50px;">NO</th>
-                            <th style="width:130px;">NOMOR SURAT</th>
-                            <th>KETERANGAN</th>
-                            <th style="width:130px;">JUMLAH</th>
-                            <th style="width:130px;">TANGGAL</th>
-                            <th style="width:220px;">AKSI</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    <?php if (!empty($data_kas)): ?>
-                        <?php $i = 1; foreach ($data_kas as $row): ?>
-                            <tr>
-                                <td style="text-align:center;"><?php echo $i; ?></td>
-                                <td style="text-align:center;"><?php echo htmlspecialchars($row['nomor_surat'] ?? '-'); ?></td>
-                                <td><?php echo htmlspecialchars($row['keterangan']); ?></td>
-                                <td style="text-align:right;">Rp. <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
-                                <td style="text-align:center;"><?php echo date('d-M-Y', strtotime($row['tanggal_transaksi'])); ?></td>
-                                <td style="text-align:center;">
-                                    <div class="action-buttons">
-                                        <a href="kas_keluar.php?edit=<?php echo $row['id']; ?>" class="btn btn-edit btn-sm" title="Edit">
-                                            Edit
-                                        </a>
-                                        <a href="kas_keluar.php?delete=<?php echo $row['id']; ?>" class="btn btn-delete btn-sm" onclick="return confirm('Yakin ingin menghapus data ini?')" title="Hapus">
-                                            Delete
-                                        </a>
-                                        <a href="export_pdf.php?type=kas_keluar&id=<?php echo $row['id']; ?>" target="_blank" class="btn btn-pdf btn-sm" title="Export PDF">
-                                            PDF
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php $i++; endforeach; ?>
-                    <?php else: ?>
-                        <tr>
-                            <td colspan="6" style="text-align:center; padding:20px; color:#999;">
-                                Belum ada data kas keluar
-                            </td>
-                        </tr>
+            <div class="container">
+                <form method="POST">
+                    <?php if ($edit_mode): ?>
+                        <input type="hidden" name="edit_id" value="<?php echo $edit_data['id']; ?>">
                     <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+                    
+                    <div class="form-group">
+                        <label>Keterangan</label>
+                        <input type="text" name="keterangan" placeholder="Masukkan keterangan" value="<?php echo htmlspecialchars($edit_data['keterangan'] ?? ''); ?>" required>
+                    </div>
 
-    <footer class="ksk-footer">
-        <div class="footer-content">
-            <div class="footer-left">
-                <img src="assets/gambar/logoksk.jpg" alt="KSK Logo" class="footer-logo">
-                <div class="footer-text">
-                    <h2>KALIMANTAN SAWIT KUSUMA GROUP</h2>
-                    <p class="subtitle">Oil Palm Plantation & Industries</p>
-                    <p class="description">
-                        Kalimantan Sawit Kusuma (KSK) adalah sebuah grup perusahaan yang memiliki beberapa 
-                        perusahaan afiliasi yang bergerak di berbagai bidang usaha, yaitu perkebunan kelapa 
-                        sawit dan hortikultura, kontraktor alat berat dan pembangunan perkebunan serta jasa 
-                        transportasi laut.
-                    </p>
+                    <div class="form-group">
+                        <label>Jumlah</label>
+                        <input type="text" name="jumlah" placeholder="Masukkan jumlah kas keluar" value="<?php echo $edit_mode ? number_format($edit_data['nominal'], 0, ',', '.') : ''; ?>" required>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" name="simpan_kas" class="btn btn-primary">
+                            <?php echo $edit_mode ? 'Update' : 'Simpan'; ?> Kas Keluar
+                        </button>
+                        <?php if ($edit_mode): ?>
+                            <a href="kas_keluar.php" class="btn btn-secondary">
+                                Batal Edit
+                            </a>
+                        <?php else: ?>
+                            <a href="dashboard.php" class="btn btn-secondary">
+                                Kembali
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </form>
+
+                <div class="form-group">
+                    <label>Daftar Kas Keluar</label>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width:50px;">NO</th>
+                                    <th style="width:130px;">NOMOR SURAT</th>
+                                    <th>KETERANGAN</th>
+                                    <th style="width:130px;">JUMLAH</th>
+                                    <th style="width:130px;">TANGGAL</th>
+                                    <th style="width:220px;">AKSI</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <?php if (!empty($data_kas)): ?>
+                                <?php $i = 1; foreach ($data_kas as $row): ?>
+                                    <tr>
+                                        <td style="text-align:center;"><?php echo $i; ?></td>
+                                        <td style="text-align:center;"><?php echo htmlspecialchars($row['nomor_surat'] ?? '-'); ?></td>
+                                        <td><?php echo htmlspecialchars($row['keterangan']); ?></td>
+                                        <td style="text-align:right;">Rp. <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
+                                        <td style="text-align:center;"><?php echo date('d-M-Y', strtotime($row['tanggal_transaksi'])); ?></td>
+                                        <td style="text-align:center;">
+                                            <div class="action-buttons">
+                                                <a href="kas_keluar.php?edit=<?php echo $row['id']; ?>" class="btn btn-edit btn-sm" title="Edit">
+                                                    Edit
+                                                </a>
+                                                <a href="kas_keluar.php?delete=<?php echo $row['id']; ?>" class="btn btn-delete btn-sm" onclick="return confirm('Yakin ingin menghapus data ini?')" title="Hapus">
+                                                    Delete
+                                                </a>
+                                                <a href="export_pdf.php?type=kas_keluar&id=<?php echo $row['id']; ?>" target="_blank" class="btn btn-pdf btn-sm" title="Export PDF">
+                                                    PDF
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php $i++; endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="6" style="text-align:center; padding:20px; color:#999;">
+                                        Belum ada data kas keluar
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            <div class="footer-right">
-                <a href="https://kskgroup.co.id" target="_blank" class="footer-item link-item">
-                    <img src="assets/gambar/icon/browser.png" class="footer-icon">
-                    <span>kskgroup.co.id</span>
-                </a>
+            <footer class="ksk-footer">
+                <div class="footer-content">
+                    <div class="footer-left">
+                        <img src="assets/gambar/logoksk.jpg" alt="KSK Logo" class="footer-logo">
+                        <div class="footer-text">
+                            <h2>KALIMANTAN SAWIT KUSUMA GROUP</h2>
+                            <p class="subtitle">Oil Palm Plantation & Industries</p>
+                            <p class="description">
+                                Kalimantan Sawit Kusuma (KSK) adalah sebuah grup perusahaan yang memiliki beberapa 
+                                perusahaan afiliasi yang bergerak di berbagai bidang usaha, yaitu perkebunan kelapa 
+                                sawit dan hortikultura, kontraktor alat berat dan pembangunan perkebunan serta jasa 
+                                transportasi laut.
+                            </p>
+                        </div>
+                    </div>
 
-                <a href="tel:+62561733035" class="footer-item link-item">
-                    <img src="assets/gambar/icon/telfon.png" class="footer-icon">
-                    <span>
-                        T. (+62 561) 733 035 (hunting)<br>
-                        F. (+62 561) 733 014
-                    </span>
-                </a>
+                    <div class="footer-right">
+                        <a href="https://kskgroup.co.id" target="_blank" class="footer-item link-item">
+                            <img src="assets/gambar/icon/browser.png" class="footer-icon">
+                            <span>kskgroup.co.id</span>
+                        </a>
 
-                <a href="https://maps.app.goo.gl/MdtmPLQTTagexjF59" target="_blank" class="footer-item link-item">
-                    <img src="assets/gambar/icon/lokasi.png" class="footer-icon">
-                    <span>
-                        Jl. W.R Supratman No. 42 Pontianak,<br>
-                        Kalimantan Barat 78122
-                    </span>
-                </a>
-            </div>
+                        <a href="tel:+62561733035" class="footer-item link-item">
+                            <img src="assets/gambar/icon/telfon.png" class="footer-icon">
+                            <span>
+                                T. (+62 561) 733 035 (hunting)<br>
+                                F. (+62 561) 733 014
+                            </span>
+                        </a>
+
+                        <a href="https://maps.app.goo.gl/MdtmPLQTTagexjF59" target="_blank" class="footer-item link-item">
+                            <img src="assets/gambar/icon/lokasi.png" class="footer-icon">
+                            <span>
+                                Jl. W.R Supratman No. 42 Pontianak,<br>
+                                Kalimantan Barat 78122
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </footer>
         </div>
-    </footer>
+    </div>
+
+    <script>
+        // sidebar script
+        const menuBurger = document.getElementById('menuBurger');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+        }
+
+        menuBurger.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar);
+
+        const menuItems = document.querySelectorAll('.menu-item a');
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    toggleSidebar();
+                }
+            });
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768 && sidebar.classList.contains('active')) {
+                toggleSidebar();
+            }
+        });
+    </script>
 </body>
 </html>

@@ -1,9 +1,62 @@
+<?php
+require_once 'config/conn_db.php';
+
+check_login();
+
+$user_id = $_SESSION['user_id'];
+$username = $_SESSION['username'];
+$nama_lengkap = $_SESSION['nama_lengkap'];
+$role = $_SESSION['role'] ?? 'Kasir';
+
+// Ambil konfigurasi dari database
+$query_config = "SELECT * FROM konfigurasi LIMIT 1";
+$result_config = mysqli_query($conn, $query_config);
+$config = mysqli_fetch_assoc($result_config);
+
+if (!$config) {
+    $nama_perusahaan = 'PT. Kalimantan Sawit Kusuma';
+} else {
+    $nama_perusahaan = $config['nama_perusahaan'] ?? 'PT. Kalimantan Sawit Kusuma';
+}
+
+// Filter tanggal
+$date_from = isset($_GET['date_from']) ? $_GET['date_from'] : date('Y-m-01');
+$date_to = isset($_GET['date_to']) ? $_GET['date_to'] : date('Y-m-t');
+
+// Ambil data transaksi
+$sql = "SELECT * FROM transaksi WHERE DATE(tanggal_transaksi) BETWEEN '$date_from' AND '$date_to' ORDER BY tanggal_transaksi ASC, id ASC";
+$res = mysqli_query($conn, $sql);
+$rows = [];
+if ($res) {
+    while ($r = mysqli_fetch_assoc($res)) {
+        $rows[] = $r;
+    }
+    mysqli_free_result($res);
+}
+
+// Hitung total
+$total_debet = 0;
+$total_kredit = 0;
+
+foreach ($rows as $row) {
+    if ($row['jenis_transaksi'] == 'kas_terima') {
+        $total_debet += floatval($row['nominal']);
+    } else {
+        $total_kredit += floatval($row['nominal']);
+    }
+}
+
+$saldo = $total_debet - $total_kredit;
+$balance = $total_debet;
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BUKU KAS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -14,12 +67,127 @@
         body {
             font-family: Arial, sans-serif;
             background-color: #E5FCED;
-            min-height: 100vh;
             display: flex;
-            flex-direction: column;
         }
 
-        /* ================= HEADER ================= */
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #E7E7E7FF;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            position: fixed;
+            left: -280px;
+            top: 0;
+            height: 100vh;
+            transition: left 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .sidebar.active {
+            left: 0;
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px 20px;
+            border-bottom: 2px solid #c8e6c9;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .sidebar-header img {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+        }
+        
+        .company-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #000000FF;
+            line-height: 1.3;
+        }
+        
+        .menu-title {
+            padding: 10px 20px;
+            font-size: 12px;
+            color: #666;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .menu-list {
+            list-style: none;
+            flex: 1;
+        }
+        
+        .menu-item {
+            margin: 5px 15px;
+        }
+        
+        .menu-item a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: #009844;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .menu-item a:hover {
+            background: #c8e6c9;
+            transform: translateX(5px);
+        }
+        
+        .menu-item.active a {
+            background: #a5d6a7;
+            font-weight: 600;
+        }
+        
+        .menu-icon {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        /* Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* Main Wrapper */
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /*  HEADER  */
         .header {
             background-color: #009844;
             color: white;
@@ -35,9 +203,14 @@
             gap: 15px;
         }
 
-        .menu-icon {
+        .menu-burger {
             font-size: 26px;
             cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .menu-burger:hover {
+            transform: scale(1.1);
         }
 
         .header h1 {
@@ -61,19 +234,30 @@
             justify-content: center;
             color: #009844;
             font-size: 16px;
+            font-weight: bold;
         }
 
-        .company-name {
+        .user-details {
+            text-align: right;
+        }
+
+        .user-name {
             font-size: 13px;
             font-weight: bold;
         }
 
-        .company-type {
+        .user-role {
             font-size: 11px;
             opacity: .85;
         }
 
-        /* ================= CONTAINER ================= */
+        /*  CONTAINER  */
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
         .container {
             width: 90%;
             max-width: 1100px;
@@ -89,11 +273,62 @@
             text-align: center;
             font-size: 20px;
             font-weight: bold;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             color: #333;
         }
 
-        /* ================= DAFTAR KAS KELUAR ================= */
+        /*  FILTER  */
+        .filter-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .filter-form {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .btn-filter {
+            padding: 10px 24px;
+            background: #009844;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-filter:hover {
+            background: #017033;
+        }
+
+        /*  DAFTAR KAS KELUAR  */
         .kas-list-title {
             font-size: 16px;
             font-weight: 600;
@@ -108,7 +343,7 @@
             font-size: 14px;
         }
 
-        /* ================= TABLE ================= */
+        /*  TABLE  */
         .table-wrapper {
             overflow-x: auto;
             margin-bottom: 30px;
@@ -162,7 +397,7 @@
             background-color: #F0F0F0;
         }
 
-        /* ================= SUMMARY ================= */
+        /* summary  */
         .summary-section {
             margin: 30px 0;
             display: flex;
@@ -197,7 +432,7 @@
             font-size: 15px;
         }
 
-        /* ================= BUTTONS ================= */
+        /* buttpons  */
         .button-group {
             display: flex;
             gap: 20px;
@@ -216,6 +451,8 @@
             font-size: 14px;
             text-align: center;
             max-width: 300px;
+            text-decoration: none;
+            display: inline-block;
         }
 
         .btn-primary {
@@ -236,7 +473,7 @@
             background-color: #c7c7c7;
         }
 
-        /* ================= FOOTER ================= */
+        /* FOOTER  */
         .ksk-footer {
             width: 100%;
             padding: 30px 40px;
@@ -244,6 +481,7 @@
             color: #ffffff;
             border-top: 3px solid #333;
             font-family: 'Poppins', sans-serif;
+            margin-top: auto;
         }
 
         .footer-content {
@@ -318,7 +556,7 @@
             opacity: 0.7;
         }
 
-        /* RESPONSIVE */
+        /* responsive */
         @media (max-width: 780px) {
             .footer-content {
                 flex-direction: column;
@@ -349,6 +587,14 @@
             .btn {
                 width: 100%;
             }
+            
+            .filter-form {
+                flex-direction: column;
+            }
+            
+            .form-group {
+                width: 100%;
+            }
         }
 
         @media(max-width:768px){
@@ -363,266 +609,231 @@
             th, td {
                 padding: 8px 6px;
             }
+            
+            .sidebar {
+                width: 100%;
+                left: -100%;
+            }
         }
     </style>
 </head>
 
 <body>
-
-    <div class="header">
-        <div class="header-left">
-            <span class="menu-icon">☰</span>
-            <h1>BUKU KAS</h1>
-        </div>
-        <div class="user-info">
-            <div class="user-avatar">🏢</div>
-            <div>
-                <div class="company-name">PT. Mitra Saudara Lestari</div>
-                <div class="company-type">Kasir</div>
+   <!-- sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="assets/gambar/logoksk.jpg" alt="KSK Logo"
+                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%232e7d32%22 rx=%228%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2220%22 fill=%22white%22 font-weight=%22bold%22%3EKSK%3C/text%3E%3C/svg%3E'">
+            <div class="company-title">
+                <h4>KALIMANTAN SAWIT KUSUMA GROUP</h4>
+                <p>Oil Palm Plantation & Industries</p>
             </div>
         </div>
+        
+        <div class="menu-title">Dashboard Menu</div>
+        
+        <ul class="menu-list">
+            <li class="menu-item">
+                <a href="dashboard.php">
+                    <img src="assets/gambar/icon/homescreen.png" class="menu-icon">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="logout.php">
+                    <img src="assets/gambar/icon/logout.png" class="menu-icon">
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
     </div>
 
-    <div class="container">
-        <h2 class="page-title">BUKU KAS HARIAN</h2>
-
-        <h3 class="kas-list-title">Daftar Kas Harian</h3>
-
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 120px;">BUKTI KAS</th>
-                        <th>URAIAN</th>
-                        <th style="width: 180px;">DEBET</th>
-                        <th style="width: 180px;">KREDIT</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <tr>
-                        <td colspan="4" class="empty-state">Tidak ada transaksi. Data akan dimuat dari database.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="summary-section">
-            <div class="summary-row" style="border-top: 2px solid #333; padding-top: 15px;">
-                <span class="summary-label" style="font-size: 15px;">Jumlah Transaksi</span>
-                <div style="display: flex; gap: 100px;">
-                    <span class="summary-value" id="totalDebet" style="min-width: 180px; text-align: right;">-</span>
-                    <span class="summary-value" id="totalKredit" style="min-width: 180px; text-align: right;">-</span>
-                </div>
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <div class="header">
+            <div class="header-left">
+                <i class="fas fa-bars menu-burger" id="menuBurger"></i>
+                <h1>BUKU KAS</h1>
             </div>
-            
-            <div class="summary-row">
-                <span class="summary-label" style="font-size: 15px;">Saldo Per Tanggal <span id="currentDate"></span></span>
-                <div style="display: flex; gap: 100px;">
-                    <span class="summary-value" style="min-width: 180px;"></span>
-                    <span class="summary-value" id="saldo" style="min-width: 180px; text-align: right;">-</span>
-                </div>
-            </div>
-            
-            <div class="summary-row balance-row" style="border-top: 2px solid #333; padding-top: 15px; margin-top: 15px;">
-                <span class="summary-label" style="font-size: 16px;">Balance</span>
-                <div style="display: flex; gap: 100px;">
-                    <span class="summary-value" id="balanceDebet" style="min-width: 180px; text-align: right;">-</span>
-                    <span class="summary-value" id="balanceKredit" style="min-width: 180px; text-align: right;">-</span>
+            <div class="user-info">
+                <div class="user-avatar"><?php echo strtoupper(substr($nama_lengkap, 0, 1)); ?></div>
+                <div class="user-details">
+                    <div class="user-name"><?php echo htmlspecialchars($nama_lengkap); ?></div>
+                    <div class="user-role"><?php echo htmlspecialchars(ucfirst($role)); ?></div>
                 </div>
             </div>
         </div>
 
-        <div class="button-group">
-            <button class="btn btn-primary">Export ke PDF</button>
-            <button class="btn btn-secondary" onclick="history.back()">Kembali</button>
+        <div class="content-wrapper">
+            <div class="container">
+                <h2 class="page-title">BUKU KAS HARIAN</h2>
+
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <form method="GET" class="filter-form">
+                        <div class="form-group">
+                            <label>Dari Tanggal</label>
+                            <input type="date" name="date_from" value="<?php echo htmlspecialchars($date_from); ?>">
+                        </div>
+                        <div class="form-group">
+                            <label>Sampai Tanggal</label>
+                            <input type="date" name="date_to" value="<?php echo htmlspecialchars($date_to); ?>">
+                        </div>
+                        <button type="submit" class="btn-filter">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                    </form>
+                </div>
+
+                <h3 class="kas-list-title">Daftar Kas Harian</h3>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 120px;">BUKTI KAS</th>
+                                <th>URAIAN</th>
+                                <th style="width: 180px;">DEBET</th>
+                                <th style="width: 180px;">KREDIT</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <?php if (empty($rows)): ?>
+                            <tr>
+                                <td colspan="4" class="empty-state">Tidak ada transaksi pada periode ini.</td>
+                            </tr>
+                            <?php else: ?>
+                                <?php foreach ($rows as $row): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($row['nomor_surat'] ?? '-'); ?></td>
+                                    <td><?php echo htmlspecialchars($row['keterangan']); ?></td>
+                                    <td><?php echo ($row['jenis_transaksi'] == 'kas_terima') ? number_format($row['nominal'], 2, ',', '.') : '-'; ?></td>
+                                    <td><?php echo ($row['jenis_transaksi'] == 'kas_keluar') ? number_format($row['nominal'], 2, ',', '.') : '-'; ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="summary-section">
+                    <div class="summary-row" style="border-top: 2px solid #333; padding-top: 15px;">
+                        <span class="summary-label" style="font-size: 15px;">Jumlah Transaksi</span>
+                        <div style="display: flex; gap: 100px;">
+                            <span class="summary-value" id="totalDebet" style="min-width: 180px; text-align: right;">
+                                <?php echo number_format($total_debet, 2, ',', '.'); ?>
+                            </span>
+                            <span class="summary-value" id="totalKredit" style="min-width: 180px; text-align: right;">
+                                <?php echo number_format($total_kredit, 2, ',', '.'); ?>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span class="summary-label" style="font-size: 15px;">Saldo Per Tanggal <span id="currentDate"><?php echo date('d-F-Y', strtotime($date_to)); ?></span></span>
+                        <div style="display: flex; gap: 100px;">
+                            <span class="summary-value" style="min-width: 180px;"></span>
+                            <span class="summary-value" id="saldo" style="min-width: 180px; text-align: right;">
+                                <?php echo number_format($saldo, 2, ',', '.'); ?>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-row balance-row" style="border-top: 2px solid #333; padding-top: 15px; margin-top: 15px;">
+                        <span class="summary-label" style="font-size: 16px;">Balance</span>
+                        <div style="display: flex; gap: 100px;">
+                            <span class="summary-value" id="balanceDebet" style="min-width: 180px; text-align: right;">
+                                <?php echo number_format($balance, 2, ',', '.'); ?>
+                            </span>
+                            <span class="summary-value" id="balanceKredit" style="min-width: 180px; text-align: right;">
+                                <?php echo number_format($balance, 2, ',', '.'); ?>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <a href="export_pdf.php?type=buku_kas&date_from=<?php echo urlencode($date_from); ?>&date_to=<?php echo urlencode($date_to); ?>" target="_blank" class="btn btn-primary">Export ke PDF</a>
+                    <button class="btn btn-secondary" onclick="window.location.href='dashboard.php'">Kembali</button>
+                </div>
+            </div>
+
+            <footer class="ksk-footer">
+                <div class="footer-content">
+                    <!-- Left Section -->
+                    <div class="footer-left">
+                        <img src="assets/gambar/logoksk.jpg" alt="KSK Logo" class="footer-logo">
+
+                        <div class="footer-text">
+                            <h2>KALIMANTAN SAWIT KUSUMA GROUP</h2>
+                            <p class="subtitle">Oil Palm Plantation & Industries</p>
+
+                            <p class="description">
+                                Kalimantan Sawit Kusuma (KSK) adalah sebuah grup perusahaan yang memiliki beberapa 
+                                perusahaan afiliasi yang bergerak di berbagai bidang usaha, yaitu perkebunan kelapa 
+                                sawit dan hortikultura, kontraktor alat berat dan pembangunan perkebunan serta jasa 
+                                transportasi laut.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Right Section -->
+                    <div class="footer-right">
+                        <a href="https://kskgroup.co.id" target="_blank" class="footer-item link-item">
+                            <img src="assets/gambar/icon/browser.png" class="footer-icon">
+                            <span>kskgroup.co.id</span>
+                        </a>
+
+                        <a href="tel:+62561733035" class="footer-item link-item">
+                            <img src="assets/gambar/icon/telfon.png" class="footer-icon">
+                            <span>
+                                T. (+62 561) 733 035 (hunting)<br>
+                                F. (+62 561) 733 014
+                            </span>
+                        </a>
+
+                        <a href="https://maps.app.goo.gl/MdtmPLQTTagexjF59" target="_blank" class="footer-item link-item">
+                            <img src="assets/gambar/icon/lokasi.png" class="footer-icon">
+                            <span>
+                                Jl. W.R Supratman No. 42 Pontianak,<br>
+                                Kalimantan Barat 78122
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </footer>
         </div>
     </div>
-
-   <footer class="ksk-footer">
-  <div class="footer-content">
-
-    <!-- Left Section -->
-    <div class="footer-left">
-      <img src="assets/gambar/logoksk.jpg" alt="KSK Logo" class="footer-logo">
-
-      <div class="footer-text">
-        <h2>KALIMANTAN SAWIT KUSUMA GROUP</h2>
-        <p class="subtitle">Oil Palm Plantation & Industries</p>
-
-        <p class="description">
-          Kalimantan Sawit Kusuma (KSK) adalah sebuah grup perusahaan yang memiliki beberapa 
-          perusahaan afiliasi yang bergerak di berbagai bidang usaha, yaitu perkebunan kelapa 
-          sawit dan hortikultura, kontraktor alat berat dan pembangunan perkebunan serta jasa 
-          transportasi laut.
-        </p>
-      </div>
-    </div>
-
-<!-- Right Section -->
-<div class="footer-right">
-
-  <a href="https://kskgroup.co.id" target="_blank" class="footer-item link-item">
-    <img src="assets/gambar/icon/browser.png" class="footer-icon">
-    <span>kskgroup.co.id</span>
-  </a>
-
-  <a href="tel:+62561733035" class="footer-item link-item">
-    <img src="assets/gambar/icon/telfon.png" class="footer-icon">
-    <span>
-      T. (+62 561) 733 035 (hunting)<br>
-      F. (+62 561) 733 014
-    </span>
-  </a>
-
-  <a href="https://maps.app.goo.gl/MdtmPLQTTagexjF59" target="_blank" class="footer-item link-item">
-    <img src="assets/gambar/icon/lokasi.png" class="footer-icon">
-    <span>
-      Jl. W.R Supratman No. 42 Pontianak,<br>
-      Kalimantan Barat 78122
-    </span>
-  </a>
-
-</div>
-
-  </div>
-
-</footer>
 
     <script>
-        // Format angka ke format standar dengan koma
-        function formatRupiah(angka) {
-            return angka.toLocaleString('id-ID', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
+        // sidebar script
+        const menuBurger = document.getElementById('menuBurger');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
         }
 
-        // Set tanggal saat ini
-        function setCurrentDate() {
-            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
-                          'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-            const today = new Date();
-            const day = today.getDate();
-            const month = months[today.getMonth()];
-            const year = today.getFullYear();
-            
-            document.getElementById('currentDate').textContent = `${day}-${month}-${year}`;
-        }
+        menuBurger.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar);
 
-        // Hitung total dan update summary
-        function calculateTotals() {
-            const rows = document.querySelectorAll('#tableBody tr');
-            let totalDebet = 0;
-            let totalKredit = 0;
-            let hasData = false;
-
-            rows.forEach(row => {
-                // Skip jika row adalah empty state
-                if (row.cells.length === 4 && !row.querySelector('.empty-state')) {
-                    hasData = true;
-                    const debetCell = row.cells[2].textContent.trim();
-                    const kreditCell = row.cells[3].textContent.trim();
-
-                    // Parse debet (skip jika '-')
-                    if (debetCell !== '-' && debetCell !== '') {
-                        const debet = parseFloat(debetCell.replace(/[^0-9,-]/g, '').replace(',', '.'));
-                        if (!isNaN(debet)) totalDebet += debet;
-                    }
-
-                    // Parse kredit (skip jika '-')
-                    if (kreditCell !== '-' && kreditCell !== '') {
-                        const kredit = parseFloat(kreditCell.replace(/[^0-9,-]/g, '').replace(',', '.'));
-                        if (!isNaN(kredit)) totalKredit += kredit;
-                    }
+        const menuItems = document.querySelectorAll('.menu-item a');
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    toggleSidebar();
                 }
             });
-
-            // Update tampilan
-            if (hasData) {
-                // Hitung saldo (Debet - Kredit)
-                const saldo = totalDebet - totalKredit;
-                
-                document.getElementById('totalDebet').textContent = formatRupiah(totalDebet);
-                document.getElementById('totalKredit').textContent = formatRupiah(totalKredit);
-                document.getElementById('saldo').textContent = formatRupiah(saldo);
-                
-                // Balance harus sama di kedua sisi (Total Debet = Total Kredit + Saldo)
-                const balanceAmount = totalDebet;
-                document.getElementById('balanceDebet').textContent = formatRupiah(balanceAmount);
-                document.getElementById('balanceKredit').textContent = formatRupiah(balanceAmount);
-            } else {
-                // Tampilkan tanda '-' jika tidak ada data
-                document.getElementById('totalDebet').textContent = '-';
-                document.getElementById('totalKredit').textContent = '-';
-                document.getElementById('saldo').textContent = '-';
-                document.getElementById('balanceDebet').textContent = '-';
-                document.getElementById('balanceKredit').textContent = '-';
-            }
-        }
-
-        // Inisialisasi saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', function() {
-            setCurrentDate();
-            calculateTotals();
         });
 
-        // Fungsi untuk menambah data ke tabel (akan dipanggil dari database)
-        function addTransaction(buktiKas, uraian, debet, kredit) {
-            const tbody = document.getElementById('tableBody');
-            
-            // Hapus empty state jika ada
-            const emptyState = tbody.querySelector('.empty-state');
-            if (emptyState) {
-                tbody.innerHTML = '';
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768 && sidebar.classList.contains('active')) {
+                toggleSidebar();
             }
-            
-            const row = tbody.insertRow();
-            row.innerHTML = `
-                <td>${buktiKas}</td>
-                <td>${uraian}</td>
-                <td style="text-align: right;">${debet || '-'}</td>
-                <td style="text-align: right;">${kredit || '-'}</td>
-            `;
-            
-            calculateTotals();
-        }
-
-        // Fungsi untuk load data dari database (contoh)
-        // Fungsi ini akan dipanggil dari backend PHP dengan data dari database
-        function loadDataFromDatabase(data) {
-            // data adalah array dari database
-            // Contoh: [{bukti_kas: '001/KK-MSL/XI/2025', uraian: '...', debet: '', kredit: '50000'}, ...]
-            
-            data.forEach(item => {
-                addTransaction(item.bukti_kas, item.uraian, item.debet, item.kredit);
-            });
-        }
-
-        /* 
-        CARA PENGGUNAAN DENGAN DATABASE:
-        
-        1. Di file PHP, load data dari database
-        2. Convert ke format JSON
-        3. Panggil fungsi loadDataFromDatabase dengan data tersebut
-        
-        Contoh di PHP:
-        
-        <?php
-        // Ambil data dari database
-        $query = "SELECT bukti_kas, uraian, debet, kredit FROM transaksi WHERE tanggal = CURDATE()";
-        $result = mysqli_query($conn, $query);
-        $data = [];
-        while($row = mysqli_fetch_assoc($result)) {
-            $data[] = $row;
-        }
-        ?>
-        
-        <script>
-        // Load data ke tabel
-        loadDataFromDatabase(<?php echo json_encode($data); ?>);
-        </script>
-        */
+        });
     </script>
-
 </body>
 </html>

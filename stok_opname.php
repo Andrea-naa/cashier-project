@@ -5,10 +5,9 @@ require_once 'config/conn_db.php';
 $user_id      = $_SESSION['user_id'];
 $username     = $_SESSION['username'];
 $nama_lengkap = $_SESSION['nama_lengkap'];
+$role = $_SESSION['role'] ?? 'Kasir';
 
-// ===========================
-// DEFINISI PECAHAN
-// ===========================
+// list pecahan fisik uang kas
 $fisik_uang_kas = [
     ['no'=>1,'uraian'=>'Seratus Ribuan Kertas','satuan'=>'Lembar','nominal'=>100000],
     ['no'=>2,'uraian'=>'Lima Puluh Ribuan Kertas','satuan'=>'Lembar','nominal'=>50000],
@@ -23,9 +22,7 @@ $fisik_uang_kas = [
     ['no'=>11,'uraian'=>'Satu Ratusan Logam','satuan'=>'Keping','nominal'=>100],
 ];
 
-// ===================================
-// MODE EDIT
-// ===================================
+// aksi edit data
 $edit_mode = false;
 $edit_id   = isset($_GET['edit']) ? intval($_GET['edit']) : 0;
 
@@ -47,9 +44,7 @@ if ($edit_id > 0) {
     }
 }
 
-// ===================================
-// SIMPAN (INSERT / UPDATE)
-// ===================================
+// aksi simpan data
 if (isset($_POST['simpan'])) {
 
     // Hitung pecahan uang kas
@@ -89,20 +84,21 @@ if (isset($_POST['simpan'])) {
 
     $selisih = $fisik_total - $saldo_sistem;
 
-    // ============================
-    // INSERT MODE
-    // ============================
+    // akski simpan ke database
     if (!$edit_mode) {
 
+        $nomor_data = get_next_nomor_surat('KAS-MSL');
+        $nomor_surat = $nomor_data['nomor'];
+
         $stmt = mysqli_prepare($conn,
-            "INSERT INTO stok_opname 
-                (user_id, username, subtotal_fisik, bon_sementara, uang_rusak, materai, lainnya, fisik_total, saldo_sistem, selisih)
-             VALUES (?,?,?,?,?,?,?,?,?,?)"
+            "INSERT INTO stok_opname
+                (nomor_surat, user_id, username, subtotal_fisik, bon_sementara, uang_rusak, materai, lainnya, fisik_total, saldo_sistem, selisih)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?)"
         );
         mysqli_stmt_bind_param(
             $stmt,
-            'isdddddddd',
-            $user_id, $username, $subtotal_fisik, $bon_sementara, $uang_rusak,
+            'sisdddddddd',
+            $nomor_surat, $user_id, $username, $subtotal_fisik, $bon_sementara, $uang_rusak,
             $materai, $lain_lain, $fisik_total, $saldo_sistem, $selisih
         );
         mysqli_stmt_execute($stmt);
@@ -132,9 +128,7 @@ if (isset($_POST['simpan'])) {
         mysqli_stmt_close($stmt2);
 
     }
-    // ============================
-    // UPDATE MODE
-    // ============================
+    // aksi update data
     else {
 
         mysqli_query($conn,
@@ -187,6 +181,7 @@ if (isset($_POST['simpan'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>STOK OPNAME</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -197,6 +192,123 @@ if (isset($_POST['simpan'])) {
         body {
             font-family: Arial, sans-serif;
             background-color: #E5FCED;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #E7E7E7FF;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            position: fixed;
+            left: -280px;
+            top: 0;
+            height: 100vh;
+            transition: left 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .sidebar.active {
+            left: 0;
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px 20px;
+            border-bottom: 2px solid #c8e6c9;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .sidebar-header img {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+        }
+        
+        .company-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #000000FF;
+            line-height: 1.3;
+        }
+        
+        .menu-title {
+            padding: 10px 20px;
+            font-size: 12px;
+            color: #666;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .menu-list {
+            list-style: none;
+            flex: 1;
+        }
+        
+        .menu-item {
+            margin: 5px 15px;
+        }
+        
+        .menu-item a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: #009844;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .menu-item a:hover {
+            background: #c8e6c9;
+            transform: translateX(5px);
+        }
+        
+        .menu-item.active a {
+            background: #a5d6a7;
+            font-weight: 600;
+        }
+        
+        .menu-icon {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        /* Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        /* Main Wrapper */
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
         }
 
         .header {
@@ -214,9 +326,14 @@ if (isset($_POST['simpan'])) {
             gap: 15px;
         }
 
-        .menu-icon {
+        .menu-burger {
             font-size: 26px;
             cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .menu-burger:hover {
+            transform: scale(1.1);
         }
 
         .header h1 {
@@ -240,16 +357,27 @@ if (isset($_POST['simpan'])) {
             justify-content: center;
             color: #009844;
             font-size: 16px;
+            font-weight: bold;
         }
 
-        .company-name {
+        .user-details {
+            text-align: right;
+        }
+        
+        .user-name {
             font-size: 13px;
             font-weight: bold;
         }
 
-        .company-type {
+        .user-role {
             font-size: 11px;
             opacity: .85;
+        }
+
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .container {
@@ -259,6 +387,7 @@ if (isset($_POST['simpan'])) {
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 90%;
         }
 
         .section-title {
@@ -387,6 +516,7 @@ if (isset($_POST['simpan'])) {
             color: #ffffff;
             border-top: 3px solid #333;
             font-family: 'Poppins', sans-serif;
+            margin-top: auto;
         }
 
         .footer-content {
@@ -407,7 +537,6 @@ if (isset($_POST['simpan'])) {
         .footer-logo {
             width: 70px;
             height: 70px;
-            /* background: white; */
             padding: 8px;
             border-radius: 10px;
         }
@@ -443,7 +572,7 @@ if (isset($_POST['simpan'])) {
             display: flex;
             align-items: start;
             gap: 10px;
-            color: black    ;
+            color: black;
         }
 
         .footer-icon {
@@ -455,7 +584,7 @@ if (isset($_POST['simpan'])) {
 
         .link-item {
             text-decoration: none;
-            color: black ;
+            color: black;
         }
 
         .link-item:hover {
@@ -494,6 +623,11 @@ if (isset($_POST['simpan'])) {
 
             .button-group {
                 flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                left: -100%;
             }
         }
 
@@ -544,192 +678,224 @@ if (isset($_POST['simpan'])) {
             // Hitung jumlah saldo fisik
             let saldoFisik = totalFisik + bonSementara + uangRusak + material + lainLain;
             
-            // Update tampilan
             document.getElementById('total-fisik').textContent = formatRupiah(totalFisik);
             document.getElementById('saldo-fisik').textContent = formatRupiah(saldoFisik);
             
             // Hitung selisih (misalnya dari saldo buku - saldo fisik)
-            // Untuk sekarang selisih = 0, bisa disesuaikan dengan saldo buku jika ada
             let selisih = 0;
             document.getElementById('selisih').textContent = formatRupiah(selisih);
         }
 
-        // Jalankan saat halaman dimuat
+        // memuat fungsi halaman
         window.onload = function() {
-            // Tambahkan event listener untuk semua input
+            // event listener untuk input perubahan
             let inputs = document.querySelectorAll('.input-field, .input-number');
             inputs.forEach(function(input) {
                 input.addEventListener('input', hitungTotal);
             });
             
-            // Hitung total awal
+            // Hitung total 
             hitungTotal();
         };
     </script>
 </head>
 <body>
-    <?php
-    // Data dummy untuk tabel dengan nilai nominal masing-masing
-    $fisik_uang_kas = [
-        ['no' => 1, 'uraian' => 'Seratus Ribuan Kertas', 'satuan' => 'Lembar', 'jumlah' => '', 'nominal' => 100000],
-        ['no' => 2, 'uraian' => 'Lima Puluh Ribuan Kertas', 'satuan' => 'Lembar', 'jumlah' => '', 'nominal' => 50000],
-        ['no' => 3, 'uraian' => 'Dua Puluh Ribuan Kertas', 'satuan' => 'Lembar', 'jumlah' => '', 'nominal' => 20000],
-        ['no' => 4, 'uraian' => 'Sepuluh Ribuan Kertas', 'satuan' => 'Lembar', 'jumlah' => '', 'nominal' => 10000],
-        ['no' => 5, 'uraian' => 'Lima Ribuan Kertas', 'satuan' => 'Lembar', 'jumlah' => '', 'nominal' => 5000],
-        ['no' => 6, 'uraian' => 'Dua Ribuan Kertas', 'satuan' => 'Lembar', 'jumlah' => '', 'nominal' => 2000],
-        ['no' => 7, 'uraian' => 'Satu Ribuan Kertas', 'satuan' => 'Lembar', 'jumlah' => '', 'nominal' => 1000],
-        ['no' => 8, 'uraian' => 'Satu Ribuan Logam', 'satuan' => 'Keping', 'jumlah' => '', 'nominal' => 1000],
-        ['no' => 9, 'uraian' => 'Lima Ratusan Logam', 'satuan' => 'Keping', 'jumlah' => '', 'nominal' => 500],
-        ['no' => 10, 'uraian' => 'Dua Ratusan Logam', 'satuan' => 'Keping', 'jumlah' => '', 'nominal' => 200],
-        ['no' => 11, 'uraian' => 'Satu Ratusan Logam', 'satuan' => 'Keping', 'jumlah' => '', 'nominal' => 100],
-    ];
-    ?>
-
-    <div class="header">
-        <div class="header-left">
-            <span class="menu-icon">☰</span>
-            <h1>STOK OPNAME</h1>
-        </div>
-        <div class="user-info">
-            <div class="user-avatar">🏢</div>
-            <div>
-                <div class="company-name">PT. Mitra Saudara Lestari</div>
-                <div class="company-type">Kasir</div>
+    <!-- sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="assets/gambar/logoksk.jpg" alt="KSK Logo"
+                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%232e7d32%22 rx=%228%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2220%22 fill=%22white%22 font-weight=%22bold%22%3EKSK%3C/text%3E%3C/svg%3E'">
+            <div class="company-title">
+                <h4>KALIMANTAN SAWIT KUSUMA GROUP</h4>
+                <p>Oil Palm Plantation & Industries</p>
             </div>
         </div>
+        
+        <div class="menu-title">Dashboard Menu</div>
+        
+        <ul class="menu-list">
+            <li class="menu-item">
+                <a href="dashboard.php">
+                    <img src="assets/gambar/icon/homescreen.png" class="menu-icon">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="logout.php">
+                    <img src="assets/gambar/icon/logout.png" class="menu-icon">
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
     </div>
 
-    <div class="container">
-        <form method="POST" action="">
-            <div class="section-title">I. Pemeriksaan Fisik Uang Kas</div>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th class="no-column">NO</th>
-                        <th>URAIAN</th>
-                        <th>SATUAN</th>
-                        <th class="amount-column">JUMLAH</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach($fisik_uang_kas as $item): ?>
-                    <tr>
-                        <td class="no-column"><?php echo $item['no']; ?></td>
-                        <td><?php echo $item['uraian']; ?></td>
-                        <td><?php echo $item['satuan']; ?></td>
-                        <td class="amount-column">
-                            <input type="number" name="jumlah_<?php echo $item['no']; ?>" class="input-number" value="<?php echo $item['jumlah']; ?>" min="0">
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <div class="header">
+            <div class="header-left">
+                <i class="fas fa-bars menu-burger" id="menuBurger"></i>
+                <h1>STOK OPNAME</h1>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar"><?php echo strtoupper(substr($nama_lengkap, 0, 1)); ?></div>
+                <div class="user-details">
+                    <div class="user-name"><?php echo htmlspecialchars($nama_lengkap); ?></div>
+                    <div class="user-role"><?php echo htmlspecialchars(ucfirst($role)); ?></div>
+                </div>
+            </div>
+        </div>
 
-            <div class="total-row">
-                <span>JUMLAH</span>
-                <span class="total-value" id="total-fisik">Rp. 0,00</span>
+        <div class="content-wrapper">
+            <div class="container">
+                <form method="POST" action="">
+                    <div class="section-title">I. Pemeriksaan Fisik Uang Kas</div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="no-column">NO</th>
+                                <th>URAIAN</th>
+                                <th>SATUAN</th>
+                                <th class="amount-column">JUMLAH</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach($fisik_uang_kas as $item): ?>
+                            <tr>
+                                <td class="no-column"><?php echo $item['no']; ?></td>
+                                <td><?php echo $item['uraian']; ?></td>
+                                <td><?php echo $item['satuan']; ?></td>
+                                <td class="amount-column">
+                                    <input type="number" 
+                                           name="jumlah_<?php echo $item['no']; ?>" 
+                                           class="input-number" 
+                                           value="<?php echo $detail_map[$item['no']] ?? 0; ?>" 
+                                           min="0">
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+
+                    <div class="total-row">
+                        <span>JUMLAH</span>
+                        <span class="total-value" id="total-fisik">Rp. 0,00</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>II. Bon Sementara</label>
+                        <input type="number" name="bon_sementara" class="input-field" min="0" step="0.01" value="<?php echo $edit_data['bon_sementara'] ?? 0; ?>">
+                    </div>
+
+                    <div class="form-group">
+                        <label>III. Uang Rusak</label>
+                        <input type="number" name="uang_rusak" class="input-field" min="0" step="0.01" value="<?php echo $edit_data['uang_rusak'] ?? 0; ?>">
+                    </div>
+
+                    <div class="form-group">
+                        <label>IV. Materai (Lembar @10.000)</label>
+                        <input type="number" name="material" class="input-field" min="0" step="0.01" value="<?php echo $edit_data['materai'] ?? 0; ?>">
+                    </div>
+
+                    <div class="form-group">
+                        <label>V. Lain-lain</label>
+                        <input type="number" name="lain_lain" class="input-field" min="0" step="0.01" value="<?php echo $edit_data['lainnya'] ?? 0; ?>">
+                    </div>
+
+                    <div class="total-row">
+                        <span>JUMLAH SALDO FISIK</span>
+                        <span class="total-value" id="saldo-fisik">Rp. 0,00</span>
+                    </div>
+
+                    <div class="total-row" style="border-bottom: none;">
+                        <span>SELISIH</span>
+                        <span class="total-value" id="selisih">Rp. 0,00</span>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" name="simpan" class="btn btn-primary">
+                            <?php echo $edit_mode ? 'Update' : 'Simpan'; ?> Stok Opname
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='dashboard.php'">Kembali</button>
+                    </div>
+
+                    <button type="button" class="btn-table" onclick="window.location.href='tabel_stok_opname.php'">Lihat Tabel</button>
+                </form>
             </div>
 
-            <div class="form-group">
-                <label>II. Bon Sementara</label>
-                <input type="number" name="bon_sementara" class="input-field" min="0" step="0.01">
-            </div>
+            <footer class="ksk-footer">
+                <div class="footer-content">
+                    <div class="footer-left">
+                        <img src="assets/gambar/logoksk.jpg" alt="KSK Logo" class="footer-logo">
+                        <div class="footer-text">
+                            <h2>KALIMANTAN SAWIT KUSUMA GROUP</h2>
+                            <p class="subtitle">Oil Palm Plantation & Industries</p>
+                            <p class="description">
+                                Kalimantan Sawit Kusuma (KSK) adalah sebuah grup perusahaan yang memiliki beberapa 
+                                perusahaan afiliasi yang bergerak di berbagai bidang usaha, yaitu perkebunan kelapa 
+                                sawit dan hortikultura, kontraktor alat berat dan pembangunan perkebunan serta jasa 
+                                transportasi laut.
+                            </p>
+                        </div>
+                    </div>
 
-            <div class="form-group">
-                <label>III. Uang Rusak</label>
-                <input type="number" name="uang_rusak" class="input-field" min="0" step="0.01">
-            </div>
+                    <div class="footer-right">
+                        <a href="https://kskgroup.co.id" target="_blank" class="footer-item link-item">
+                            <img src="assets/gambar/icon/browser.png" class="footer-icon">
+                            <span>kskgroup.co.id</span>
+                        </a>
 
-            <div class="form-group">
-                <label>IV. Materai (Lembar @10.000)</label>
-                <input type="number" name="material" class="input-field" min="0" step="0.01">
-            </div>
+                        <a href="tel:+62561733035" class="footer-item link-item">
+                            <img src="assets/gambar/icon/telfon.png" class="footer-icon">
+                            <span>
+                                T. (+62 561) 733 035 (hunting)<br>
+                                F. (+62 561) 733 014
+                            </span>
+                        </a>
 
-            <div class="form-group">
-                <label>V. Lain-lain</label>
-                <input type="number" name="lain_lain" class="input-field" min="0" step="0.01">
-            </div>
-
-            <div class="total-row">
-                <span>JUMLAH SALDO FISIK</span>
-                <span class="total-value" id="saldo-fisik">Rp. 0,00</span>
-            </div>
-
-            <div class="total-row" style="border-bottom: none;">
-                <span>SELISIH</span>
-                <span class="total-value" id="selisih">Rp. 0,00</span>
-            </div>
-
-            <div class="button-group">
-                <button type="submit" name="simpan" class="btn btn-primary">Simpan Stok Opname</button>
-                <button type="button" class="btn btn-secondary"onclick="window.location.href='dashboard.php'">Kembali</button>
-            </div>
-
-            <button type="button" class="btn-table" onclick="window.location.href='tabel_stok_opname.php'">Lihat Tabel</button>
-        </form>
+                        <a href="https://maps.app.goo.gl/MdtmPLQTTagexjF59" target="_blank" class="footer-item link-item">
+                            <img src="assets/gambar/icon/lokasi.png" class="footer-icon">
+                            <span>
+                                Jl. W.R Supratman No. 42 Pontianak,<br>
+                                Kalimantan Barat 78122
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </footer>
+        </div>
     </div>
 
-    <footer class="ksk-footer">
-  <div class="footer-content">
+    <script>
+        // sidebar script
+        const menuBurger = document.getElementById('menuBurger');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-    <!-- Left Section -->
-    <div class="footer-left">
-      <img src="assets/gambar/logoksk.jpg" alt="KSK Logo" class="footer-logo">
+        function toggleSidebar() {
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+        }
 
-      <div class="footer-text">
-        <h2>KALIMANTAN SAWIT KUSUMA GROUP</h2>
-        <p class="subtitle">Oil Palm Plantation & Industries</p>
+        menuBurger.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar);
 
-        <p class="description">
-          Kalimantan Sawit Kusuma (KSK) adalah sebuah grup perusahaan yang memiliki beberapa 
-          perusahaan afiliasi yang bergerak di berbagai bidang usaha, yaitu perkebunan kelapa 
-          sawit dan hortikultura, kontraktor alat berat dan pembangunan perkebunan serta jasa 
-          transportasi laut.
-        </p>
-      </div>
-    </div>
-
-<!-- Right Section -->
-<div class="footer-right">
-
-  <a href="https://kskgroup.co.id" target="_blank" class="footer-item link-item">
-    <img src="assets/gambar/icon/browser.png" class="footer-icon">
-    <span>kskgroup.co.id</span>
-  </a>
-
-  <a href="tel:+62561733035" class="footer-item link-item">
-    <img src="assets/gambar/icon/telfon.png" class="footer-icon">
-    <span>
-      T. (+62 561) 733 035 (hunting)<br>
-      F. (+62 561) 733 014
-    </span>
-  </a>
-
-  <a href="https://maps.app.goo.gl/MdtmPLQTTagexjF59" target="_blank" class="footer-item link-item">
-    <img src="assets/gambar/icon/lokasi.png" class="footer-icon">
-    <span>
-      Jl. W.R Supratman No. 42 Pontianak,<br>
-      Kalimantan Barat 78122
-    </span>
-  </a>
-
-</div>
-
-  </div>
-</footer>
-
-<script>
-        // Toggle sidebar collapse when burger clicked
-        (function(){
-            var btn = document.getElementById('toggleSidebar');
-            var sidebar = document.querySelector('.sidebar');
-            var main = document.querySelector('.main-content');
-            if (!btn) return;
-            btn.addEventListener('click', function(){
-                sidebar.classList.toggle('collapsed');
+        const menuItems = document.querySelectorAll('.menu-item a');
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    toggleSidebar();
+                }
             });
-        })();
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768 && sidebar.classList.contains('active')) {
+                toggleSidebar();
+            }
+        });
     </script>
 </body>
 </html>

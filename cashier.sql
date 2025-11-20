@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 20, 2025 at 03:59 AM
+-- Generation Time: Nov 20, 2025 at 09:23 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -83,7 +83,15 @@ INSERT INTO `audit_log` (`id`, `user_id`, `username`, `action`, `ip_address`, `t
 (40, 1, 'admin', 'Kas Masuk #001/KT-MSL/XI/2025: Rp. 19.000.001', '::1', '2025-11-20 08:12:38'),
 (41, 1, 'admin', 'Hapus Kas Masuk #1', '::1', '2025-11-20 08:21:14'),
 (42, 5, 'ngising', 'Login berhasil', '::1', '2025-11-20 08:23:55'),
-(43, 1, 'admin', 'Login berhasil', '::1', '2025-11-20 08:24:15');
+(43, 1, 'admin', 'Login berhasil', '::1', '2025-11-20 08:24:15'),
+(44, 1, 'admin', 'Kas Keluar #002/KK-MSL/XI/2025: Rp. 19.000.000', '::1', '2025-11-20 12:58:29'),
+(45, 1, 'admin', 'Hapus Kas Masuk #7', '::1', '2025-11-20 13:34:06'),
+(46, 1, 'admin', 'Kas Masuk #003/KT-MSL/XI/2025: Rp. 1.999.022.134', '::1', '2025-11-20 13:35:08'),
+(47, 1, 'admin', 'Kas Masuk #004/KT-MSL/XI/2025: Rp. 19.000.001', '::1', '2025-11-20 13:35:32'),
+(48, 1, 'admin', 'Hapus Kas Keluar #8', '::1', '2025-11-20 13:42:22'),
+(49, 1, 'admin', 'Kas Keluar #001/KK-MSL/XI/2025: Rp. 1.900.000', '::1', '2025-11-20 13:42:26'),
+(50, 1, 'admin', 'Kas Keluar #002/KK-MSL/XI/2025: Rp. 190.000', '::1', '2025-11-20 13:43:31'),
+(51, 1, 'admin', 'Kas Keluar #003/KK-MSL/XI/2025: Rp. 190.000', '::1', '2025-11-20 13:45:56');
 
 -- --------------------------------------------------------
 
@@ -120,6 +128,7 @@ INSERT INTO `konfigurasi` (`id`, `nama_perusahaan`, `alamat`, `kota`, `telepon`,
 
 CREATE TABLE `nomor_surat` (
   `id` int(11) NOT NULL,
+  `jenis_dokumen` varchar(20) NOT NULL DEFAULT 'KT-KSK',
   `tahun` int(4) NOT NULL,
   `bulan` int(2) NOT NULL,
   `counter` int(11) NOT NULL DEFAULT 0,
@@ -130,8 +139,30 @@ CREATE TABLE `nomor_surat` (
 -- Dumping data for table `nomor_surat`
 --
 
-INSERT INTO `nomor_surat` (`id`, `tahun`, `bulan`, `counter`, `updated_at`) VALUES
-(1, 2025, 11, 1, '2025-11-20 01:12:38');
+INSERT INTO `nomor_surat` (`id`, `jenis_dokumen`, `tahun`, `bulan`, `counter`, `updated_at`) VALUES
+(1, 'KT-MSL', 2025, 11, 4, '2025-11-20 06:35:32'),
+(2, 'KK-MSL', 2025, 11, 3, '2025-11-20 06:45:56');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `nomor_surat_backup`
+--
+
+CREATE TABLE `nomor_surat_backup` (
+  `id` int(11) NOT NULL DEFAULT 0,
+  `tahun` int(4) NOT NULL,
+  `bulan` int(2) NOT NULL,
+  `counter` int(11) NOT NULL DEFAULT 0,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `nomor_surat_backup`
+--
+
+INSERT INTO `nomor_surat_backup` (`id`, `tahun`, `bulan`, `counter`, `updated_at`) VALUES
+(1, 2025, 11, 2, '2025-11-20 05:58:29');
 
 -- --------------------------------------------------------
 
@@ -194,7 +225,11 @@ CREATE TABLE `transaksi` (
 --
 
 INSERT INTO `transaksi` (`id`, `nomor_surat`, `user_id`, `username`, `jenis_transaksi`, `nominal`, `keterangan`, `tanggal_transaksi`) VALUES
-(7, '001/KT-MSL/XI/2025', 1, 'admin', 'kas_terima', 19000001.00, 'wassapguys', '2025-11-20 08:12:38');
+(9, '003/KT-MSL/XI/2025', 1, 'admin', 'kas_terima', 1999022134.00, 'wassapguys12', '2025-11-20 13:35:08'),
+(10, '004/KT-MSL/XI/2025', 1, 'admin', 'kas_terima', 19000001.00, 'wassapmamen', '2025-11-20 13:35:32'),
+(11, '001/KK-MSL/XI/2025', 1, 'admin', 'kas_keluar', 1900000.00, 'wassapguys1221', '2025-11-20 13:42:26'),
+(12, '002/KK-MSL/XI/2025', 1, 'admin', 'kas_keluar', 190000.00, 'wassapmamen', '2025-11-20 13:43:31'),
+(13, '003/KK-MSL/XI/2025', 1, 'admin', 'kas_keluar', 190000.00, 'wassapguys12', '2025-11-20 13:45:56');
 
 -- --------------------------------------------------------
 
@@ -284,7 +319,7 @@ ALTER TABLE `konfigurasi`
 --
 ALTER TABLE `nomor_surat`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `tahun_bulan` (`tahun`,`bulan`);
+  ADD UNIQUE KEY `unique_nomor` (`jenis_dokumen`,`tahun`,`bulan`);
 
 --
 -- Indexes for table `stok_opname`
@@ -324,7 +359,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `audit_log`
 --
 ALTER TABLE `audit_log`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT for table `konfigurasi`
@@ -336,7 +371,7 @@ ALTER TABLE `konfigurasi`
 -- AUTO_INCREMENT for table `nomor_surat`
 --
 ALTER TABLE `nomor_surat`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `stok_opname`
@@ -354,7 +389,7 @@ ALTER TABLE `stok_opname_detail`
 -- AUTO_INCREMENT for table `transaksi`
 --
 ALTER TABLE `transaksi`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `users`
