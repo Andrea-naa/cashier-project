@@ -6,7 +6,9 @@ $user_id      = $_SESSION['user_id'];
 $username     = $_SESSION['username'];
 $nama_lengkap = $_SESSION['nama_lengkap'];
 
-// List pecahan uang
+// ===========================
+// DEFINISI PECAHAN
+// ===========================
 $fisik_uang_kas = [
     ['no'=>1,'uraian'=>'Seratus Ribuan Kertas','satuan'=>'Lembar','nominal'=>100000],
     ['no'=>2,'uraian'=>'Lima Puluh Ribuan Kertas','satuan'=>'Lembar','nominal'=>50000],
@@ -21,37 +23,59 @@ $fisik_uang_kas = [
     ['no'=>11,'uraian'=>'Satu Ratusan Logam','satuan'=>'Keping','nominal'=>100],
 ];
 
+// ===================================
+// MODE EDIT
+// ===================================
+$edit_mode = false;
+$edit_id   = isset($_GET['edit']) ? intval($_GET['edit']) : 0;
 
-    // alur proses penyimpanan data stok opname
+$edit_data = [];
+$detail_map = [];
 
+if ($edit_id > 0) {
+    $edit_mode = true;
+
+    $get_main = mysqli_query($conn, "SELECT * FROM stok_opname WHERE id = $edit_id");
+    $edit_data = mysqli_fetch_assoc($get_main);
+
+    $get_detail = mysqli_query($conn,
+        "SELECT * FROM stok_opname_detail WHERE stok_opname_id=$edit_id ORDER BY no_urut ASC"
+    );
+
+    while ($d = mysqli_fetch_assoc($get_detail)) {
+        $detail_map[$d['no_urut']] = $d['jumlah'];
+    }
+}
+
+// ===================================
+// SIMPAN (INSERT / UPDATE)
+// ===================================
 if (isset($_POST['simpan'])) {
 
-    // Hitung total fisik uang kas
+    // Hitung pecahan uang kas
     $subtotal_fisik = 0;
     $jumlah_items   = [];
 
     foreach ($fisik_uang_kas as $item) {
-        $field = "jumlah_" . $item['no'];
-        $jumlah = floatval($_POST[$field] ?? 0);
+        $jumlah = floatval($_POST["jumlah_{$item['no']}"] ?? 0);
 
         $jumlah_items[] = [
-            'no'      => $item['no'],
-            'uraian'  => $item['uraian'],
-            'satuan'  => $item['satuan'],
-            'jumlah'  => $jumlah,
-            'nilai'   => $item['nominal']
+            'no'     => $item['no'],
+            'uraian' => $item['uraian'],
+            'satuan' => $item['satuan'],
+            'jumlah' => $jumlah,
+            'nilai'  => $item['nominal']
         ];
 
         $subtotal_fisik += ($jumlah * $item['nominal']);
     }
 
-    // Data tambahan
+    // Input lainnya
     $bon_sementara = floatval($_POST['bon_sementara'] ?? 0);
     $uang_rusak    = floatval($_POST['uang_rusak'] ?? 0);
     $materai       = floatval($_POST['material'] ?? 0);
     $lain_lain     = floatval($_POST['lain_lain'] ?? 0);
 
-    // Hitung total saldo fisik
     $fisik_total = $subtotal_fisik + $bon_sementara + $uang_rusak + $materai + $lain_lain;
 
     // Hitung saldo sistem
@@ -61,49 +85,100 @@ if (isset($_POST['simpan'])) {
             (SELECT IFNULL(SUM(nominal),0) FROM transaksi WHERE jenis_transaksi='kas_keluar')
          AS saldo_sistem"
     );
-    $d = mysqli_fetch_assoc($q_system);
-    $saldo_sistem = $d['saldo_sistem'] ?? 0;
+    $saldo_sistem = mysqli_fetch_assoc($q_system)['saldo_sistem'] ?? 0;
 
-    // Selisih
     $selisih = $fisik_total - $saldo_sistem;
 
- 
-    // menyimpan ke database tabel stok_opname
+    // ============================
+    // INSERT MODE
+    // ============================
+    if (!$edit_mode) {
 
-    $stmt = mysqli_prepare($conn,
-        "INSERT INTO stok_opname 
-         (user_id, username, subtotal_fisik, bon_sementara, uang_rusak, materai, lainnya, fisik_total, saldo_sistem, selisih)
-         VALUES (?,?,?,?,?,?,?,?,?,?)"
-    );
-    mysqli_stmt_bind_param($stmt, 'isdddddddd',
-        $user_id, $username, $subtotal_fisik, $bon_sementara, $uang_rusak,
-        $materai, $lain_lain, $fisik_total, $saldo_sistem, $selisih
-    );
-    mysqli_stmt_execute($stmt);
-    $stok_opname_id = mysqli_insert_id($conn);
-    mysqli_stmt_close($stmt);
-
-  
-    // menyimpan ke database tabel stok_opname_detail
-
-    $stmt2 = mysqli_prepare($conn,
-        "INSERT INTO stok_opname_detail (stok_opname_id, no_urut, uraian, satuan, jumlah, nilai)
-         VALUES (?,?,?,?,?,?)"
-    );
-
-    foreach ($jumlah_items as $it) {
-        mysqli_stmt_bind_param($stmt2, 'iissid',
-            $stok_opname_id, $it['no'], $it['uraian'], $it['satuan'], $it['jumlah'], $it['nilai']
+        $stmt = mysqli_prepare($conn,
+            "INSERT INTO stok_opname 
+                (user_id, username, subtotal_fisik, bon_sementara, uang_rusak, materai, lainnya, fisik_total, saldo_sistem, selisih)
+             VALUES (?,?,?,?,?,?,?,?,?,?)"
         );
-        mysqli_stmt_execute($stmt2);
-    }
-    mysqli_stmt_close($stmt2);
+        mysqli_stmt_bind_param(
+            $stmt,
+            'isdddddddd',
+            $user_id, $username, $subtotal_fisik, $bon_sementara, $uang_rusak,
+            $materai, $lain_lain, $fisik_total, $saldo_sistem, $selisih
+        );
+        mysqli_stmt_execute($stmt);
+        $insert_id = mysqli_insert_id($conn);
+        mysqli_stmt_close($stmt);
 
-    // Redirect
-    header("Location: tabel_stok_opname.php?success=1");
+        // Insert detail
+        $stmt2 = mysqli_prepare($conn,
+            "INSERT INTO stok_opname_detail
+                (stok_opname_id, no_urut, uraian, satuan, jumlah, nilai)
+             VALUES (?,?,?,?,?,?)"
+        );
+
+        foreach ($jumlah_items as $it) {
+            mysqli_stmt_bind_param(
+                $stmt2,
+                'iissid',
+                $insert_id,
+                $it['no'],
+                $it['uraian'],
+                $it['satuan'],
+                $it['jumlah'],
+                $it['nilai']
+            );
+            mysqli_stmt_execute($stmt2);
+        }
+        mysqli_stmt_close($stmt2);
+
+    }
+    // ============================
+    // UPDATE MODE
+    // ============================
+    else {
+
+        mysqli_query($conn,
+            "UPDATE stok_opname SET
+                subtotal_fisik=$subtotal_fisik,
+                bon_sementara=$bon_sementara,
+                uang_rusak=$uang_rusak,
+                materai=$materai,
+                lainnya=$lain_lain,
+                fisik_total=$fisik_total,
+                saldo_sistem=$saldo_sistem,
+                selisih=$selisih
+             WHERE id=$edit_id"
+        );
+
+        // Hapus detail lama
+        mysqli_query($conn, "DELETE FROM stok_opname_detail WHERE stok_opname_id=$edit_id");
+
+        // Insert ulang detail
+        $stmt3 = mysqli_prepare($conn,
+            "INSERT INTO stok_opname_detail
+                (stok_opname_id, no_urut, uraian, satuan, jumlah, nilai)
+             VALUES (?,?,?,?,?,?)"
+        );
+
+        foreach ($jumlah_items as $it) {
+            mysqli_stmt_bind_param(
+                $stmt3,
+                'iissid',
+                $edit_id,
+                $it['no'],
+                $it['uraian'],
+                $it['satuan'],
+                $it['jumlah'],
+                $it['nilai']
+            );
+            mysqli_stmt_execute($stmt3);
+        }
+        mysqli_stmt_close($stmt3);
+    }
+
+    header("Location: tabel_stok_opname.php?saved=1");
     exit;
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -588,10 +663,10 @@ if (isset($_POST['simpan'])) {
 
             <div class="button-group">
                 <button type="submit" name="simpan" class="btn btn-primary">Simpan Risk Opname</button>
-                <button type="button" class="btn btn-secondary">Kembali</button>
+                <button type="button" class="btn btn-secondary"onclick="window.location.href='dashboard.php'">Kembali</button>
             </div>
 
-            <button type="button" class="btn-table">Lihat Tabel</button>
+            <button type="button" class="btn-table" onclick="window.location.href='tabel_stok_opname.php'">Lihat Tabel</button>
         </form>
     </div>
 
@@ -656,29 +731,5 @@ if (isset($_POST['simpan'])) {
             });
         })();
     </script>
-     
-    <?php
-    // Proses form jika di-submit
-    if(isset($_POST['simpan'])) {
-        // Ambil data dari form
-        $bon_sementara = $_POST['bon_sementara'] ?? '';
-        $uang_rusak = $_POST['uang_rusak'] ?? '';
-        $material = $_POST['material'] ?? '';
-        $lain_lain = $_POST['lain_lain'] ?? '';
-        
-        // Proses data jumlah
-        $jumlah_items = [];
-        for($i = 1; $i <= 11; $i++) {
-            $jumlah_items[$i] = $_POST["jumlah_$i"] ?? '';
-        }
-        
-        // Di sini Anda bisa menambahkan logika untuk menyimpan ke database
-        // Contoh:
-        // $query = "INSERT INTO stok_opname ...";
-        // mysqli_query($conn, $query);
-        
-        echo "<script>alert('Data berhasil disimpan!');</script>";
-    }
-    ?>
 </body>
 </html>

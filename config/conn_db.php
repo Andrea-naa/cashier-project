@@ -1,36 +1,194 @@
 <?php
+// Database configuration
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "cashier";
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+// Create connection with error reporting
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-// Check connection
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
+try {
+    $conn = new mysqli($servername, $username, $password, $dbname);
+    $conn->set_charset("utf8mb4");
+} catch (Exception $e) {
+    die("Connection failed: " . $e->getMessage());
 }
-session_start();
-// Fungsi untuk membersihkan input dan mencegah SQL injection
-function clean_input($data) {
+
+// Start session
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// ===================================
+// FUNGSI NOMOR SURAT GLOBAL
+// ===================================
+
+/**
+ * Generate nomor surat berikutnya (GLOBAL untuk semua transaksi)
+ * Format: 001/KODE/XI/2025
+ * 
+ * @param string $kode - Kode surat (KT-MSL, KK-MSL, KAS-MSL)
+ * @return array ['nomor' => 'formatted', 'urut' => 1]
+ */
+function get_next_nomor_surat($kode = 'KT-MSL') {
     global $conn;
+    
+    $tahun = date('Y');
+    $bulan = date('n'); // 1-12
+    
+    // Start transaction
+    mysqli_begin_transaction($conn);
+    
+    try {
+        // Lock row untuk avoid race condition
+        $stmt = $conn->prepare("SELECT counter FROM nomor_surat WHERE tahun = ? AND bulan = ? FOR UPDATE");
+        $stmt->bind_param("ii", $tahun, $bulan);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $stmt->close();
+        
+        if ($row) {
+            // Update counter
+            $counter = intval($row['counter']) + 1;
+            $stmt = $conn->prepare("UPDATE nomor_surat SET counter = ? WHERE tahun = ? AND bulan = ?");
+            $stmt->bind_param("iii", $counter, $tahun, $bulan);
+            $stmt->execute();
+            $stmt->close();
+        } else {
+            // Insert baru untuk bulan/tahun ini
+            $counter = 1;
+            $stmt = $conn->prepare("INSERT INTO nomor_surat (tahun, bulan, counter) VALUES (?, ?, ?)");
+            $stmt->bind_param("iii", $tahun, $bulan, $counter);
+            $stmt->execute();
+            $stmt->close();
+        }
+        
+        // Commit
+        mysqli_commit($conn);
+        
+        // Format nomor
+        $bulan_romawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+        $nomor_formatted = sprintf('%03d/%s/%s/%04d', $counter, $kode, $bulan_romawi[$bulan], $tahun);
+        
+        return [
+            'urut' => $counter,
+            'nomor' => $nomor_formatted,
+            'tahun' => $tahun,
+            'bulan' => $bulan
+        ];
+        
+    } catch (Exception $e) {
+        mysqli_rollback($conn);
+        throw $e;
+    }
+}
+
+/**
+ * Get nomor surat terakhir (untuk display saja)
+ */
+function get_last_nomor_surat() {
+    global $conn;
+    
+    $tahun = date('Y');
+    $bulan = date('n');
+    
+    $stmt = $conn->prepare("SELECT counter FROM nomor_surat WHERE tahun = ? AND bulan = ? LIMIT 1");
+    $stmt->bind_param("ii", $tahun, $bulan);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    
+    if ($row) {
+        $counter = intval($row['counter']);
+        $bulan_romawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+        return sprintf('%03d/%s/%04d', $counter, $bulan_romawi[$bulan], $tahun);
+    }
+    
+    return '000/I/' . $tahun;
+}
+
+// ===================================
+// FUNGSI HELPER
+// ===================================
+
+function clean_input($data) {
     $data = trim($data);
     $data = stripslashes($data);
-    $data = htmlspecialchars($data);
-    $data = $conn->real_escape_string($data);
+    $data = htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
     return $data;
 }
 
-// Fungsi untuk log audit
+function sanitize_sql($data) {
+    global $conn;
+    return $conn->real_escape_string($data);
+}
+
+function rupiah_fmt($n) {
+    return 'Rp. ' . number_format($n, 0, ',', '.');
+}
+
 function log_audit($user_id, $username, $action) {
     global $conn;
-    $timestamp = date('Y-m-d H:i:s');
     $ip_address = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
     
-    $query = "INSERT INTO audit_log (user_id, username, action, ip_address, timestamp) 
-              VALUES ('$user_id', '$username', '$action', '$ip_address', '$timestamp')";
+    $stmt = $conn->prepare("INSERT INTO audit_log (user_id, username, action, ip_address, timestamp) VALUES (?, ?, ?, ?, NOW())");
+    $stmt->bind_param("isss", $user_id, $username, $action, $ip_address);
+    $stmt->execute();
+    $stmt->close();
+}
+
+function check_login() {
+    if (!isset($_SESSION['user_id'])) {
+        header("Location: index.php");
+        exit();
+    }
+}
+
+function check_admin() {
+    global $conn;
+    check_login();
     
-    mysqli_query($conn, $query);
+    $user_id = $_SESSION['user_id'];
+    $stmt = $conn->prepare("SELECT role FROM users WHERE id = ? LIMIT 1");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $stmt->close();
+    
+    if (!$user || stripos($user['role'], 'Administrator') === false) {
+        die("Akses ditolak. Hanya untuk admin.");
+    }
+}
+
+function get_user_role($user_id) {
+    global $conn;
+    $stmt = $conn->prepare("SELECT role FROM users WHERE id = ? LIMIT 1");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $stmt->close();
+    
+    return $user['role'] ?? 'Kasir';
+}
+
+function get_saldo_kas() {
+    global $conn;
+    $query = "SELECT 
+                (SELECT COALESCE(SUM(nominal), 0) FROM transaksi WHERE jenis_transaksi = 'kas_terima') -
+                (SELECT COALESCE(SUM(nominal), 0) FROM transaksi WHERE jenis_transaksi = 'kas_keluar')
+              AS saldo";
+    $result = $conn->query($query);
+    $row = $result->fetch_assoc();
+    return $row['saldo'] ?? 0;
+}
+
+function validate_number($value, $default = 0) {
+    $value = str_replace(['.', ','], ['', '.'], $value);
+    return is_numeric($value) ? floatval($value) : $default;
 }
 ?>
