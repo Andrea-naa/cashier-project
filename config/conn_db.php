@@ -20,12 +20,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// ===================================
-// FUNGSI NOMOR SURAT GLOBAL
-// ===================================
-
 /**
- * Generate nomor surat berikutnya (GLOBAL untuk semua transaksi)
+ * Generate nomor surat berikutnya (INDEPENDENT per menu)
  * Format: 001/KODE/XI/2025
  * 
  * @param string $kode - Kode surat (KT-MSL, KK-MSL, KAS-MSL)
@@ -41,9 +37,9 @@ function get_next_nomor_surat($kode = 'KT-MSL') {
     mysqli_begin_transaction($conn);
     
     try {
-        // Lock row untuk avoid race condition
-        $stmt = $conn->prepare("SELECT counter FROM nomor_surat WHERE tahun = ? AND bulan = ? FOR UPDATE");
-        $stmt->bind_param("ii", $tahun, $bulan);
+        // Lock row untuk avoid race condition - BERDASARKAN JENIS_DOKUMEN
+        $stmt = $conn->prepare("SELECT counter FROM nomor_surat WHERE jenis_dokumen = ? AND tahun = ? AND bulan = ? FOR UPDATE");
+        $stmt->bind_param("sii", $kode, $tahun, $bulan);
         $stmt->execute();
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
@@ -52,15 +48,15 @@ function get_next_nomor_surat($kode = 'KT-MSL') {
         if ($row) {
             // Update counter
             $counter = intval($row['counter']) + 1;
-            $stmt = $conn->prepare("UPDATE nomor_surat SET counter = ? WHERE tahun = ? AND bulan = ?");
-            $stmt->bind_param("iii", $counter, $tahun, $bulan);
+            $stmt = $conn->prepare("UPDATE nomor_surat SET counter = ?, updated_at = NOW() WHERE jenis_dokumen = ? AND tahun = ? AND bulan = ?");
+            $stmt->bind_param("isii", $counter, $kode, $tahun, $bulan);
             $stmt->execute();
             $stmt->close();
         } else {
-            // Insert baru untuk bulan/tahun ini
+            // Insert baru untuk jenis_dokumen/bulan/tahun ini
             $counter = 1;
-            $stmt = $conn->prepare("INSERT INTO nomor_surat (tahun, bulan, counter) VALUES (?, ?, ?)");
-            $stmt->bind_param("iii", $tahun, $bulan, $counter);
+            $stmt = $conn->prepare("INSERT INTO nomor_surat (jenis_dokumen, tahun, bulan, counter) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("siii", $kode, $tahun, $bulan, $counter);
             $stmt->execute();
             $stmt->close();
         }
@@ -76,7 +72,8 @@ function get_next_nomor_surat($kode = 'KT-MSL') {
             'urut' => $counter,
             'nomor' => $nomor_formatted,
             'tahun' => $tahun,
-            'bulan' => $bulan
+            'bulan' => $bulan,
+            'kode' => $kode
         ];
         
     } catch (Exception $e) {
@@ -86,16 +83,19 @@ function get_next_nomor_surat($kode = 'KT-MSL') {
 }
 
 /**
- * Get nomor surat terakhir (untuk display saja)
+ * Get nomor surat terakhir (untuk display saja) - PER MENU
+ * 
+ * @param string $kode - Kode surat (KT-MSL, KK-MSL, KAS-MSL)
+ * @return string - Nomor surat terakhir atau default
  */
-function get_last_nomor_surat() {
+function get_last_nomor_surat($kode = 'KT-MSL') {
     global $conn;
     
     $tahun = date('Y');
     $bulan = date('n');
     
-    $stmt = $conn->prepare("SELECT counter FROM nomor_surat WHERE tahun = ? AND bulan = ? LIMIT 1");
-    $stmt->bind_param("ii", $tahun, $bulan);
+    $stmt = $conn->prepare("SELECT counter FROM nomor_surat WHERE jenis_dokumen = ? AND tahun = ? AND bulan = ? LIMIT 1");
+    $stmt->bind_param("sii", $kode, $tahun, $bulan);
     $stmt->execute();
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
@@ -104,16 +104,14 @@ function get_last_nomor_surat() {
     if ($row) {
         $counter = intval($row['counter']);
         $bulan_romawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
-        return sprintf('%03d/%s/%04d', $counter, $bulan_romawi[$bulan], $tahun);
+        return sprintf('Nomor Terakhir: %03d/%s/%s/%04d', $counter, $kode, $bulan_romawi[$bulan], $tahun);
     }
     
-    return '000/I/' . $tahun;
+    $bulan_romawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+    return sprintf('Nomor Berikutnya: 001/%s/%s/%04d', $kode, $bulan_romawi[$bulan], $tahun);
 }
 
-// ===================================
-// FUNGSI HELPER
-// ===================================
-
+// bagian fungsi umum lainnya
 function clean_input($data) {
     $data = trim($data);
     $data = stripslashes($data);

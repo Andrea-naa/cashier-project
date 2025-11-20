@@ -24,23 +24,23 @@ function terbilang($angka) {
     $temp = "";
     
     if ($angka < 12) {
-        $temp = " " . $huruf[$angka];
+        $temp = $huruf[$angka];
     } else if ($angka < 20) {
         $temp = terbilang($angka - 10) . " belas";
     } else if ($angka < 100) {
-        $temp = terbilang($angka / 10) . " puluh" . terbilang($angka % 10);
+        $temp = terbilang($angka / 10) . " puluh " . terbilang($angka % 10);
     } else if ($angka < 200) {
-        $temp = " seratus" . terbilang($angka - 100);
+        $temp = "seratus " . terbilang($angka - 100);
     } else if ($angka < 1000) {
-        $temp = terbilang($angka / 100) . " ratus" . terbilang($angka % 100);
+        $temp = terbilang($angka / 100) . " ratus " . terbilang($angka % 100);
     } else if ($angka < 2000) {
-        $temp = " seribu" . terbilang($angka - 1000);
+        $temp = "seribu " . terbilang($angka - 1000);
     } else if ($angka < 1000000) {
-        $temp = terbilang($angka / 1000) . " ribu" . terbilang($angka % 1000);
+        $temp = terbilang($angka / 1000) . " ribu " . terbilang($angka % 1000);
     } else if ($angka < 1000000000) {
-        $temp = terbilang($angka / 1000000) . " juta" . terbilang($angka % 1000000);
+        $temp = terbilang($angka / 1000000) . " juta " . terbilang($angka % 1000000);
     } else if ($angka < 1000000000000) {
-        $temp = terbilang($angka / 1000000000) . " milyar" . terbilang(fmod($angka, 1000000000));
+        $temp = terbilang($angka / 1000000000) . " milyar " . terbilang(fmod($angka, 1000000000));
     }
     
     return trim($temp);
@@ -110,7 +110,8 @@ if ($type === 'kas_masuk' || $type === 'kas_keluar') {
     $sen = round(($nominal - $rupiah_bulat) * 100);
     
     // Terbilang hanya untuk rupiah (tanpa sen)
-    $terbilang_text = ucwords(terbilang($rupiah_bulat));
+    $terbilang_raw = terbilang($rupiah_bulat);
+    $terbilang_text = ucfirst($terbilang_raw);
     if ($sen > 0) {
         $terbilang_text .= " koma " . terbilang($sen);
     }
@@ -185,31 +186,39 @@ if ($type === 'kas_masuk' || $type === 'kas_keluar') {
             text-align: right; 
         }
         
-        
         .total-section {
             margin: 15px 0;
             text-align: right;
-            padding-right: 10px;
         }
         .total-label {
             display: inline-block;
-            width: 150px;
             text-align: left;
             font-weight: bold;
+            margin-right: 10px;
         }
         .total-value {
             display: inline-block;
             width: 150px;
             text-align: right;
             font-weight: bold;
+            border: 1px solid #000;
+            padding: 5px 10px;
         }
         
-        .terbilang { 
-            margin: 15px 0; 
+        .terbilang-section {
+            margin: 15px 0;
             line-height: 1.5;
         }
-        .terbilang-underline {
+        .terbilang-label {
+            display: inline-block;
+            vertical-align: top;
+            margin-right: 5px;
+        }
+        .terbilang-value {
+            display: inline-block;
             text-decoration: underline;
+            vertical-align: top;
+            max-width: calc(100% - 80px);
         }
         
         .signature { 
@@ -229,8 +238,7 @@ if ($type === 'kas_masuk' || $type === 'kas_keluar') {
             display: table-cell; 
             width: 25%;
             text-align: center; 
-            vertical-align: top; 
-            // padding: 0 5px;
+            vertical-align: top;
         }
         .sig-label { 
             font-size: 10pt; 
@@ -296,8 +304,9 @@ if ($type === 'kas_masuk' || $type === 'kas_keluar') {
         <span class="total-value">Rp. ' . number_format($nominal, 2, ',', '.') . '</span>
     </div>
     
-    <div class="terbilang">
-        Rp (Huruf) <span class="terbilang-underline">' . htmlspecialchars($terbilang_text) . '</span>
+    <div class="terbilang-section">
+        <span class="terbilang-label">Rp (Huruf)</span>
+        <span class="terbilang-value">' . htmlspecialchars($terbilang_text) . '</span>
     </div>
     
     <div class="signature">
