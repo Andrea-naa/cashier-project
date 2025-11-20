@@ -458,6 +458,7 @@ if ($stmt) {
 
         <!-- Button Group -->
         <div class="button-group">
+            <a href="dashboard.php"><button class="btn btn-primary">Kembali ke Dashboard</button></a>
             <a href="stok_opname.php"><button class="btn btn-primary">Buat Stok Opname Baru</button></a>
             <a href="export_pdf.php" target="_blank"><button class="btn btn-export">Export Semua ke PDF</button></a>
         </div>
