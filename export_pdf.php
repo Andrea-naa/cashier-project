@@ -373,22 +373,115 @@ elseif ($type === 'stok_opname') {
             font-size: 9pt; 
             color: #000; 
         }
-        .header { text-align: center; margin-bottom: 15px; }
-        .title { font-size: 14pt; font-weight: bold; }
-        .info-box { text-align: right; margin-bottom: 10px; font-size: 9pt; }
-        .saldo-box { text-align: right; background: #f0f0f0; padding: 8px; margin: 10px 0; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; font-size: 8pt; margin-bottom: 10px; }
-        th, td { border: 1px solid #000; padding: 5px; }
-        th { background-color: #e0e0e0; font-weight: bold; text-align: center; }
-        .no-col { width: 30px; text-align: center; }
-        .amount-col { width: 120px; text-align: right; }
-        .total-row { background-color: #f5f5f5; font-weight: bold; }
-        .section-title { font-weight: bold; margin: 10px 0 5px 0; font-size: 9pt; }
-        .signature { margin-top: 30px; display: table; width: 100%; font-size: 8pt; }
-        .sig-box { display: table-cell; width: 25%; text-align: center; vertical-align: top; }
-        .sig-label { margin-bottom: 50px; display: block; }
-        .sig-name { border-top: 1px solid #000; display: inline-block; padding-top: 3px; }
-    </style>
+        .header { 
+        text-align: 
+        center; 
+        margin-bottom: 15px; 
+        }
+
+        .title { 
+        font-size: 14pt; 
+        font-weight: bold; 
+        }
+
+        .info-box { 
+        text-align: right; 
+        margin-bottom: 10px; 
+        font-size: 9pt; 
+        }
+
+        .saldo-box { 
+        text-align: right; 
+        background: #f0f0f0; 
+        padding: 8px; 
+        margin: 10px 0; 
+        font-weight: bold; 
+        }
+
+        table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        font-size: 8pt; 
+        margin-bottom: 10px; 
+        }
+
+        th, td { 
+        border: 1px solid #000; 
+        padding: 5px; 
+        }
+
+        th { 
+        background-color: #e0e0e0; 
+        font-weight: bold; 
+        text-align: center; 
+        }
+
+        .no-col { 
+        width: 30px; 
+        text-align: center; 
+        }
+
+        .amount-col { 
+        width: 120px; 
+        text-align: right; 
+        }
+
+        .total-row { 
+        background-color: #f5f5f5; 
+        font-weight: bold; 
+        }
+
+        .section-title { 
+        font-weight: bold; 
+        margin: 10px 0 5px 0; 
+        font-size: 9pt; 
+        }
+        
+        .signature { 
+            margin-top: 40px; 
+            display: table; 
+            width: 100%;
+            max-width: 2000px;
+        }
+        .sig-box { 
+            display: table-cell; 
+            width: 25%; 
+            text-align: center; 
+            vertical-align: top; 
+            padding: 0 5px;
+        }
+        .sig-box1 { 
+            display: table-cell; 
+            width: 25%;
+            text-align: center; 
+            vertical-align: top;
+        }
+        .sig-label { 
+            font-size: 10pt; 
+            margin-bottom: 60px; 
+            display: block; 
+        }
+        .sig-label1 {
+            font-size: 10pt;
+            margin-bottom: 60px; 
+            display: block;
+            margin-left: 100px;
+        }
+        .sig-name { 
+            font-size: 10pt; 
+            border-bottom: 1px solid #000; 
+            display: inline-block; 
+            padding: 2px 10px; 
+            min-width: 120px;
+        }
+        .sig-name1 { 
+            font-size: 10pt; 
+            border-bottom: 1px solid #000; 
+            display: inline-block; 
+            padding: 2px 10px; 
+            min-width: 120px;
+            margin-top: 76px;
+        }    </style>
     </head><body>';
     
     $html .= '<div style="font-size:9pt;">' . htmlspecialchars($config['nama_perusahaan']) . '</div>
@@ -471,20 +564,19 @@ elseif ($type === 'stok_opname') {
     
     <div class="signature">
         <div class="sig-box">
+            <div class="sig-label">Diterima Oleh :</div>
+            <span class="sig-name">' . htmlspecialchars($config['ttd_jabatan_1']) . '</span>
+        </div>
+        <div class="sig-box1">
+            <div class="sig-label1">Dicek Oleh :</div>
+            <span class="sig-name">' . htmlspecialchars($config['ttd_jabatan_2']) . '</span>
+        </div>
+        <div class="sig-box1">
+            <span class="sig-name1">' . htmlspecialchars($config['ttd_jabatan_3']) . '</span>
+        </div>
+        <div class="sig-box">
             <div class="sig-label">Disetujui Oleh :</div>
-            <div class="sig-name">' . htmlspecialchars($config['ttd_jabatan_4']) . '</div>
-        </div>
-        <div class="sig-box">
-            <div class="sig-label">Dicek Oleh :</div>
-            <div class="sig-name">' . htmlspecialchars($config['ttd_jabatan_3']) . '</div>
-        </div>
-        <div class="sig-box">
-            <div class="sig-label">Dibuat Oleh :</div>
-            <div class="sig-name">' . htmlspecialchars($config['ttd_jabatan_2']) . '</div>
-        </div>
-        <div class="sig-box">
-            <div class="sig-label">Dibuat Oleh :</div>
-            <div class="sig-name">' . htmlspecialchars($config['ttd_jabatan_1']) . '</div>
+            <span class="sig-name">' . htmlspecialchars($config['ttd_jabatan_4']) . '</span>
         </div>
     </div>
     </body></html>';
@@ -503,29 +595,194 @@ elseif ($type === 'buku_kas') {
     $rows = [];
     while ($r = mysqli_fetch_assoc($res)) $rows[] = $r;
     
+    // Generate nomor surat untuk buku kas
+    $bulan_romawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+    $tanggal_to = strtotime($date_to);
+    $nomor_buku = sprintf('001/KAS-MSL/%s/%04d', $bulan_romawi[date('n', $tanggal_to)], date('Y', $tanggal_to));
+    $tanggal_formatted = date('d-M-Y', $tanggal_to);
+    
     $html = '<!doctype html><html><head><meta charset="utf-8">
     <style>
-        @page { margin: 15mm; }
+        @page { margin: 20mm 15mm; }
         body { 
             font-family: "Times New Roman", Times, serif; 
-            font-size: 9pt; 
+            font-size: 10pt; 
             color: #000; 
         }
-        .header { text-align: center; margin-bottom: 15px; }
-        .title { font-size: 14pt; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; font-size: 8pt; }
-        th, td { border: 1px solid #000; padding: 5px; }
-        th { background-color: #e0e0e0; font-weight: bold; text-align: center; }
-        .amount-col { text-align: right; }
-        .total-row { background-color: #f5f5f5; font-weight: bold; }
+        
+        /* Header */
+        .header-row { 
+            display: table; 
+            width: 100%; 
+            margin-bottom: 20px; 
+        }
+        .header-left { 
+            display: table-cell; 
+            width: 30%; 
+            vertical-align: top; 
+            font-size: 10pt;
+            line-height: 1.4;
+        }
+        .header-center { 
+            display: table-cell; 
+            width: 40%; 
+            text-align: center; 
+            vertical-align: top; 
+        }
+        .header-right { 
+            display: table-cell; 
+            width: 30%; 
+            text-align: left; 
+            vertical-align: top; 
+            font-size: 10pt;
+            line-height: 1.6;
+        }
+        .title { 
+            font-size: 16pt; 
+            font-weight: bold; 
+            margin: 0;
+            text-decoration: underline;
+        }
+        
+        /* Table */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 9pt; 
+            margin-bottom: 20px;
+        }
+        th, td { 
+            border: 1px solid #000; 
+            padding: 6px 8px; 
+        }
+        th { 
+            background-color: #e0e0e0; 
+            font-weight: bold; 
+            text-align: center; 
+        }
+        .amount-col { 
+            text-align: right; 
+        }
+        .text-col {
+            text-align: left;
+        }
+        
+        /* Summary Section */
+        .summary-divider {
+            border-top: 2px solid #000;
+            margin: 15px 0 10px 0;
+        }
+        .summary-row {
+            display: table;
+            width: 100%;
+            margin: 8px 0;
+            font-size: 10pt;
+        }
+        .summary-label {
+            display: table-cell;
+            width: 50%;
+            font-weight: bold;
+            padding-right: 10px;
+        }
+        .summary-values {
+            display: table-cell;
+            width: 50%;
+            text-align: right;
+        }
+        .summary-values span {
+            display: inline-block;
+            width: 48%;
+            text-align: right;
+            font-weight: bold;
+        }
+        .balance-row {
+            border-top: 2px solid #000;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        
+        /* Footer */
+        .footer-location {
+            text-align: right;
+            margin: 20px 0 30px 0;
+            font-size: 10pt;
+            font-weight: bold;
+        }
+        .signature { 
+            margin-top: 40px; 
+            display: table; 
+            width: 100%;
+            max-width: 2000px;
+        }
+        .sig-box { 
+            display: table-cell; 
+            width: 25%; 
+            text-align: center; 
+            vertical-align: top; 
+            padding: 0 5px;
+        }
+        .sig-box1 { 
+            display: table-cell; 
+            width: 25%;
+            text-align: center; 
+            vertical-align: top;
+        }
+        .sig-label { 
+            font-size: 10pt; 
+            margin-bottom: 60px; 
+            display: block; 
+        }
+        .sig-label1 {
+            font-size: 10pt;
+            margin-bottom: 60px; 
+            display: block;
+            margin-left: 100px;
+        }
+        .sig-name { 
+            font-size: 10pt; 
+            border-bottom: 1px solid #000; 
+            display: inline-block; 
+            padding: 2px 10px; 
+            min-width: 120px;
+        }
+        .sig-name1 { 
+            font-size: 10pt; 
+            border-bottom: 1px solid #000; 
+            display: inline-block; 
+            padding: 2px 10px; 
+            min-width: 120px;
+            margin-top: 76px;
+        }
+        .sig-role {
+            font-size: 9pt;
+            margin-top: 3px;
+            display: block;
+        }
     </style>
     </head><body>';
     
-    $html .= '<div style="font-size:9pt;">' . htmlspecialchars($config['nama_perusahaan']) . '</div>
-    <div class="header"><div class="title">BUKU KAS HARIAN</div></div>
+    // Header
+    $html .= '<div class="header-row">
+        <div class="header-left">' . htmlspecialchars($config['nama_perusahaan']) . '</div>
+        <div class="header-center">
+            <div class="title">BUKU KAS HARIAN</div>
+        </div>
+        <div class="header-right">
+            <strong>Nomor</strong> : ' . htmlspecialchars($nomor_buku) . '<br>
+            <strong>Tanggal</strong> : ' . htmlspecialchars($tanggal_formatted) . '
+        </div>
+    </div>';
     
-    <table>
-        <thead><tr><th>BUKTI KAS</th><th>URAIAN</th><th>DEBET</th><th>KREDIT</th></tr></thead>
+    // Table
+    $html .= '<table>
+        <thead>
+            <tr>
+                <th style="width: 120px;">BUKTI KAS</th>
+                <th>URAIAN</th>
+                <th style="width: 140px;">DEBET</th>
+                <th style="width: 140px;">KREDIT</th>
+            </tr>
+        </thead>
         <tbody>';
     
     $total_debet = 0;
@@ -541,30 +798,70 @@ elseif ($type === 'buku_kas') {
         $total_kredit += $kredit;
         
         $html .= '<tr>
-            <td>' . htmlspecialchars($nomor) . '</td>
-            <td>' . htmlspecialchars($row['keterangan']) . '</td>
+            <td style="text-align:center;">' . htmlspecialchars($nomor) . '</td>
+            <td class="text-col">' . htmlspecialchars($row['keterangan']) . '</td>
             <td class="amount-col">' . ($debet > 0 ? number_format($debet, 2, ',', '.') : '-') . '</td>
             <td class="amount-col">' . ($kredit > 0 ? number_format($kredit, 2, ',', '.') : '-') . '</td>
         </tr>';
     }
     
+    $html .= '</tbody></table>';
+    
+    // Summary Section
     $saldo = $total_debet - $total_kredit;
     
-    $html .= '</tbody></table>
+    $html .= '<div class="summary-divider"></div>
     
-    <div style="margin-top:15px; text-align:right;">
-        <strong>Jumlah Transaksi:</strong> Rp. ' . number_format($total_debet, 2, ',', '.') . ' | Rp. ' . number_format($total_kredit, 2, ',', '.') . '<br>
-        <strong>Saldo:</strong> Rp. ' . number_format($saldo, 2, ',', '.') . '<br>
-        <strong>Balance:</strong> Rp. ' . number_format($total_debet, 2, ',', '.') . '
+    <div class="summary-row">
+        <div class="summary-label">Jumlah Transaksi</div>
+        <div class="summary-values">
+            <span>' . number_format($total_debet, 2, ',', '.') . '</span>
+            <span>' . number_format($total_kredit, 2, ',', '.') . '</span>
+        </div>
     </div>
+    
+    <div class="summary-row">
+        <div class="summary-label">Saldo Per Tanggal ' . date('d-F-Y', strtotime($date_to)) . '</div>
+        <div class="summary-values">
+            <span></span>
+            <span>' . number_format($saldo, 2, ',', '.') . '</span>
+        </div>
+    </div>
+    
+    <div class="summary-row balance-row">
+        <div class="summary-label">Balance</div>
+        <div class="summary-values">
+            <span>' . number_format($total_debet, 2, ',', '.') . '</span>
+            <span>' . number_format($total_debet, 2, ',', '.') . '</span>
+        </div>
+    </div>';
+    
+    // Footer
+    $html .= '<div class="footer-location">' . htmlspecialchars($config['kota']) . ', ' . date('d-F-Y', strtotime($date_to)) . '</div>
+    
+    <div class="signature">
+        <div class="sig-box">
+            <div class="sig-label">Diterima Oleh :</div>
+            <span class="sig-name">' . htmlspecialchars($config['ttd_jabatan_1']) . '</span>
+        </div>
+        <div class="sig-box1">
+            <div class="sig-label1">Dicek Oleh :</div>
+            <span class="sig-name">' . htmlspecialchars($config['ttd_jabatan_2']) . '</span>
+        </div>
+        <div class="sig-box1">
+            <span class="sig-name1">' . htmlspecialchars($config['ttd_jabatan_3']) . '</span>
+        </div>
+        <div class="sig-box">
+            <div class="sig-label">Disetujui Oleh :</div>
+            <span class="sig-name">' . htmlspecialchars($config['ttd_jabatan_4']) . '</span>
+        </div>
+    </div>
+    
     </body></html>';
     
-    $filename = 'Buku_Kas_Harian_' . date('Ymd') . '.pdf';
+    $filename = 'Buku_Kas_Harian_' . date('Ymd', strtotime($date_to)) . '.pdf';
 }
 
-else {
-    die('ERROR: Type tidak dikenali. Gunakan: kas_masuk, kas_keluar, stok_opname, atau buku_kas');
-}
 
 // GENERATE PDF
 try {
