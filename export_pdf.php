@@ -423,7 +423,6 @@ elseif ($type === 'stok_opname') {
         .saldo-label {
             display: table-cell;
             width: 70%;
-            font-weight: bold;
             font-size: 10pt;
             vertical-align: middle;
         }
@@ -636,7 +635,6 @@ elseif ($type === 'stok_opname') {
             <div style="font-size:9pt; margin-top:5px;">Tanggal ' . htmlspecialchars($tanggal) . '</div>
         </div>
         <div class="header-right">
-            <strong>Nomor</strong> : ' . htmlspecialchars($nomor) . '<br>
         </div>
     </div>';
     
