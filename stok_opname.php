@@ -22,6 +22,15 @@ $fisik_uang_kas = [
     ['no'=>11,'uraian'=>'Satu Ratusan Logam','satuan'=>'Keping','nominal'=>100],
 ];
 
+// Hitung saldo sistem (dipindahkan ke atas agar bisa dipakai di JavaScript)
+$q_system = mysqli_query($conn,
+    "SELECT 
+        (SELECT IFNULL(SUM(nominal),0) FROM transaksi WHERE jenis_transaksi='kas_terima') -
+        (SELECT IFNULL(SUM(nominal),0) FROM transaksi WHERE jenis_transaksi='kas_keluar')
+     AS saldo_sistem"
+);
+$saldo_sistem = mysqli_fetch_assoc($q_system)['saldo_sistem'] ?? 0;
+
 // aksi edit data
 $edit_mode = false;
 $edit_id   = isset($_GET['edit']) ? intval($_GET['edit']) : 0;
@@ -68,23 +77,16 @@ if (isset($_POST['simpan'])) {
     // Input lainnya
     $bon_sementara = floatval($_POST['bon_sementara'] ?? 0);
     $uang_rusak    = floatval($_POST['uang_rusak'] ?? 0);
-    $materai       = floatval($_POST['material'] ?? 0);
+    $materai = floatval($_POST['material'] ?? 0); // Simpan jumlah lembar
     $lain_lain     = floatval($_POST['lain_lain'] ?? 0);
 
-    $fisik_total = $subtotal_fisik + $bon_sementara + $uang_rusak + $materai + $lain_lain;
+    // Kalikan materai dengan 10.000 untuk perhitungan fisik_total
+    $fisik_total = $subtotal_fisik + $bon_sementara + $uang_rusak + ($materai * 10000) + $lain_lain;
 
-    // Hitung saldo sistem
-    $q_system = mysqli_query($conn,
-        "SELECT 
-            (SELECT IFNULL(SUM(nominal),0) FROM transaksi WHERE jenis_transaksi='kas_terima') -
-            (SELECT IFNULL(SUM(nominal),0) FROM transaksi WHERE jenis_transaksi='kas_keluar')
-         AS saldo_sistem"
-    );
-    $saldo_sistem = mysqli_fetch_assoc($q_system)['saldo_sistem'] ?? 0;
+    // Selisih = Saldo Buku Kas - Jumlah Saldo Fisik
+    $selisih = $saldo_sistem - $fisik_total;
 
-    $selisih = $fisik_total - $saldo_sistem;
-
-    // akski simpan ke database
+    // aksi simpan ke database
     if (!$edit_mode) {
 
         $nomor_data = get_next_nomor_surat('KAS-MSL');
@@ -442,6 +444,11 @@ if (isset($_POST['simpan'])) {
             text-align: center;
         }
 
+        .total-row span:last-child {
+            flex: 1;
+            text-align: center;
+        }
+
         .form-group {
             margin-bottom: 15px;
             display: flex;
@@ -526,7 +533,6 @@ if (isset($_POST['simpan'])) {
             gap: 30px;
         }
 
-        /* Left Section */
         .footer-left {
             display: flex;
             flex-direction: row;
@@ -560,7 +566,6 @@ if (isset($_POST['simpan'])) {
             color: black;
         }
 
-        /* Right Section */
         .footer-right {
             width: 40%;
             display: flex;
@@ -591,7 +596,6 @@ if (isset($_POST['simpan'])) {
             opacity: 0.7;
         }
         
-        /* RESPONSIVE */
         @media (max-width: 780px) {
             .footer-content {
                 flex-direction: column;
@@ -657,7 +661,13 @@ if (isset($_POST['simpan'])) {
     </style>
     <script>
         function formatRupiah(angka) {
-            return 'Rp. ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + ',00';
+            // Handle negative numbers
+            let prefix = '';
+            if (angka < 0) {
+                prefix = '-';
+                angka = Math.abs(angka);
+            }
+            return prefix + 'Rp. ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + ',00';
         }
 
         function hitungTotal() {
@@ -673,16 +683,21 @@ if (isset($_POST['simpan'])) {
             let bonSementara = parseFloat(document.getElementsByName('bon_sementara')[0].value) || 0;
             let uangRusak = parseFloat(document.getElementsByName('uang_rusak')[0].value) || 0;
             let material = parseFloat(document.getElementsByName('material')[0].value) || 0;
+            let materialNilai = material * 10000; // Kalikan dengan 10.000
             let lainLain = parseFloat(document.getElementsByName('lain_lain')[0].value) || 0;
             
             // Hitung jumlah saldo fisik
-            let saldoFisik = totalFisik + bonSementara + uangRusak + material + lainLain;
+            let saldoFisik = totalFisik + bonSementara + uangRusak + materialNilai + lainLain;
+            
+            // Ambil saldo buku kas dari PHP
+            let saldoBukuKas = <?php echo $saldo_sistem; ?>;
+            
+            // Hitung selisih = Saldo Buku Kas - Jumlah Saldo Fisik
+            let selisih = saldoBukuKas - saldoFisik;
             
             document.getElementById('total-fisik').textContent = formatRupiah(totalFisik);
             document.getElementById('saldo-fisik').textContent = formatRupiah(saldoFisik);
-            
-            // Hitung selisih (misalnya dari saldo buku - saldo fisik)
-            let selisih = 0;
+            document.getElementById('saldo-buku').textContent = formatRupiah(saldoBukuKas);
             document.getElementById('selisih').textContent = formatRupiah(selisih);
         }
 
@@ -796,7 +811,7 @@ if (isset($_POST['simpan'])) {
 
                     <div class="form-group">
                         <label>IV. Materai (Lembar @10.000)</label>
-                        <input type="number" name="material" class="input-field" min="0" step="0.01" value="<?php echo $edit_data['materai'] ?? 0; ?>">
+                        <input type="number" name="material" class="input-field" min="0" step="1" value="<?php echo $edit_data['materai'] ?? 0; ?>">
                     </div>
 
                     <div class="form-group">
@@ -807,6 +822,11 @@ if (isset($_POST['simpan'])) {
                     <div class="total-row">
                         <span>JUMLAH SALDO FISIK</span>
                         <span class="total-value" id="saldo-fisik">Rp. 0,00</span>
+                    </div>
+
+                    <div class="total-row">
+                        <span>SALDO BUKU KAS</span>
+                        <span class="total-value" id="saldo-buku">Rp. 0,00</span>
                     </div>
 
                     <div class="total-row" style="border-bottom: none;">
@@ -832,70 +852,3 @@ if (isset($_POST['simpan'])) {
                         <div class="footer-text">
                             <h2>KALIMANTAN SAWIT KUSUMA GROUP</h2>
                             <p class="subtitle">Oil Palm Plantation & Industries</p>
-                            <p class="description">
-                                Kalimantan Sawit Kusuma (KSK) adalah sebuah grup perusahaan yang memiliki beberapa 
-                                perusahaan afiliasi yang bergerak di berbagai bidang usaha, yaitu perkebunan kelapa 
-                                sawit dan hortikultura, kontraktor alat berat dan pembangunan perkebunan serta jasa 
-                                transportasi laut.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="footer-right">
-                        <a href="https://kskgroup.co.id" target="_blank" class="footer-item link-item">
-                            <img src="assets/gambar/icon/browser.png" class="footer-icon">
-                            <span>kskgroup.co.id</span>
-                        </a>
-
-                        <a href="tel:+62561733035" class="footer-item link-item">
-                            <img src="assets/gambar/icon/telfon.png" class="footer-icon">
-                            <span>
-                                T. (+62 561) 733 035 (hunting)<br>
-                                F. (+62 561) 733 014
-                            </span>
-                        </a>
-
-                        <a href="https://maps.app.goo.gl/MdtmPLQTTagexjF59" target="_blank" class="footer-item link-item">
-                            <img src="assets/gambar/icon/lokasi.png" class="footer-icon">
-                            <span>
-                                Jl. W.R Supratman No. 42 Pontianak,<br>
-                                Kalimantan Barat 78122
-                            </span>
-                        </a>
-                    </div>
-                </div>
-            </footer>
-        </div>
-    </div>
-
-    <script>
-        // sidebar script
-        const menuBurger = document.getElementById('menuBurger');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
-
-        function toggleSidebar() {
-            sidebar.classList.toggle('active');
-            sidebarOverlay.classList.toggle('active');
-        }
-
-        menuBurger.addEventListener('click', toggleSidebar);
-        sidebarOverlay.addEventListener('click', toggleSidebar);
-
-        const menuItems = document.querySelectorAll('.menu-item a');
-        menuItems.forEach(item => {
-            item.addEventListener('click', () => {
-                if (window.innerWidth <= 768) {
-                    toggleSidebar();
-                }
-            });
-        });
-
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 768 && sidebar.classList.contains('active')) {
-                toggleSidebar();
-            }
-        });
-    </script>
-</body>
-</html>
