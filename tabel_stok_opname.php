@@ -300,15 +300,16 @@ if ($stmt) {
         }
 
         .btn {
-            padding: 13px 20px;
+            padding: 10px 18px;
             border-radius: 6px;
             cursor: pointer;
-            font-weight: 600;
+            font-weight: bold;
             border: none;
-            transition: 0.25s;
-            font-size: 14px;
+            transition: all 0.25s;
+            font-size: 13px;
             text-decoration: none;
             display: inline-block;
+            text-align: center;
         }
 
         .btn-primary {
@@ -323,8 +324,7 @@ if ($stmt) {
         .btn-edit {
             background: #009844;
             color: #fff;
-            padding: 8px 19px;
-            font-size: 13px;
+            min-width: 70px;
         }
 
         .btn-edit:hover {
@@ -332,21 +332,19 @@ if ($stmt) {
         }
 
         .btn-delete {
-            background: #DFDFDFFF;
+            background: #dcdcdc;
             color: black;
-            padding: 8px 12px;
-            font-size: 13px;
+            min-width: 70px;
         }
 
         .btn-delete:hover {
-            background: #A8A8A8FF;
+            background: #c7c7c7;
         }
 
         .btn-pdf {
             background: #009844;
             color: white;
-            padding: 8px 16px;
-            font-size: 13px;
+            min-width: 70px;
         }
 
         .btn-pdf:hover {
@@ -374,13 +372,18 @@ if ($stmt) {
             padding: 12px 10px;
             font-size: 14px;
             font-weight: 600;
-            text-align: left;
+            text-align: center;
         }
 
         td {
             border: 1px solid #ddd;
             padding: 10px;
             font-size: 13px;
+            text-align: left;
+        }
+        
+        td:first-child {
+            text-align: center;
         }
 
         tbody tr:hover {
@@ -389,8 +392,7 @@ if ($stmt) {
 
         .actions {
             display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
+            gap: 6px;
             justify-content: center;
             align-items: center;
         }
@@ -398,11 +400,6 @@ if ($stmt) {
         .actions form {
             display: inline;
             margin: 0;
-        }
-
-        .actions a,
-        .actions form {
-            flex-shrink: 0;
         }
 
         /* PAGINATION  */
@@ -545,6 +542,15 @@ if ($stmt) {
                 width: 100%;
                 left: -100%;
             }
+            
+            .actions {
+                flex-direction: column;
+                gap: 6px;
+            }
+            
+            .btn {
+                width: 100%;
+            }
         }
 
         @media(max-width: 768px) {
@@ -558,10 +564,6 @@ if ($stmt) {
 
             .header h1 {
                 font-size: 18px;
-            }
-
-            .actions {
-                flex-direction: column;
             }
         }
     </style>
@@ -633,10 +635,10 @@ if ($stmt) {
                 <!-- Button Group -->
                 <div class="button-group">
                     <a href="dashboard.php" class="btn btn-primary">
-                        <i class="fas fa-arrow-left"></i> Kembali ke Dashboard
+                        Kembali ke Dashboard
                     </a>
                     <a href="stok_opname.php" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Buat Stok Opname Baru
+                        Buat Stok Opname Baru
                     </a>
                 </div>
 
@@ -648,12 +650,12 @@ if ($stmt) {
                                 <th style="width:60px; text-align:center;">ID</th>
                                 <th>Nomor Surat</th>
                                 <th>User</th>
-                                <th style="text-align:right;">Subtotal</th>
-                                <th style="text-align:right;">Total Fisik</th>
-                                <th style="text-align:right;">Saldo Sistem</th>
-                                <th style="text-align:right;">Selisih</th>
-                                <th style="text-align:center;">Tanggal</th>
-                                <th style="width:250px; text-align:center;">Aksi</th>
+                                <th>Subtotal</th>
+                                <th>Total Fisik</th>
+                                <th>Saldo Sistem</th>
+                                <th>Selisih</th>
+                                <th>Tanggal</th>
+                                <th style="width:220px; text-align:center;">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -667,24 +669,24 @@ if ($stmt) {
                                     <td style="text-align:center;"><?= intval($r['id']); ?></td>
                                     <td><?= htmlspecialchars($r['nomor_surat'] ?? '-'); ?></td>
                                     <td><?= htmlspecialchars($r['username']); ?></td>
-                                    <td style="text-align:right;"><?= 'Rp. ' . number_format($r['subtotal_fisik'], 0, ',', '.'); ?></td>
-                                    <td style="text-align:right;"><?= 'Rp. ' . number_format($r['fisik_total'], 0, ',', '.'); ?></td>
-                                    <td style="text-align:right;"><?= 'Rp. ' . number_format($r['saldo_sistem'], 0, ',', '.'); ?></td>
-                                    <td style="text-align:right;"><?= 'Rp. ' . number_format($r['selisih'], 0, ',', '.'); ?></td>
-                                    <td style="text-align:center;"><?= date('d-M-Y H:i', strtotime($r['tanggal_opname'])); ?></td>
+                                    <td><?= 'Rp. ' . number_format($r['subtotal_fisik'], 0, ',', '.'); ?></td>
+                                    <td><?= 'Rp. ' . number_format($r['fisik_total'], 0, ',', '.'); ?></td>
+                                    <td><?= 'Rp. ' . number_format($r['saldo_sistem'], 0, ',', '.'); ?></td>
+                                    <td><?= 'Rp. ' . number_format($r['selisih'], 0, ',', '.'); ?></td>
+                                    <td><?= date('d-M-Y H:i', strtotime($r['tanggal_opname'])); ?></td>
                                     <td>
                                         <div class="actions">
-                                            <a href="stok_opname.php?edit=<?= intval($r['id']); ?>" class="btn btn-edit" title="Edit">
-                                                <i class="fas fa-edit"></i> Edit
+                                            <a href="stok_opname.php?edit=<?= intval($r['id']); ?>" class="btn btn-edit">
+                                                Edit
                                             </a>
-                                            <form method="post" onsubmit="return confirm('Hapus data ini?');" style="display:inline;">
+                                            <form method="post" onsubmit="return confirm('Hapus data ini?');">
                                                 <input type="hidden" name="delete_id" value="<?= intval($r['id']); ?>">
-                                                <button type="submit" class="btn btn-delete" title="Hapus">
-                                                    <i class="fas fa-trash"></i> Delete
+                                                <button type="submit" class="btn btn-delete">
+                                                    Delete
                                                 </button>
                                             </form>
-                                            <a href="export_pdf.php?type=stok_opname&id=<?= intval($r['id']); ?>" target="_blank" class="btn btn-pdf" title="Export PDF">
-                                                <i class="fas fa-file-pdf"></i> PDF
+                                            <a href="export_pdf.php?type=stok_opname&id=<?= intval($r['id']); ?>" target="_blank" class="btn btn-pdf">
+                                                PDF
                                             </a>
                                         </div>
                                     </td>
