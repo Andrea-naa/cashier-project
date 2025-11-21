@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
             // bagian tombol simpan
             
             // Generate nomor surat GLOBAL
-            $nomor_data = get_next_nomor_surat('KK-MSL');
+            $nomor_data = get_next_nomor_surat('KK-KSK');
             $nomor_surat = $nomor_data['nomor'];
             
             $stmt = mysqli_prepare($conn, "INSERT INTO transaksi (user_id, username, jenis_transaksi, nominal, keterangan, nomor_surat, tanggal_transaksi) VALUES (?, ?, 'kas_keluar', ?, ?, ?, NOW())");
@@ -118,7 +118,7 @@ if ($res) {
 }
 
 // Nomor terakhir
-$last_nomor = get_last_nomor_surat('KK-MSL');
+$last_nomor = get_last_nomor_surat('KK-KSK');
 ?>
 
 <!DOCTYPE html>

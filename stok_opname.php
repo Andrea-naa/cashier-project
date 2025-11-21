@@ -89,7 +89,7 @@ if (isset($_POST['simpan'])) {
     // aksi simpan ke database
     if (!$edit_mode) {
 
-        $nomor_data = get_next_nomor_surat('KAS-MSL');
+        $nomor_data = get_next_nomor_surat('KAS-KSK');
         $nomor_surat = $nomor_data['nomor'];
 
         $stmt = mysqli_prepare($conn,

@@ -21,23 +21,23 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 /**
- * Generate nomor surat berikutnya (INDEPENDENT per menu)
+ * Generate nomor surat berikutnya (per menu)
  * Format: 001/KODE/XI/2025
  * 
- * @param string $kode - Kode surat (KT-MSL, KK-MSL, KAS-MSL)
+ * @param string $kode - Kode surat (KT-KSK, KK-KSK, KAS-KSK)
  * @return array ['nomor' => 'formatted', 'urut' => 1]
  */
-function get_next_nomor_surat($kode = 'KT-MSL') {
+function get_next_nomor_surat($kode = 'KT-KSK') {
     global $conn;
     
     $tahun = date('Y');
     $bulan = date('n'); // 1-12
     
-    // Start transaction
+    // mulai transaksi
     mysqli_begin_transaction($conn);
     
     try {
-        // Lock row untuk avoid race condition - BERDASARKAN JENIS_DOKUMEN
+        // Lock row for update
         $stmt = $conn->prepare("SELECT counter FROM nomor_surat WHERE jenis_dokumen = ? AND tahun = ? AND bulan = ? FOR UPDATE");
         $stmt->bind_param("sii", $kode, $tahun, $bulan);
         $stmt->execute();
@@ -53,7 +53,7 @@ function get_next_nomor_surat($kode = 'KT-MSL') {
             $stmt->execute();
             $stmt->close();
         } else {
-            // Insert baru untuk jenis_dokumen/bulan/tahun ini
+            // Insert untuk jenis_dokumen/bulan/tahun ini
             $counter = 1;
             $stmt = $conn->prepare("INSERT INTO nomor_surat (jenis_dokumen, tahun, bulan, counter) VALUES (?, ?, ?, ?)");
             $stmt->bind_param("siii", $kode, $tahun, $bulan, $counter);
@@ -83,12 +83,12 @@ function get_next_nomor_surat($kode = 'KT-MSL') {
 }
 
 /**
- * Get nomor surat terakhir (untuk display saja) - PER MENU
+ * Get nomor surat terakhir - PER MENU
  * 
- * @param string $kode - Kode surat (KT-MSL, KK-MSL, KAS-MSL)
+ * @param string $kode - Kode surat (KT-KSK, KK-KSK, KAS-KSK)
  * @return string - Nomor surat terakhir atau default
  */
-function get_last_nomor_surat($kode = 'KT-MSL') {
+function get_last_nomor_surat($kode = 'KT-KSK') {
     global $conn;
     
     $tahun = date('Y');

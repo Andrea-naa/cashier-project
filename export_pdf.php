@@ -98,7 +98,7 @@ if ($type === 'kas_masuk' || $type === 'kas_keluar') {
     if (empty($nomor)) {
         $dt = strtotime($data['tanggal_transaksi']);
         $bulan_romawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
-        $kode = ($type === 'kas_masuk') ? 'KT-MSL' : 'KK-MSL';
+        $kode = ($type === 'kas_masuk') ? 'KT-KSK' : 'KK-KSK';
         $nomor = sprintf('%03d/%s/%s/%04d', $data['id'], $kode, $bulan_romawi[date('n', $dt)], date('Y', $dt));
     }
     
@@ -345,10 +345,10 @@ elseif ($type === 'stok_opname') {
     }
     
     $nomor = $data['nomor_surat'];
-    if (empty($nomor)) {
+        if (empty($nomor)) {
         $dt = strtotime($data['tanggal_opname']);
         $bulan_romawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
-        $nomor = sprintf('%03d/KAS-MSL/%s/%04d', $data['id'], $bulan_romawi[date('n', $dt)], date('Y', $dt));
+        $nomor = sprintf('%03d/KAS-KSK/%s/%04d', $data['id'], $bulan_romawi[date('n', $dt)], date('Y', $dt));
     }
     
     $tanggal = date('d-M-Y', strtotime($data['tanggal_opname']));
@@ -637,7 +637,6 @@ elseif ($type === 'stok_opname') {
         </div>
         <div class="header-right">
             <strong>Nomor</strong> : ' . htmlspecialchars($nomor) . '<br>
-            <strong>Tanggal</strong> : ' . htmlspecialchars($tanggal) . '
         </div>
     </div>';
     
@@ -715,7 +714,7 @@ elseif ($type === 'stok_opname') {
     </div>';
     
     $html .= '<div class="summary-row">
-        <div class="summary-left">IV. Materai (Lembar @ 6.000)</div>
+        <div class="summary-left">IV. Materai (Lembar @ 10.000)</div>
         <div class="summary-right">
             <span class="summary-value-box">Rp. ' . number_format($materai, 2, ',', '.') . '</span>
         </div>
@@ -750,7 +749,7 @@ elseif ($type === 'stok_opname') {
     $keterangan_text = !empty($data['keterangan_lainnya']) ? htmlspecialchars($data['keterangan_lainnya']) : '';
     $html .= '<div class="keterangan-box">' . $keterangan_text . '</div>';
     
-    // Location & Date
+    // Lokasi dan tanggal
     $html .= '<div class="location-date">' 
         . htmlspecialchars($config['kota']) . ', ' 
         . date('d-F-Y', strtotime($data['tanggal_opname'])) . '</div>';
@@ -791,7 +790,7 @@ elseif ($type === 'buku_kas') {
     // Generate nomor surat untuk buku kas
     $bulan_romawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
     $tanggal_to = strtotime($date_to);
-    $nomor_buku = sprintf('001/KAS-MSL/%s/%04d', $bulan_romawi[date('n', $tanggal_to)], date('Y', $tanggal_to));
+    $nomor_buku = sprintf('001/KAS-KSK/%s/%04d', $bulan_romawi[date('n', $tanggal_to)], date('Y', $tanggal_to));
     $tanggal_formatted = date('d-M-Y', $tanggal_to);
     
     $html = '<!doctype html><html><head><meta charset="utf-8">
