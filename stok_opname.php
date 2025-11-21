@@ -74,7 +74,7 @@ if (isset($_POST['simpan'])) {
         $subtotal_fisik += ($jumlah * $item['nominal']);
     }
 
-    // Input lainnya
+    // bagian input lainnya
     $bon_sementara = floatval($_POST['bon_sementara'] ?? 0);
     $uang_rusak    = floatval($_POST['uang_rusak'] ?? 0);
     $materai = floatval($_POST['material'] ?? 0); // Simpan jumlah lembar
@@ -107,7 +107,7 @@ if (isset($_POST['simpan'])) {
         $insert_id = mysqli_insert_id($conn);
         mysqli_stmt_close($stmt);
 
-        // Insert detail
+        // bagian input detail
         $stmt2 = mysqli_prepare($conn,
             "INSERT INTO stok_opname_detail
                 (stok_opname_id, no_urut, uraian, satuan, jumlah, nilai)
@@ -146,10 +146,10 @@ if (isset($_POST['simpan'])) {
              WHERE id=$edit_id"
         );
 
-        // Hapus detail lama
+        // bagian buat hapus detail lama
         mysqli_query($conn, "DELETE FROM stok_opname_detail WHERE stok_opname_id=$edit_id");
 
-        // Insert ulang detail
+        // bagian input ulang data detail
         $stmt3 = mysqli_prepare($conn,
             "INSERT INTO stok_opname_detail
                 (stok_opname_id, no_urut, uraian, satuan, jumlah, nilai)
@@ -289,7 +289,7 @@ if (isset($_POST['simpan'])) {
             font-size: 16px;
         }
         
-        /* Overlay */
+        /* operlay */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -515,15 +515,14 @@ if (isset($_POST['simpan'])) {
             margin-right: auto;
         }
 
-        /*  FOOTER  */
+        /*  futer  */
         .ksk-footer {
             width: 100%;
             padding: 30px 40px;
             background: linear-gradient(to right, #00984489, #003216DB);
             color: #ffffff;
             border-top: 3px solid #333;
-            font-family: 'Poppins', sans-serif;
-            margin-top: auto;
+            font-family: 'Arial', sans-serif;
         }
 
         .footer-content {
@@ -661,7 +660,7 @@ if (isset($_POST['simpan'])) {
     </style>
     <script>
         function formatRupiah(angka) {
-            // Handle negative numbers
+            // buat menangani nilai negatif
             let prefix = '';
             if (angka < 0) {
                 prefix = '-';
@@ -715,9 +714,8 @@ if (isset($_POST['simpan'])) {
     </script>
 </head>
 <body>
-    <!-- sidebar -->
+    <!-- buat menu burger -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
-    
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <img src="assets/gambar/logoksk.jpg" alt="KSK Logo"
@@ -845,10 +843,48 @@ if (isset($_POST['simpan'])) {
                 </form>
             </div>
 
+            <!-- futer -->
             <footer class="ksk-footer">
                 <div class="footer-content">
+                    <!-- bagian kiri futer -->
                     <div class="footer-left">
                         <img src="assets/gambar/logoksk.jpg" alt="KSK Logo" class="footer-logo">
                         <div class="footer-text">
                             <h2>KALIMANTAN SAWIT KUSUMA GROUP</h2>
                             <p class="subtitle">Oil Palm Plantation & Industries</p>
+                            <p class="description">
+                                Kalimantan Sawit Kusuma (KSK) adalah sebuah grup perusahaan yang memiliki beberapa 
+                                perusahaan afiliasi yang bergerak di berbagai bidang usaha, yaitu perkebunan kelapa 
+                                sawit dan hortikultura, kontraktor alat berat dan pembangunan perkebunan serta jasa 
+                                transportasi laut.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- bagian kanan futer -->
+                    <div class="footer-right">
+                        <a href="https://kskgroup.co.id" target="_blank" class="footer-item link-item">
+                            <img src="assets/gambar/icon/browser.png" class="footer-icon">
+                            <span>kskgroup.co.id</span>
+                        </a>
+
+                        <a href="tel:+62561733035" class="footer-item link-item">
+                            <img src="assets/gambar/icon/telfon.png" class="footer-icon">
+                            <span>
+                                T. (+62 561) 733 035 (hunting)<br>
+                                F. (+62 561) 733 014
+                            </span>
+                        </a>
+
+                        <a href="https://maps.app.goo.gl/MdtmPLQTTagexjF59" target="_blank" class="footer-item link-item">
+                            <img src="assets/gambar/icon/lokasi.png" class="footer-icon">
+                            <span>
+                                Jl. W.R Supratman No. 42 Pontianak,<br>
+                                Kalimantan Barat 78122
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>

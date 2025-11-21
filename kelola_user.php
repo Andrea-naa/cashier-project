@@ -20,7 +20,7 @@ if (stripos($role, 'Administrator') === false) {
     exit();
 }
 
-// Handle aksi
+// bagian menangani aksi tambah, edit, dan hapus
 $action = $_GET['action'] ?? '';
 $msg = '';
 

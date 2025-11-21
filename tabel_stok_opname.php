@@ -83,7 +83,7 @@ if ($stmt) {
             flex-direction: column;
         }
 
-        /* ================= HEADER ================= */
+        /* header */
         .header {
             background-color: #009844;
             color: white;
@@ -147,7 +147,7 @@ if ($stmt) {
             opacity: 0.9;
         }
 
-        /* SIDEBAR  */
+        /* Sidebar */
         .sidebar {
             width: 280px;
             background: #E7E7E7FF;
@@ -239,7 +239,7 @@ if ($stmt) {
             font-size: 16px;
         }
         
-        /* Overlay */
+        /* operlay */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -255,7 +255,7 @@ if ($stmt) {
             display: block;
         }
 
-        /*  MAIN WRAPPER  */
+        /*  Main Wrapper  */
         .main-wrapper {
             flex: 1;
             display: flex;
@@ -269,7 +269,7 @@ if ($stmt) {
             flex-direction: column;
         }
 
-        /*  CONTAINER  */
+        /*  kontener  */
         .container {
             width: 95%;
             max-width: 1200px;
@@ -281,7 +281,7 @@ if ($stmt) {
             flex: 1;
         }
 
-        /*  NOTICE  */
+        /*  notis  */
         .notice {
             background: #e6ffea;
             padding: 12px 16px;
@@ -292,7 +292,7 @@ if ($stmt) {
             color: #2e7d32;
         }
 
-        /* BUTTONS  */
+        /* buttons  */
         .button-group {
             display: flex;
             gap: 15px;
@@ -351,7 +351,7 @@ if ($stmt) {
             background: #017033;
         }
 
-        /* TABLE  */
+        /* tabel  */
         .table-wrapper {
             overflow-x: auto;
             margin-top: 20px;
@@ -402,7 +402,7 @@ if ($stmt) {
             margin: 0;
         }
 
-        /* PAGINATION  */
+        /* pagination  */
         .pager {
             margin-top: 20px;
             display: flex;
@@ -430,7 +430,7 @@ if ($stmt) {
             font-weight: bold;
         }
 
-        /* FOOTER  */
+        /* futer  */
         .ksk-footer {
             width: 100%;
             padding: 30px 40px;
@@ -707,10 +707,10 @@ if ($stmt) {
                 <?php endif; ?>
             </div>
 
-            <!-- FOOTER -->
+            <!-- futer -->
             <footer class="ksk-footer">
                 <div class="footer-content">
-                    <!-- Left Section -->
+                    <!-- bagian kiri futer -->
                     <div class="footer-left">
                         <img src="assets/gambar/logoksk.jpg" alt="KSK Logo" class="footer-logo">
                         <div class="footer-text">
@@ -725,7 +725,7 @@ if ($stmt) {
                         </div>
                     </div>
 
-                    <!-- Right Section -->
+                    <!-- bagian kanan futer -->
                     <div class="footer-right">
                         <a href="https://kskgroup.co.id" target="_blank" class="footer-item link-item">
                             <img src="assets/gambar/icon/browser.png" class="footer-icon">

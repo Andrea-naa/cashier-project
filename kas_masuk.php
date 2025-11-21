@@ -116,7 +116,7 @@ if ($res) {
     mysqli_free_result($res);
 }
 
-// Nomor terakhir
+// ngambil nomor terakhir
 $last_nomor = get_last_nomor_surat('KT-KSK');
 ?>
 
@@ -232,7 +232,7 @@ $last_nomor = get_last_nomor_surat('KT-KSK');
             font-size: 16px;
         }
         
-        /* Overlay */
+        /* operlay */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -640,7 +640,7 @@ $last_nomor = get_last_nomor_surat('KT-KSK');
     </style>
 </head>
 <body>
-    <!-- sidebar -->
+    <!-- buat menu burger -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <div class="sidebar" id="sidebar">
@@ -726,7 +726,7 @@ $last_nomor = get_last_nomor_surat('KT-KSK');
             <?php endif; ?>
         </div>
     </form>
-
+<!-- ngilangin nomor surat yang ada diatas tabel tapi pake komentar sewaktu waktu dipake bisa diaktifkan lagi -->
     <!-- <div class="nomor-info">
         <?php echo htmlspecialchars($last_nomor); ?>
     </div> -->

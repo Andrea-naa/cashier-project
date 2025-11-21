@@ -107,7 +107,7 @@ if (isset($_GET['success'])) {
     }
 }
 
-// Ambil data kas keluar
+// ngambil data kas keluar
 $data_kas = [];
 $res = mysqli_query($conn, "SELECT * FROM transaksi WHERE jenis_transaksi = 'kas_keluar' ORDER BY tanggal_transaksi DESC");
 if ($res) {
@@ -117,7 +117,7 @@ if ($res) {
     mysqli_free_result($res);
 }
 
-// Nomor terakhir
+// ngambil nomor terakhir
 $last_nomor = get_last_nomor_surat('KK-KSK');
 ?>
 
@@ -233,7 +233,7 @@ $last_nomor = get_last_nomor_surat('KK-KSK');
             font-size: 16px;
         }
         
-        /* Overlay */
+        /* operlay */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -642,10 +642,8 @@ $last_nomor = get_last_nomor_surat('KK-KSK');
 </head>
 
 <body>
-    <!-- Sidebar Overlay -->
+    <!-- buat menu burger -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
-    
-    <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <img src="assets/gambar/logoksk.jpg" alt="KSK Logo"

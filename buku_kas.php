@@ -8,7 +8,7 @@ $username = $_SESSION['username'];
 $nama_lengkap = $_SESSION['nama_lengkap'];
 $role = $_SESSION['role'] ?? 'Kasir';
 
-// Ambil konfigurasi dari database
+// ngambil konfigurasi dari database
 $query_config = "SELECT * FROM konfigurasi LIMIT 1";
 $result_config = mysqli_query($conn, $query_config);
 $config = mysqli_fetch_assoc($result_config);
@@ -19,11 +19,11 @@ if (!$config) {
     $nama_perusahaan = $config['nama_perusahaan'] ?? 'PT. Kalimantan Sawit Kusuma';
 }
 
-// Filter tanggal
+// pilter untuk tanggal
 $date_from = isset($_GET['date_from']) ? $_GET['date_from'] : date('Y-m-01');
 $date_to = isset($_GET['date_to']) ? $_GET['date_to'] : date('Y-m-t');
 
-// Ambil data transaksi
+// ngammbil data transaksi
 $sql = "SELECT * FROM transaksi WHERE DATE(tanggal_transaksi) BETWEEN '$date_from' AND '$date_to' ORDER BY tanggal_transaksi ASC, id ASC";
 $res = mysqli_query($conn, $sql);
 $rows = [];
@@ -162,7 +162,7 @@ $balance = $total_debet;
             font-size: 16px;
         }
         
-        /* Overlay */
+        /* operlay */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -178,7 +178,7 @@ $balance = $total_debet;
             display: block;
         }
 
-        /* Main Wrapper */
+        /* pembungkus utama */
         .main-wrapper {
             flex: 1;
             display: flex;
@@ -187,7 +187,7 @@ $balance = $total_debet;
             min-height: 100vh;
         }
 
-        /*  HEADER  */
+        /*  header  */
         .header {
             background-color: #009844;
             color: white;
@@ -251,7 +251,7 @@ $balance = $total_debet;
             opacity: .85;
         }
 
-        /*  CONTAINER  */
+        /*  kontener  */
         .content-wrapper {
             flex: 1;
             display: flex;
@@ -277,7 +277,7 @@ $balance = $total_debet;
             color: #333;
         }
 
-        /*  FILTER  */
+        /*  pilter  */
         .filter-section {
             background: #f8f9fa;
             padding: 20px;
@@ -328,7 +328,7 @@ $balance = $total_debet;
             background: #017033;
         }
 
-        /*  DAFTAR KAS KELUAR  */
+        /*  daftar kas keluar  */
         .kas-list-title {
             font-size: 16px;
             font-weight: 600;
@@ -343,7 +343,7 @@ $balance = $total_debet;
             font-size: 14px;
         }
 
-        /*  TABLE  */
+        /*  tabel  */
         .table-wrapper {
             overflow-x: auto;
             margin-bottom: 30px;
@@ -473,7 +473,7 @@ $balance = $total_debet;
             background-color: #c7c7c7;
         }
 
-        /* FOOTER  */
+        /* futer  */
         .ksk-footer {
             width: 100%;
             padding: 30px 40px;
@@ -491,7 +491,7 @@ $balance = $total_debet;
             gap: 30px;
         }
 
-        /* Left Section */
+        /* bagian kiri futer */
         .footer-left {
             display: flex;
             flex-direction: row;
@@ -525,7 +525,7 @@ $balance = $total_debet;
             color: black;
         }
 
-        /* Right Section */
+        /* bagian kanan futer */
         .footer-right {
             width: 40%;
             display: flex;
@@ -556,7 +556,7 @@ $balance = $total_debet;
             opacity: 0.7;
         }
 
-        /* responsive */
+        /* biar bisa responsive */
         @media (max-width: 780px) {
             .footer-content {
                 flex-direction: column;
@@ -619,7 +619,7 @@ $balance = $total_debet;
 </head>
 
 <body>
-   <!-- sidebar -->
+   <!-- buat menu burger -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -669,7 +669,7 @@ $balance = $total_debet;
             <div class="container">
                 <h2 class="page-title">BUKU KAS HARIAN</h2>
 
-                <!-- Filter Section -->
+                <!-- pilter section -->
                 <div class="filter-section">
                     <form method="GET" class="filter-form">
                         <div class="form-group">
@@ -761,7 +761,7 @@ $balance = $total_debet;
 
             <footer class="ksk-footer">
                 <div class="footer-content">
-                    <!-- Left Section -->
+                    <!-- bagian kiri futer -->
                     <div class="footer-left">
                         <img src="assets/gambar/logoksk.jpg" alt="KSK Logo" class="footer-logo">
 
@@ -778,7 +778,7 @@ $balance = $total_debet;
                         </div>
                     </div>
 
-                    <!-- Right Section -->
+                    <!-- bagian kanan futer -->
                     <div class="footer-right">
                         <a href="https://kskgroup.co.id" target="_blank" class="footer-item link-item">
                             <img src="assets/gambar/icon/browser.png" class="footer-icon">

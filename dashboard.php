@@ -31,7 +31,7 @@ if (!$config) {
 
 $nama_perusahaan = $config['nama_perusahaan'] ?? 'PT. Mitra Saudara Lestari';
 
-// Ambil role user dari session (default: Kasir)
+// Ambil role user dari session
 $role = $_SESSION['role'] ?? 'Kasir';
 
 // Hitung saldo kas (Kas Masuk - Kas Keluar) dari tabel transaksi
@@ -157,14 +157,14 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             font-size: 16px;
         }
         
-        /* Main Content */
+        /* konten utama */
         .main-content {
             flex: 1;
             display: flex;
             flex-direction: column;
         }
         
-        /* Header */
+        /* header */
         .header {
             background: linear-gradient(135deg, #009844 0%, #009844 100%);
             padding: 25px 40px;
@@ -214,13 +214,13 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             opacity: 0.9;
         }
         
-        /* Content Area */
+        /* area konten */
         .content-area {
             flex: 1;
             padding: 40px;
             display: flex;
             flex-direction: column;
-            align-items: center; /* center the menu grid horizontally */
+            align-items: center;
         }
 
         .menu-grid {
@@ -228,15 +228,15 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             flex-direction: column;
             gap: 40px;
             width: 100%;
-            max-width: 980px; /* control overall width */
-            margin-top: 10px; /* small gap under header */
+            max-width: 980px;
+            margin-top: 10px;
         }
 
         .menu-row {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 60px; /* larger gap between the two columns */
-            justify-items: center; /* center cards in each column */
+            gap: 60px;
+            justify-items: center;
             align-items: start;
         }
         
@@ -244,7 +244,7 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             background: linear-gradient(to top, #009844, #00320E);
             border-radius: 15px;
             padding: 36px 28px;
-            width: 260px; /* fixed width to control layout like example */
+            width: 260px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -263,7 +263,6 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             width: 84px;
             height: 84px;
             margin: 0 auto 18px;
-            /* border: 3px solid rgba(255,255,255,0.45); */
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -278,7 +277,7 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             letter-spacing: 0.5px;
         }
         
-        /* ================= FOOTER ================= */
+        /* futer */
         .ksk-footer {
             width: 100%;
             padding: 30px 40px;
@@ -295,7 +294,7 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             gap: 30px;
         }
 
-        /* Left Section */
+        /* bagian kiri futer */
         .footer-left {
             display: flex;
             flex-direction: row;
@@ -330,7 +329,7 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             color: black;
         }
 
-        /* Right Section */
+        /* bagian kanan futer */
         .footer-right {
             width: 40%;
             display: flex;
@@ -374,7 +373,7 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             margin-top: -5px;
         }
         
-        /* Responsive */
+        /* biar responsive */
         @media (max-width: 768px) {
             body {
                 flex-direction: column;
@@ -429,7 +428,7 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
+    <!-- buat menu burger -->
     <div class="sidebar">
         <div class="sidebar-header">
             <img src="assets/gambar/logoksk.jpg" alt="KSK Logo"
@@ -472,9 +471,9 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
         </ul>
     </div>
     
-    <!-- Main Content -->
+    <!-- konten utama -->
     <div class="main-content">
-        <!-- Header -->
+        <!-- header -->
         <div class="header">
             <div class="header-left">
                 <div class="welcome-text">Dashboard</div>
@@ -491,7 +490,7 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             </div>
         </div>
         
-        <!-- Content Area -->
+        <!-- area konten -->
         <div class="content-area">
             <div class="menu-grid">
                 <div class="menu-row">
@@ -523,7 +522,7 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
         <footer class="ksk-footer">
   <div class="footer-content">
 
-    <!-- Left Section -->
+    <!-- bagian kiri futer -->
     <div class="footer-left">
       <img src="assets/gambar/logoksk.jpg" alt="KSK Logo" class="footer-logo">
 
@@ -540,7 +539,7 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
       </div>
     </div>
 
-<!-- Right Section -->
+<!-- bagian kanan futer -->
 <div class="footer-right">
 
   <a href="https://kskgroup.co.id" target="_blank" class="footer-item link-item">

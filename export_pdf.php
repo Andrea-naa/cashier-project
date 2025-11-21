@@ -73,7 +73,7 @@ if ($id <= 0 && $type !== 'buku_kas') {
 $html = '';
 
 
-// BUKTI KAS MASUK / KELUAR
+// bagian kas masuk / keluar
 if ($type === 'kas_masuk' || $type === 'kas_keluar') {
     
     $jenis_transaksi = ($type === 'kas_masuk') ? 'kas_terima' : 'kas_keluar';
@@ -91,7 +91,7 @@ if ($type === 'kas_masuk' || $type === 'kas_keluar') {
     
     $jenis = ($type === 'kas_masuk') ? 'MASUK' : 'KELUAR';
     
-    // Ambil nomor dari database
+    // ngambil nomor dari database
     $nomor = $data['nomor_surat'];
     
     // Jika nomor_surat NULL, generate manual
@@ -105,11 +105,11 @@ if ($type === 'kas_masuk' || $type === 'kas_keluar') {
     $tanggal = date('d-M-Y', strtotime($data['tanggal_transaksi']));
     $nominal = floatval($data['nominal']);
     
-    // Pisahkan rupiah dan sen
+    // misahkan rupiah dan sen
     $rupiah_bulat = floor($nominal);
     $sen = round(($nominal - $rupiah_bulat) * 100);
     
-    // Terbilang hanya untuk rupiah (tanpa sen)
+    // Buat teks terbilang
     $terbilang_raw = terbilang($rupiah_bulat);
     $terbilang_text = ucfirst($terbilang_raw);
     if ($sen > 0) {
@@ -117,7 +117,7 @@ if ($type === 'kas_masuk' || $type === 'kas_keluar') {
     }
     $terbilang_text .= " rupiah";
     
-    // HTML 
+    // html untuk pdf 
     $html = '<!doctype html><html><head><meta charset="utf-8">
     <style>
         @page { margin: 20mm 15mm; }
@@ -330,7 +330,7 @@ if ($type === 'kas_masuk' || $type === 'kas_keluar') {
     $filename = 'Bukti_Kas_' . $jenis . '_' . str_replace('/', '-', $nomor) . '.pdf';
 }
 
-// STOK OPNAME KAS
+// bagian stok opname
 elseif ($type === 'stok_opname') {
     
     $stmt = mysqli_prepare($conn, "SELECT * FROM stok_opname WHERE id = ? LIMIT 1");
@@ -627,7 +627,7 @@ elseif ($type === 'stok_opname') {
     </style>
     </head><body>';
     
-    // HEADER
+    // header
     $html .= '<div class="header-row">
         <div class="header-left">' . htmlspecialchars($config['nama_perusahaan']) . '</div>
         <div class="header-center">
@@ -647,7 +647,7 @@ elseif ($type === 'stok_opname') {
         </div>
     </div>';
     
-    // TABEL PEMERIKSAAN FISIK
+    // tabel untuk pecahan
     $html .= '<div class="section-title">I. Pemeriksaan Fisik Uang Kas</div>
     <table>
         <thead><tr><th class="no-col">NO</th><th>URAIAN</th><th>SATUAN</th><th>JUMLAH</th><th class="amount-col">NILAI</th></tr></thead>
@@ -725,7 +725,7 @@ elseif ($type === 'stok_opname') {
         </div>
     </div>';
     
-    $html .= '</div>'; // end summary section
+    $html .= '</div>'; // akhir dari bagian summary-section
 
     $html .= '<div class="total-fisik-section">
         <div class="total-row">
@@ -774,7 +774,7 @@ elseif ($type === 'stok_opname') {
     $filename = 'Stok_Opname_' . str_replace('/', '-', $nomor) . '.pdf';
 }
 
-// BUKU KAS HARIAN
+// bagian buku kas
 elseif ($type === 'buku_kas') {
     
     $date_from = isset($_GET['date_from']) ? $_GET['date_from'] : date('Y-m-01');
@@ -800,7 +800,7 @@ elseif ($type === 'buku_kas') {
             color: #000; 
         }
         
-        /* Header */
+        /* header */
         .header-row { 
             display: table; 
             width: 100%; 
@@ -834,7 +834,7 @@ elseif ($type === 'buku_kas') {
             text-decoration: underline;
         }
         
-        /* Table */
+        /* Tabel */
         table { 
             width: 100%; 
             border-collapse: collapse; 
@@ -891,7 +891,7 @@ elseif ($type === 'buku_kas') {
             margin-top: 1px;
         }
         
-        /* Footer */
+        /* futer */
         .footer-location {
             text-align: right;
             margin: 20px 0 30px 0;
@@ -951,7 +951,7 @@ elseif ($type === 'buku_kas') {
     </style>
     </head><body>';
     
-    // Header
+    // header
     $html .= '<div class="header-row">
         <div class="header-left">' . htmlspecialchars($config['nama_perusahaan']) . '</div>
         <div class="header-center">
@@ -963,7 +963,7 @@ elseif ($type === 'buku_kas') {
         </div>
     </div>';
     
-    // Table
+    // tabel transaksi
     $html .= '<table>
         <thead>
             <tr>
@@ -1026,7 +1026,7 @@ elseif ($type === 'buku_kas') {
         </div>
     </div>';
     
-    // Footer
+    // futer
     $html .= '<div class="footer-location">' . htmlspecialchars($config['kota']) . ', ' . date('d-F-Y', strtotime($date_to)) . '</div>
     
     <div class="signature">
@@ -1053,7 +1053,7 @@ elseif ($type === 'buku_kas') {
 }
 
 
-// GENERATE PDF
+// biar bisa generate pdf
 try {
     $options = new Options();
     $options->set('defaultFont', 'Times New Roman');

@@ -5,7 +5,7 @@ $username = "root";
 $password = "";
 $dbname = "cashier";
 
-// Create connection with error reporting
+// koneksi database
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 try {
@@ -85,7 +85,7 @@ function get_next_nomor_surat($kode = 'KT-KSK') {
 /**
  * Get nomor surat terakhir - PER MENU
  * 
- * @param string $kode - Kode surat (KT-KSK, KK-KSK, KAS-KSK)
+ * @param string $kode - Kode surat
  * @return string - Nomor surat terakhir atau default
  */
 function get_last_nomor_surat($kode = 'KT-KSK') {
