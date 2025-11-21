@@ -740,7 +740,7 @@ $balance = $total_debet;
                         </div>
                     </div>
                     
-                    <div class="summary-row balance-row" style="border-top: 2px solid #333; padding-top: 15px; margin-top: 15px;">
+                    <div class="summary-row" style="border-top: 2px solid #333; padding-top: 15px; margin-top: 15px;">
                         <span class="summary-label" style="font-size: 16px;">Balance</span>
                         <div style="display: flex; gap: 100px;">
                             <span class="summary-value" id="balanceDebet" style="min-width: 180px; text-align: right;">

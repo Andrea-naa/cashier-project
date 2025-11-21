@@ -221,11 +221,10 @@ if ($type === 'kas_masuk' || $type === 'kas_keluar') {
             max-width: calc(100% - 80px);
         }
         
-        .signature { 
-            margin-top: 40px; 
-            display: table; 
+        .signature {
+            margin-top: 40px;
+            display: table;
             width: 100%;
-            max-width: 2000px;
         }
         .sig-box { 
             display: table-cell; 
@@ -365,6 +364,15 @@ elseif ($type === 'stok_opname') {
     }
     mysqli_stmt_close($qd);
     
+    // Hitung saldo kas dari database
+    $q_saldo = mysqli_query($conn,
+        "SELECT 
+            (SELECT IFNULL(SUM(nominal),0) FROM transaksi WHERE jenis_transaksi='kas_terima') -
+            (SELECT IFNULL(SUM(nominal),0) FROM transaksi WHERE jenis_transaksi='kas_keluar')
+         AS saldo_kas"
+    );
+    $saldo_buku_kas = mysqli_fetch_assoc($q_saldo)['saldo_kas'] ?? 0;
+    
     $html = '<!doctype html><html><head><meta charset="utf-8">
     <style>
         @page { margin: 15mm 10mm; }
@@ -373,75 +381,204 @@ elseif ($type === 'stok_opname') {
             font-size: 9pt; 
             color: #000; 
         }
-        .header { 
-        text-align: 
-        center; 
-        margin-bottom: 15px; 
+        .header-row { 
+            display: table;
+            width: 100%; 
+            margin-bottom: 15px; 
         }
-
+        .header-left { 
+            display: table-cell;
+            width: 30%;
+            vertical-align: top;
+            font-size: 10pt;
+        }
+        .header-center { 
+            display: table-cell;
+            width: 40%;
+            text-align: center;
+            vertical-align: top;
+        }
+        .header-right { 
+            display: table-cell;
+            width: 30%;
+            text-align: left;
+            vertical-align: top;
+            font-size: 10pt;
+            line-height: 1.6;
+        }
         .title { 
-        font-size: 14pt; 
-        font-weight: bold; 
-        }
-
-        .info-box { 
-        text-align: right; 
-        margin-bottom: 10px; 
-        font-size: 9pt; 
-        }
-
-        .saldo-box { 
-        text-align: right; 
-        background: #f0f0f0; 
-        padding: 8px; 
-        margin: 10px 0; 
-        font-weight: bold; 
-        }
-
-        table { 
-        width: 100%; 
-        border-collapse: collapse; 
-        font-size: 8pt; 
-        margin-bottom: 10px; 
-        }
-
-        th, td { 
-        border: 1px solid #000; 
-        padding: 5px; 
-        }
-
-        th { 
-        background-color: #e0e0e0; 
-        font-weight: bold; 
-        text-align: center; 
-        }
-
-        .no-col { 
-        width: 30px; 
-        text-align: center; 
-        }
-
-        .amount-col { 
-        width: 120px; 
-        text-align: right; 
-        }
-
-        .total-row { 
-        background-color: #f5f5f5; 
-        font-weight: bold; 
-        }
-
-        .section-title { 
-        font-weight: bold; 
-        margin: 10px 0 5px 0; 
-        font-size: 9pt; 
+            font-size: 16pt; 
+            font-weight: bold; 
+            margin: 0;
         }
         
-        .signature { 
-            margin-top: 40px; 
-            display: table; 
+        .saldo-container {
+            display: table;
             width: 100%;
-            max-width: 2000px;
+            margin: 15px 0 8px 0;
+        }
+        .saldo-row {
+            display: table-row;
+        }
+        .saldo-label {
+            display: table-cell;
+            width: 70%;
+            font-weight: bold;
+            font-size: 10pt;
+            vertical-align: middle;
+        }
+        .saldo-value {
+            display: table-cell;
+            width: 30%;
+            text-align: right;
+            vertical-align: middle;
+        }
+        .saldo-value-box {
+            display: inline-block;
+            border: 2px solid #000;
+            padding: 8px 15px;
+            font-weight: bold;
+            font-size: 10pt;
+            min-width: 180px;
+            text-align: right;
+        }
+        
+        .section-title { 
+            font-weight: bold; 
+            margin: 0 0 5px 0; 
+            font-size: 9pt; 
+        }
+        
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 8pt; 
+            margin-bottom: 10px; 
+        }
+        th, td { 
+            border: 1px solid #000; 
+            padding: 5px; 
+        }
+        th { 
+            background-color: #e0e0e0; 
+            font-weight: bold; 
+            text-align: center; 
+        }
+        .no-col { 
+            width: 30px; 
+            text-align: center; 
+        }
+        .amount-col { 
+            width: 120px; 
+            text-align: right; 
+        }
+        
+        /* Summary section */
+        .summary-section {
+            margin: 15px 0;
+        }
+        
+        .jumlah-row {
+            display: table;
+            width: 100%;
+            padding: 10px 0;
+            border-bottom: 2px solid #000;
+            margin-bottom: 10px;
+        }
+        .jumlah-left {
+            display: table-cell;
+            width: 50%;
+            text-align: center;
+            font-weight: bold;
+            font-size: 9pt;
+        }
+        .jumlah-right {
+            display: table-cell;
+            width: 50%;
+            text-align: right;
+            font-weight: bold;
+            font-size: 9pt;
+        }
+        
+        .summary-row {
+            display: table;
+            width: 100%;
+            margin: 5px 0;
+        }
+        .summary-left {
+            display: table-cell;
+            width: 70%;
+            font-size: 9pt;
+            padding-left: 0;
+        }
+        .summary-right {
+            display: table-cell;
+            width: 30%;
+            text-align: right;
+            font-size: 9pt;
+            padding-right: 0;
+        }
+        .summary-value-box {
+            display: inline-block;
+            border: 1px solid #000;
+            padding: 5px 10px;
+            min-width: 150px;
+            text-align: right;
+        }
+
+        .total-fisik-section {
+            margin: 15px 0;
+        }
+        .total-row {
+            display: table;
+            width: 100%;
+            margin: 5px 0;
+        }
+        .total-label {
+            display: table-cell;
+            font-weight: bold;
+            font-size: 9pt;
+            text-align: right;
+            padding-right: 15px;
+            width: 70%;
+            vertical-align: middle;
+        }
+        .total-value {
+            display: table-cell;
+            text-align: right;
+            width: 30%;
+            vertical-align: middle;
+        }
+        .total-value-box {
+            display: inline-block;
+            border: 1px solid #000;
+            padding: 5px 10px;
+            min-width: 150px;
+            text-align: right;
+            font-weight: bold;
+            font-size: 9pt;
+        }
+        
+        .keterangan-label {
+            font-size: 9pt;
+            margin: 15px 0 0 0;
+        }
+        .keterangan-box {
+            margin: 0;
+            padding: 0;
+            min-height: 15px;
+        }
+        .keterangan-dots {
+            border-bottom: 1px dotted #999;
+            height: 1px;
+            width: 100%;
+            margin: 2px 0;
+        }
+        
+        .signature {
+            margin-top: 40px;
+            display: table;
+            width: 100%;
         }
         .sig-box { 
             display: table-cell; 
@@ -481,19 +618,40 @@ elseif ($type === 'stok_opname') {
             padding: 2px 10px; 
             min-width: 120px;
             margin-top: 76px;
-        }    </style>
+        }
+        
+        .location-date {
+            text-align: right;
+            margin: 20px 0 10px 0;
+            font-size: 9pt;
+        }
+    </style>
     </head><body>';
     
-    $html .= '<div style="font-size:9pt;">' . htmlspecialchars($config['nama_perusahaan']) . '</div>
-    <div class="header"><div class="title">STOK OPNAME KAS</div></div>
-    <div class="info-box">
-        <strong>Nomor</strong> : ' . htmlspecialchars($nomor) . '<br>
-        <strong>Tanggal</strong> : ' . htmlspecialchars($tanggal) . '
-    </div>
+    // HEADER
+    $html .= '<div class="header-row">
+        <div class="header-left">' . htmlspecialchars($config['nama_perusahaan']) . '</div>
+        <div class="header-center">
+            <div class="title">STOK OPNAME KAS</div>
+            <div style="font-size:9pt; margin-top:5px;">Tanggal ' . htmlspecialchars($tanggal) . '</div>
+        </div>
+        <div class="header-right">
+            <strong>Nomor</strong> : ' . htmlspecialchars($nomor) . '<br>
+            <strong>Tanggal</strong> : ' . htmlspecialchars($tanggal) . '
+        </div>
+    </div>';
     
-    <div class="saldo-box">Saldo Buku Kas: Rp. ' . number_format($data['fisik_total'], 2, ',', '.') . '</div>
+    $html .= '<div class="saldo-container">
+        <div class="saldo-row">
+            <div class="saldo-label">Saldo Buku Kas</div>
+            <div class="saldo-value">
+                <span class="saldo-value-box">Rp. ' . number_format($saldo_buku_kas, 2, ',', '.') . '</span>
+            </div>
+        </div>
+    </div>';
     
-    <div class="section-title">I. Pemeriksaan Fisik Uang Kas</div>
+    // TABEL PEMERIKSAAN FISIK
+    $html .= '<div class="section-title">I. Pemeriksaan Fisik Uang Kas</div>
     <table>
         <thead><tr><th class="no-col">NO</th><th>URAIAN</th><th>SATUAN</th><th>JUMLAH</th><th class="amount-col">NILAI</th></tr></thead>
         <tbody>';
@@ -528,41 +686,76 @@ elseif ($type === 'stok_opname') {
         </tr>';
     }
     
-    $html .= '<tr class="total-row">
-        <td colspan="4" style="text-align:right; padding-right:10px;">JUMLAH</td>
-        <td class="amount-col">Rp. ' . number_format($total_nilai, 2, ',', '.') . '</td>
-    </tr></tbody></table>';
+    $html .= '</tbody></table>';
     
     $bon = floatval($data['bon_sementara']);
     $rusak = floatval($data['uang_rusak']);
     $materai = floatval($data['materai']);
     $lain = floatval($data['lainnya']);
+
+    $html .= '<div class="jumlah-row">
+        <div class="jumlah-left">JUMLAH</div>
+        <div class="jumlah-right">Rp. ' . number_format($total_nilai, 2, ',', '.') . '</div>
+    </div>';
     
-    $html .= '<div class="section-title">II. Bon Sementara</div>
-    <div style="text-align:right; margin-bottom:5px;">Rp. ' . number_format($bon, 2, ',', '.') . '</div>
+    $html .= '<div class="summary-section">';
     
-    <div class="section-title">III. Uang Rusak</div>
-    <div style="text-align:right; margin-bottom:5px;">Rp. ' . number_format($rusak, 2, ',', '.') . '</div>
+    $html .= '<div class="summary-row">
+        <div class="summary-left">II. Bon Sementara</div>
+        <div class="summary-right">
+            <span class="summary-value-box">Rp. ' . number_format($bon, 2, ',', '.') . '</span>
+        </div>
+    </div>';
     
-    <div class="section-title">IV. Materai (Lembar @ 6.000)</div>
-    <div style="text-align:right; margin-bottom:5px;">Rp. ' . number_format($materai, 2, ',', '.') . '</div>
+    $html .= '<div class="summary-row">
+        <div class="summary-left">III. Uang Rusak</div>
+        <div class="summary-right">
+            <span class="summary-value-box">Rp. ' . number_format($rusak, 2, ',', '.') . '</span>
+        </div>
+    </div>';
     
-    <div class="section-title">V. Lain-lain</div>
-    <div style="text-align:right; margin-bottom:5px;">Rp. ' . number_format($lain, 2, ',', '.') . '</div>
+    $html .= '<div class="summary-row">
+        <div class="summary-left">IV. Materai (Lembar @ 6.000)</div>
+        <div class="summary-right">
+            <span class="summary-value-box">Rp. ' . number_format($materai, 2, ',', '.') . '</span>
+        </div>
+    </div>';
     
-    <div style="border-top:2px solid #000; margin:10px 0;"></div>
-    <div style="display:flex; justify-content:space-between; font-weight:bold; margin:5px 0;">
-        <span>JUMLAH SALDO FISIK</span>
-        <span>Rp. ' . number_format($data['fisik_total'], 2, ',', '.') . '</span>
-    </div>
-    <div style="display:flex; justify-content:space-between; margin:5px 0;">
-        <span>SELISIH</span>
-        <span>Rp. ' . number_format($data['selisih'], 2, ',', '.') . '</span>
-    </div>
+    $html .= '<div class="summary-row">
+        <div class="summary-left">V. Lain-lain</div>
+        <div class="summary-right">
+            <span class="summary-value-box">Rp. ' . number_format($lain, 2, ',', '.') . '</span>
+        </div>
+    </div>';
     
-    <div style="text-align:right; margin:15px 0; font-size:8pt;">' . htmlspecialchars($config['kota']) . ', ' . date('d-F-Y', strtotime($data['tanggal_opname'])) . '</div>
+    $html .= '</div>'; // end summary section
+
+    $html .= '<div class="total-fisik-section">
+        <div class="total-row">
+            <div class="total-label">JUMLAH SALDO FISIK</div>
+            <div class="total-value">
+                <span class="total-value-box">Rp. ' . number_format($data['fisik_total'], 2, ',', '.') . '</span>
+            </div>
+        </div>
+        <div class="total-row">
+            <div class="total-label">SELISIH</div>
+            <div class="total-value">
+                <span class="total-value-box">Rp. ' . number_format($data['selisih'], 2, ',', '.') . '</span>
+            </div>
+        </div>
+    </div>';
     
-    <div class="signature">
+    // Keterangan
+    $html .= '<div class="keterangan-label">Keterangan</div>';
+    $keterangan_text = !empty($data['keterangan_lainnya']) ? htmlspecialchars($data['keterangan_lainnya']) : '';
+    $html .= '<div class="keterangan-box">' . $keterangan_text . '</div>';
+    
+    // Location & Date
+    $html .= '<div class="location-date">' 
+        . htmlspecialchars($config['kota']) . ', ' 
+        . date('d-F-Y', strtotime($data['tanggal_opname'])) . '</div>';
+    
+    $html .= '<div class="signature">
         <div class="sig-box">
             <div class="sig-label">Diterima Oleh :</div>
             <span class="sig-name">' . htmlspecialchars($config['ttd_jabatan_1']) . '</span>
@@ -696,9 +889,9 @@ elseif ($type === 'buku_kas') {
             font-weight: bold;
         }
         .balance-row {
-            border-top: 2px solid #000;
+            border-bottom: 2px solid #000;
             padding-top: 10px;
-            margin-top: 10px;
+            margin-top: 1px;
         }
         
         /* Footer */
