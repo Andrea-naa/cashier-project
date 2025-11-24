@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 21, 2025 at 07:05 AM
+-- Generation Time: Nov 21, 2025 at 08:09 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -92,7 +92,15 @@ INSERT INTO `audit_log` (`id`, `user_id`, `username`, `action`, `ip_address`, `t
 (49, 1, 'admin', 'Kas Keluar #001/KK-MSL/XI/2025: Rp. 1.900.000', '::1', '2025-11-20 13:42:26'),
 (50, 1, 'admin', 'Kas Keluar #002/KK-MSL/XI/2025: Rp. 190.000', '::1', '2025-11-20 13:43:31'),
 (51, 1, 'admin', 'Kas Keluar #003/KK-MSL/XI/2025: Rp. 190.000', '::1', '2025-11-20 13:45:56'),
-(52, 1, 'admin', 'Login berhasil', '::1', '2025-11-21 08:23:22');
+(52, 1, 'admin', 'Login berhasil', '::1', '2025-11-21 08:23:22'),
+(53, 2, 'Falih', 'Akun diupdate: Username: palihnges → Falih; Role: Kasir → Administrator; ', NULL, '2025-11-21 13:55:57'),
+(54, 5, 'KSK', 'Akun diupdate: Username: ngising → KSK; Nama: Ngising Mampet → PT. Kalimantan Sawit Kusuma; ', NULL, '2025-11-21 13:56:32'),
+(55, 6, 'Viola', 'Akun dibuat: Viola (Role: Administrator)', NULL, '2025-11-21 13:56:50'),
+(56, 1, 'admin', 'Hapus Kas Masuk #10', '::1', '2025-11-21 13:57:13'),
+(57, 1, 'admin', 'Hapus Kas Masuk #9', '::1', '2025-11-21 13:57:15'),
+(58, 1, 'admin', 'Hapus Kas Keluar #13', '::1', '2025-11-21 13:57:19'),
+(59, 1, 'admin', 'Hapus Kas Keluar #12', '::1', '2025-11-21 13:57:21'),
+(60, 1, 'admin', 'Hapus Kas Keluar #11', '::1', '2025-11-21 13:57:22');
 
 -- --------------------------------------------------------
 
@@ -189,13 +197,6 @@ CREATE TABLE `stok_opname` (
   `tanggal_opname` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `stok_opname`
---
-
-INSERT INTO `stok_opname` (`id`, `nomor_surat`, `user_id`, `username`, `subtotal_fisik`, `bon_sementara`, `uang_rusak`, `materai`, `lainnya`, `keterangan_lainnya`, `fisik_total`, `saldo_sistem`, `selisih`, `tanggal_opname`) VALUES
-(1, '001/KAS-KSK/XI/2025', 1, 'admin', 40400000.00, 0.00, 0.00, 0.00, 0.00, NULL, 40400000.00, 2015742135.00, -1975342135.00, '2025-11-21 09:00:55');
-
 -- --------------------------------------------------------
 
 --
@@ -211,23 +212,6 @@ CREATE TABLE `stok_opname_detail` (
   `jumlah` int(11) NOT NULL,
   `nilai` decimal(15,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `stok_opname_detail`
---
-
-INSERT INTO `stok_opname_detail` (`id`, `stok_opname_id`, `no_urut`, `uraian`, `satuan`, `jumlah`, `nilai`) VALUES
-(1, 1, 1, 'Seratus Ribuan Kertas', 'Lembar', 120, 100000.00),
-(2, 1, 2, 'Lima Puluh Ribuan Kertas', 'Lembar', 430, 50000.00),
-(3, 1, 3, 'Dua Puluh Ribuan Kertas', 'Lembar', 120, 20000.00),
-(4, 1, 4, 'Sepuluh Ribuan Kertas', 'Lembar', 450, 10000.00),
-(5, 1, 5, 'Lima Ribuan Kertas', 'Lembar', 0, 5000.00),
-(6, 1, 6, 'Dua Ribuan Kertas', 'Lembar', 0, 2000.00),
-(7, 1, 7, 'Satu Ribuan Kertas', 'Lembar', 0, 1000.00),
-(8, 1, 8, 'Satu Ribuan Logam', 'Keping', 0, 1000.00),
-(9, 1, 9, 'Lima Ratusan Logam', 'Keping', 0, 500.00),
-(10, 1, 10, 'Dua Ratusan Logam', 'Keping', 0, 200.00),
-(11, 1, 11, 'Satu Ratusan Logam', 'Keping', 0, 100.00);
 
 -- --------------------------------------------------------
 
@@ -245,17 +229,6 @@ CREATE TABLE `transaksi` (
   `keterangan` text DEFAULT NULL,
   `tanggal_transaksi` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `transaksi`
---
-
-INSERT INTO `transaksi` (`id`, `nomor_surat`, `user_id`, `username`, `jenis_transaksi`, `nominal`, `keterangan`, `tanggal_transaksi`) VALUES
-(9, '003/KT-KSK/XI/2025', 1, 'admin', 'kas_terima', 1999022134.00, 'wassapguys12', '2025-11-20 13:35:08'),
-(10, '004/KT-KSK/XI/2025', 1, 'admin', 'kas_terima', 19000001.00, 'wassapmamen', '2025-11-20 13:35:32'),
-(11, '001/KK-KSK/XI/2025', 1, 'admin', 'kas_keluar', 1900000.00, 'wassapguys1221', '2025-11-20 13:42:26'),
-(12, '002/KK-KSK/XI/2025', 1, 'admin', 'kas_keluar', 190000.00, 'wassapmamen', '2025-11-20 13:43:31'),
-(13, '003/KK-KSK/XI/2025', 1, 'admin', 'kas_keluar', 190000.00, 'wassapguys12', '2025-11-20 13:45:56');
 
 -- --------------------------------------------------------
 
@@ -278,8 +251,9 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `username`, `password`, `nama_lengkap`, `role`, `created_at`) VALUES
 (1, 'admin', '$2y$10$upcANdBwwfO7IZWJ0BvFve74wJQewUJ0aJ1Ykgd03UdlPocWzd.XW', 'Andreanoe Meitin', 'Administrator', '2025-11-17 02:51:52'),
-(2, 'palihnges', '$2y$10$5KYqmbmP/3XEnYQsS/9q2OzpOLgAuI2ilpcyR5SoWk6J05XyfWG6O', 'Falih Pangestu', 'Kasir', '2025-11-17 00:51:50'),
-(5, 'ngising', '$2y$10$AXCuteFGWCj3wH7kZYOV4OU1cX567gK1VPNbprWw31aa60YhyzodG', 'Ngising Mampet', 'Kasir', '2025-11-17 22:14:44');
+(2, 'Falih', '$2y$10$kbIC8PlzCYekG7S2gJxsDOpXUYeWQRAcofv43ar9zUsIpO0tjmBUm', 'Falih Pangestu', 'Administrator', '2025-11-17 00:51:50'),
+(5, 'KSK', '$2y$10$281CCVc5d9BcfroIrGed9Ol4s6jq/URvkykVTuiM8Xi.nk6XEQQ9S', 'PT. Kalimantan Sawit Kusuma', 'Kasir', '2025-11-17 22:14:44'),
+(6, 'Viola', '$2y$10$duvkzx89PGsuD2T86I0vruvepUZMtLLKrXsui7NPbTiABMJNEXLqm', 'Viola Salwa Firnanda', 'Administrator', '2025-11-21 00:56:49');
 
 --
 -- Triggers `users`
@@ -385,7 +359,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `audit_log`
 --
 ALTER TABLE `audit_log`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
 
 --
 -- AUTO_INCREMENT for table `konfigurasi`
@@ -421,7 +395,7 @@ ALTER TABLE `transaksi`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables

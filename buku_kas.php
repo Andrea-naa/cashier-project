@@ -704,7 +704,7 @@ $balance = $total_debet;
                         <tbody id="tableBody">
                             <?php if (empty($rows)): ?>
                             <tr>
-                                <td colspan="4" class="empty-state">Tidak ada transaksi pada periode ini.</td>
+                                <td colspan="5" class="empty-state">Tidak ada transaksi pada periode ini.</td>
                             </tr>
                             <?php else: ?>
                                 <?php foreach ($rows as $row): ?>

@@ -16,7 +16,23 @@ $user_id = $_SESSION['user_id'] ?? 0;
 $username = $_SESSION['username'] ?? 'Guest';
 $nama_lengkap = $_SESSION['nama_lengkap'] ?? $_SESSION['username'] ?? 'User';
 $role = $_SESSION['role'] ?? 'Kasir';
+// bagian filter data tanggal transaksi
+$filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
+$date_condition = '';
 
+switch($filter) {
+    case 'today':
+        $date_condition = " WHERE DATE(tanggal_opname) = CURDATE()";
+        break;
+    case '7days':
+        $date_condition = " WHERE DATE(tanggal_opname) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+        break;
+    case 'month':
+        $date_condition = " WHERE MONTH(tanggal_opname) = MONTH(CURDATE()) AND YEAR(tanggal_opname) = YEAR(CURDATE())";
+        break;
+    default:
+        $date_condition = '';
+}
 // bagian hapus data
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
     $del_id = intval($_POST['delete_id']);
@@ -36,7 +52,7 @@ $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $start = ($page - 1) * $limit;
 
 // ngitung total data
-$qCount = mysqli_query($conn, "SELECT COUNT(*) as total FROM stok_opname");
+$qCount = mysqli_query($conn, "SELECT COUNT(*) as total FROM stok_opname $date_condition");
 $total = 0;
 if ($qCount) {
     $resultCount = mysqli_fetch_assoc($qCount);
@@ -47,7 +63,8 @@ $totalPages = max(1, ceil($total / $limit));
 
 // ngambil data stok opname dengan pagination
 $rows = [];
-$stmt = mysqli_prepare($conn, "SELECT * FROM stok_opname ORDER BY tanggal_opname DESC LIMIT ?, ?");
+$query = "SELECT * FROM stok_opname $date_condition ORDER BY tanggal_opname DESC LIMIT ?, ?";
+$stmt = mysqli_prepare($conn, $query);
 if ($stmt) {
     mysqli_stmt_bind_param($stmt, 'ii', $start, $limit);
     mysqli_stmt_execute($stmt);
@@ -268,7 +285,35 @@ if ($stmt) {
             display: flex;
             flex-direction: column;
         }
+        /* Filter Section */
+        .filter-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
 
+        .filter-wrapper {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .btn-filter {
+            flex: none;
+            padding: 10px 18px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
         /*  kontener  */
         .container {
             width: 95%;
@@ -542,7 +587,15 @@ if ($stmt) {
                 width: 100%;
                 left: -100%;
             }
+            .filter-wrapper {
+                flex-direction: column;
+                align-items: stretch;
+            }
             
+            .filter-wrapper .btn-filter {
+                width: 100%;
+                justify-content: center;
+            }
             .actions {
                 flex-direction: column;
                 gap: 6px;
@@ -641,7 +694,28 @@ if ($stmt) {
                         Buat Stok Opname Baru
                     </a>
                 </div>
-
+                <!-- Filter Section -->
+                <div class="filter-container">
+                    <div class="filter-wrapper">
+                        <span class="filter-label">Filter:</span>
+                        <a href="tabel_stok_opname.php?filter=today&page=<?= $page; ?>" 
+                        class="btn btn-filter <?php echo $filter === 'today' ? 'btn-primary' : 'btn-edit'; ?>">
+                            <i class="fas fa-calendar-day"></i> Hari Ini
+                        </a>
+                        <a href="tabel_stok_opname.php?filter=7days&page=<?= $page; ?>" 
+                        class="btn btn-filter <?php echo $filter === '7days' ? 'btn-primary' : 'btn-edit'; ?>">
+                            <i class="fas fa-calendar-week"></i> 7 Hari Terakhir
+                        </a>
+                        <a href="tabel_stok_opname.php?filter=month&page=<?= $page; ?>" 
+                        class="btn btn-filter <?php echo $filter === 'month' ? 'btn-primary' : 'btn-edit'; ?>">
+                            <i class="fas fa-calendar-alt"></i> Bulan Ini
+                        </a>
+                        <a href="tabel_stok_opname.php?page=<?= $page; ?>" 
+                        class="btn btn-filter <?php echo $filter === 'all' ? 'btn-primary' : 'btn-edit'; ?>">
+                            <i class="fas fa-list"></i> Semua
+                        </a>
+                    </div>
+                </div>
                 <!-- Tabel Stok Opname -->
                 <div class="table-wrapper">
                     <table>
@@ -701,7 +775,7 @@ if ($stmt) {
                 <?php if ($totalPages > 1): ?>
                 <div class="pager">
                     <?php for ($p = 1; $p <= $totalPages; $p++): ?>
-                        <a href="?page=<?= $p; ?>" <?= ($p == $page) ? 'class="active"' : ''; ?>><?= $p; ?></a>
+                        <a href="?page=<?= $p; ?>&filter=<?= $filter; ?>" <?= ($p == $page) ? 'class="active"' : ''; ?>><?= $p; ?></a>
                     <?php endfor; ?>
                 </div>
                 <?php endif; ?>

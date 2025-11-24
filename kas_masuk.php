@@ -7,6 +7,23 @@ $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
 $nama_lengkap = $_SESSION['nama_lengkap'];
 $role = $_SESSION['role'] ?? 'Kasir';
+// bagian filter tanggal
+$filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
+$date_condition = '';
+
+switch($filter) {
+    case 'today':
+        $date_condition = " AND DATE(tanggal_transaksi) = CURDATE()";
+        break;
+    case '7days':
+        $date_condition = " AND DATE(tanggal_transaksi) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+        break;
+    case 'month':
+        $date_condition = " AND MONTH(tanggal_transaksi) = MONTH(CURDATE()) AND YEAR(tanggal_transaksi) = YEAR(CURDATE())";
+        break;
+    default:
+        $date_condition = '';
+}
 
 $success_message = '';
 $edit_mode = false;
@@ -108,7 +125,7 @@ if (isset($_GET['success'])) {
 
 // Ambil data kas masuk
 $data_kas = [];
-$res = mysqli_query($conn, "SELECT * FROM transaksi WHERE jenis_transaksi = 'kas_terima' ORDER BY tanggal_transaksi DESC");
+$res = mysqli_query($conn, "SELECT * FROM transaksi WHERE jenis_transaksi = 'kas_terima' $date_condition ORDER BY tanggal_transaksi DESC");
 if ($res) {
     while ($r = mysqli_fetch_assoc($res)) {
         $data_kas[] = $r;
@@ -320,6 +337,34 @@ $last_nomor = get_last_nomor_surat('KT-KSK');
             flex-direction: column;
         }
         
+        /* Filter Section */
+        .filter-container {
+            max-width: 860px;
+            margin: 20px auto 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .filter-wrapper {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        .btn-filter {
+            flex: none;
+            padding: 8px 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
         .alert { 
             max-width: 860px; 
             margin: 20px auto 0; 
@@ -354,7 +399,7 @@ $last_nomor = get_last_nomor_surat('KT-KSK');
         .container { 
             width: 90%; 
             max-width: 900px; 
-            margin: 40px auto; 
+            margin: 0 auto 40px; 
             background-color: white; 
             padding: 40px; 
             border-radius: 14px; 
@@ -636,6 +681,16 @@ $last_nomor = get_last_nomor_surat('KT-KSK');
                 width: 100%;
                 left: -100%;
             }
+            
+            .filter-wrapper {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-wrapper .btn-filter {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -661,8 +716,6 @@ $last_nomor = get_last_nomor_surat('KT-KSK');
                     <span>Home</span>
                 </a>
             </li>
-                </a>
-            </li>
             <li class="menu-item">
                 <a href="logout.php">
                     <img src="assets/gambar/icon/logout.png" class="menu-icon">
@@ -671,9 +724,6 @@ $last_nomor = get_last_nomor_surat('KT-KSK');
             </li>
         </ul>
     </div>
-    </div>
-
-    
 
     <!-- Main Content -->
     <div class="main-wrapper">
@@ -691,78 +741,98 @@ $last_nomor = get_last_nomor_surat('KT-KSK');
             </div>
         </div>
 
-    <?php if ($success_message): ?>
-        <?php echo $success_message; ?>
-    <?php endif; ?>
+        <!-- Filter Section -->
+        <div class="content-wrapper">
+            <div class="filter-container">
+                <div class="filter-wrapper">
+                    <span class="filter-label">Filter:</span>
+                    <a href="kas_masuk.php?filter=today<?php echo $edit_mode ? '&edit='.$edit_data['id'] : ''; ?>" 
+                       class="btn btn-filter btn-sm <?php echo $filter === 'today' ? 'btn-primary' : 'btn-secondary'; ?>">
+                        <i class="fas fa-calendar-day"></i> Hari Ini
+                    </a>
+                    <a href="kas_masuk.php?filter=7days<?php echo $edit_mode ? '&edit='.$edit_data['id'] : ''; ?>" 
+                       class="btn btn-filter btn-sm <?php echo $filter === '7days' ? 'btn-primary' : 'btn-secondary'; ?>">
+                        <i class="fas fa-calendar-week"></i> 7 Hari Terakhir
+                    </a>
+                    <a href="kas_masuk.php?filter=month<?php echo $edit_mode ? '&edit='.$edit_data['id'] : ''; ?>" 
+                       class="btn btn-filter btn-sm <?php echo $filter === 'month' ? 'btn-primary' : 'btn-secondary'; ?>">
+                        <i class="fas fa-calendar-alt"></i> Bulan Ini
+                    </a>
+                    <a href="kas_masuk.php<?php echo $edit_mode ? '?edit='.$edit_data['id'] : ''; ?>" 
+                       class="btn btn-filter btn-sm <?php echo $filter === 'all' ? 'btn-primary' : 'btn-secondary'; ?>">
+                        <i class="fas fa-list"></i> Semua
+                    </a>
+                </div>
+            </div>
 
-    <div class="container">
-    <form method="POST">
-        <?php if ($edit_mode): ?>
-            <input type="hidden" name="edit_id" value="<?php echo $edit_data['id']; ?>">
-        <?php endif; ?>
-
-        <div class="form-group">
-            <label>Keterangan</label>
-            <input type="text" name="keterangan" placeholder="Masukkan keterangan" value="<?php echo htmlspecialchars($edit_data['keterangan'] ?? ''); ?>" required>
-        </div>
-
-        <div class="form-group">
-            <label>Jumlah</label>
-            <input type="text" name="jumlah" placeholder="Masukkan jumlah kas masuk" value="<?php echo $edit_mode ? number_format($edit_data['nominal'], 0, ',', '.') : ''; ?>" required>
-        </div>
-
-        <div class="button-group">
-            <button type="submit" name="simpan_kas" class="btn btn-primary">
-                <?php echo $edit_mode ? 'Update' : 'Simpan'; ?> Kas Masuk
-            </button>
-            <?php if ($edit_mode): ?>
-                <a href="kas_masuk.php" class="btn btn-secondary">
-                    Batal Edit
-                </a>
-            <?php else: ?>
-                <a href="dashboard.php" class="btn btn-secondary">
-                    Kembali
-                </a>
+            <?php if ($success_message): ?>
+                <?php echo $success_message; ?>
             <?php endif; ?>
-        </div>
-    </form>
-<!-- ngilangin nomor surat yang ada diatas tabel tapi pake komentar sewaktu waktu dipake bisa diaktifkan lagi -->
-    <!-- <div class="nomor-info">
-        <?php echo htmlspecialchars($last_nomor); ?>
-    </div> -->
 
-    <div class="form-group">
-        <label>Daftar Kas Masuk</label>
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width:50px;">NO</th>
-                        <th style="width:130px;">NOMOR SURAT</th>
-                        <th style="width:130px;">TANGGAL</th>
-                        <th>KETERANGAN</th>
-                        <th style="width:130px;">JUMLAH</th>
-                        <th style="width:220px;">AKSI</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <?php if (!empty($data_kas)): ?>
-                    <?php $i = 1; foreach ($data_kas as $row): ?>
-                        <tr>
-                            <td style="text-align:center;"><?php echo $i; ?></td>
-                            <td style="text-align:center;"><?php echo htmlspecialchars($row['nomor_surat'] ?? '-'); ?></td>
-                            <td style="text-align:center;"><?php echo date('d-M-Y', strtotime($row['tanggal_transaksi'])); ?></td>
-                            <td><?php echo htmlspecialchars($row['keterangan']); ?></td>
-                            <td style="text-align:right;">Rp. <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
-                            <td style="text-align:center;">
-                                <div class="action-buttons">
-                                    <a href="kas_masuk.php?edit=<?php echo $row['id']; ?>" class="btn btn-edit btn-sm" title="Edit">
-                                        Edit
-                                    </a>
-                                    <a href="kas_masuk.php?delete=<?php echo $row['id']; ?>" class="btn btn-delete btn-sm" onclick="return confirm('Yakin ingin menghapus data ini?')" title="Hapus">
-                                        Delete
-                                    </a>
-                                    <a href="export_pdf.php?type=kas_masuk&id=<?php echo $row['id']; ?>" target="_blank" class="btn btn-pdf btn-sm" title="Export PDF">
+            <div class="container">
+                <form method="POST">
+                    <?php if ($edit_mode): ?>
+                        <input type="hidden" name="edit_id" value="<?php echo $edit_data['id']; ?>">
+                    <?php endif; ?>
+
+                    <div class="form-group">
+                        <label>Keterangan</label>
+                        <input type="text" name="keterangan" placeholder="Masukkan keterangan" value="<?php echo htmlspecialchars($edit_data['keterangan'] ?? ''); ?>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Jumlah</label>
+                        <input type="text" name="jumlah" placeholder="Masukkan jumlah kas masuk" value="<?php echo $edit_mode ? number_format($edit_data['nominal'], 0, ',', '.') : ''; ?>" required>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" name="simpan_kas" class="btn btn-primary">
+                            <?php echo $edit_mode ? 'Update' : 'Simpan'; ?> Kas Masuk
+                        </button>
+                        <?php if ($edit_mode): ?>
+                            <a href="kas_masuk.php" class="btn btn-secondary">
+                                Batal Edit
+                            </a>
+                        <?php else: ?>
+                            <a href="dashboard.php" class="btn btn-secondary">
+                                Kembali
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </form>
+
+                <div class="form-group">
+                    <label>Daftar Kas Masuk</label>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width:50px;">NO</th>
+                                    <th style="width:130px;">NOMOR SURAT</th>
+                                    <th style="width:130px;">TANGGAL</th>
+                                    <th>KETERANGAN</th>
+                                    <th style="width:130px;">JUMLAH</th>
+                                    <th style="width:220px;">AKSI</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <?php if (!empty($data_kas)): ?>
+                                <?php $i = 1; foreach ($data_kas as $row): ?>
+                                    <tr>
+                                        <td style="text-align:center;"><?php echo $i; ?></td>
+                                        <td style="text-align:center;"><?php echo htmlspecialchars($row['nomor_surat'] ?? '-'); ?></td>
+                                        <td style="text-align:center;"><?php echo date('d-M-Y', strtotime($row['tanggal_transaksi'])); ?></td>
+                                        <td><?php echo htmlspecialchars($row['keterangan']); ?></td>
+                                        <td style="text-align:right;">Rp. <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
+                                        <td style="text-align:center;">
+                                            <div class="action-buttons">
+                                                <a href="kas_masuk.php?edit=<?php echo $row['id']; ?>" class="btn btn-edit btn-sm" title="Edit">
+                                                    Edit
+                                                </a>
+                                                <a href="kas_masuk.php?delete=<?php echo $row['id']; ?>" class="btn btn-delete btn-sm" onclick="return confirm('Yakin ingin menghapus data ini?')" title="Hapus">
+                                                    Delete
+                                                </a>
+                                                <a href="export_pdf.php?type=kas_masuk&id=<?php echo $row['id']; ?>" target="_blank" class="btn btn-pdf btn-sm" title="Export PDF">
                                         PDF
                                     </a>
                                 </div>

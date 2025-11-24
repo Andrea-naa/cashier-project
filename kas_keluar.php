@@ -8,7 +8,23 @@ $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
 $nama_lengkap = $_SESSION['nama_lengkap'];
 $role = $_SESSION['role'] ?? 'Kasir';
+// bagian filter data tanggal transaksi
+$filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
+$date_condition = '';
 
+switch($filter) {
+    case 'today':
+        $date_condition = " AND DATE(tanggal_transaksi) = CURDATE()";
+        break;
+    case '7days':
+        $date_condition = " AND DATE(tanggal_transaksi) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+        break;
+    case 'month':
+        $date_condition = " AND MONTH(tanggal_transaksi) = MONTH(CURDATE()) AND YEAR(tanggal_transaksi) = YEAR(CURDATE())";
+        break;
+    default:
+        $date_condition = '';
+}
 $success_message = '';
 $edit_mode = false;
 $edit_data = [];
@@ -109,7 +125,7 @@ if (isset($_GET['success'])) {
 
 // ngambil data kas keluar
 $data_kas = [];
-$res = mysqli_query($conn, "SELECT * FROM transaksi WHERE jenis_transaksi = 'kas_keluar' ORDER BY tanggal_transaksi DESC");
+$res = mysqli_query($conn, "SELECT * FROM transaksi WHERE jenis_transaksi = 'kas_keluar' $date_condition ORDER BY tanggal_transaksi DESC");
 if ($res) {
     while ($r = mysqli_fetch_assoc($res)) {
         $data_kas[] = $r;
@@ -319,6 +335,33 @@ $last_nomor = get_last_nomor_surat('KK-KSK');
             flex: 1;
             display: flex;
             flex-direction: column;
+        }
+        /* * Filter Section */ 
+        .filter-container {
+            max-width: 860px;
+            margin: 20px auto 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .filter-wrapper {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        .btn-filter {
+            flex: none;
+            padding: 8px 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
         
         .alert { 
@@ -637,6 +680,16 @@ $last_nomor = get_last_nomor_surat('KK-KSK');
                 width: 100%;
                 left: -100%;
             }
+                       
+            .filter-wrapper {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-wrapper .btn-filter {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -690,7 +743,29 @@ $last_nomor = get_last_nomor_surat('KK-KSK');
             </div>
         </div>
 
+             <!-- Filter Section -->
         <div class="content-wrapper">
+            <div class="filter-container">
+                <div class="filter-wrapper">
+                    <span class="filter-label">Filter:</span>
+                    <a href="kas_keluar.php?filter=today<?php echo $edit_mode ? '&edit='.$edit_data['id'] : ''; ?>" 
+                       class="btn btn-filter btn-sm <?php echo $filter === 'today' ? 'btn-primary' : 'btn-secondary'; ?>">
+                        <i class="fas fa-calendar-day"></i> Hari Ini
+                    </a>
+                    <a href="kas_keluar.php?filter=7days<?php echo $edit_mode ? '&edit='.$edit_data['id'] : ''; ?>" 
+                       class="btn btn-filter btn-sm <?php echo $filter === '7days' ? 'btn-primary' : 'btn-secondary'; ?>">
+                        <i class="fas fa-calendar-week"></i> 7 Hari Terakhir
+                    </a>
+                    <a href="kas_keluar.php?filter=month<?php echo $edit_mode ? '&edit='.$edit_data['id'] : ''; ?>" 
+                       class="btn btn-filter btn-sm <?php echo $filter === 'month' ? 'btn-primary' : 'btn-secondary'; ?>">
+                        <i class="fas fa-calendar-alt"></i> Bulan Ini
+                    </a>
+                    <a href="kas_keluar.php<?php echo $edit_mode ? '?edit='.$edit_data['id'] : ''; ?>" 
+                       class="btn btn-filter btn-sm <?php echo $filter === 'all' ? 'btn-primary' : 'btn-secondary'; ?>">
+                        <i class="fas fa-list"></i> Semua
+                    </a>
+                </div>
+            </div>
             <?php if ($success_message): ?>
                 <?php echo $success_message; ?>
             <?php endif; ?>
