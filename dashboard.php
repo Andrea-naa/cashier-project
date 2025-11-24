@@ -463,6 +463,12 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             </li>
             <?php endif; ?>
             <li class="menu-item">
+                <a href="dashboard2.php">
+                    <img src="assets/gambar/icon/logout.png" class="menu-icon">
+                    <span>Flexible Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
                 <a href="logout.php">
                     <img src="assets/gambar/icon/logout.png" class="menu-icon">
                     <span>Logout</span>
