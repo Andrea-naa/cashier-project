@@ -735,9 +735,9 @@ $last_nomor = get_last_nomor_surat('KK-KSK');
                                 <tr>
                                     <th style="width:50px;">NO</th>
                                     <th style="width:130px;">NOMOR SURAT</th>
+                                    <th style="width:130px;">TANGGAL</th>
                                     <th>KETERANGAN</th>
                                     <th style="width:130px;">JUMLAH</th>
-                                    <th style="width:130px;">TANGGAL</th>
                                     <th style="width:220px;">AKSI</th>
                                 </tr>
                             </thead>
@@ -747,9 +747,9 @@ $last_nomor = get_last_nomor_surat('KK-KSK');
                                     <tr>
                                         <td style="text-align:center;"><?php echo $i; ?></td>
                                         <td style="text-align:center;"><?php echo htmlspecialchars($row['nomor_surat'] ?? '-'); ?></td>
+                                        <td style="text-align:center;"><?php echo date('d-M-Y', strtotime($row['tanggal_transaksi'])); ?></td>
                                         <td><?php echo htmlspecialchars($row['keterangan']); ?></td>
                                         <td style="text-align:right;">Rp. <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
-                                        <td style="text-align:center;"><?php echo date('d-M-Y', strtotime($row['tanggal_transaksi'])); ?></td>
                                         <td style="text-align:center;">
                                             <div class="action-buttons">
                                                 <a href="kas_keluar.php?edit=<?php echo $row['id']; ?>" class="btn btn-edit btn-sm" title="Edit">

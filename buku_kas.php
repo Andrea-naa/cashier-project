@@ -377,16 +377,18 @@ $balance = $total_debet;
         }
 
         td:nth-child(1) {
-            text-align: center;
-        }
-
-        td:nth-child(2) {
             text-align: left;
         }
 
-        td:nth-child(3),
+        td:nth-child(2) {
+            text-align: center;
+        }
+
+        td:nth-child(3){
+            text-align: left; 
+        }
         td:nth-child(4) {
-            text-align: right;
+            text-align: center;
         }
 
         tbody tr:nth-child(even) {
@@ -693,6 +695,7 @@ $balance = $total_debet;
                         <thead>
                             <tr>
                                 <th style="width: 120px;">BUKTI KAS</th>
+                                <th style="width:130px;">TANGGAL</th>
                                 <th>URAIAN</th>
                                 <th style="width: 180px;">DEBET</th>
                                 <th style="width: 180px;">KREDIT</th>
@@ -707,6 +710,7 @@ $balance = $total_debet;
                                 <?php foreach ($rows as $row): ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($row['nomor_surat'] ?? '-'); ?></td>
+                                    <td><?php echo date('d-M-Y', strtotime($row['tanggal_transaksi'])); ?></td>
                                     <td><?php echo htmlspecialchars($row['keterangan']); ?></td>
                                     <td><?php echo ($row['jenis_transaksi'] == 'kas_terima') ? number_format($row['nominal'], 2, ',', '.') : '-'; ?></td>
                                     <td><?php echo ($row['jenis_transaksi'] == 'kas_keluar') ? number_format($row['nominal'], 2, ',', '.') : '-'; ?></td>
@@ -741,7 +745,7 @@ $balance = $total_debet;
                     </div>
                     
                     <div class="summary-row" style="border-top: 2px solid #333; padding-top: 15px; margin-top: 15px;">
-                        <span class="summary-label" style="font-size: 16px;">Balance</span>
+                        <!-- <span class="summary-label" style="font-size: 16px;">Balance</span>
                         <div style="display: flex; gap: 100px;">
                             <span class="summary-value" id="balanceDebet" style="min-width: 180px; text-align: right;">
                                 <?php echo number_format($balance, 2, ',', '.'); ?>
@@ -749,7 +753,7 @@ $balance = $total_debet;
                             <span class="summary-value" id="balanceKredit" style="min-width: 180px; text-align: right;">
                                 <?php echo number_format($balance, 2, ',', '.'); ?>
                             </span>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
 

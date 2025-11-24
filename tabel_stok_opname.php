@@ -649,12 +649,12 @@ if ($stmt) {
                             <tr>
                                 <th style="width:60px; text-align:center;">ID</th>
                                 <th>Nomor Surat</th>
+                                <th>Tanggal</th>
                                 <th>User</th>
                                 <th>Subtotal</th>
                                 <th>Total Fisik</th>
                                 <th>Saldo Sistem</th>
                                 <th>Selisih</th>
-                                <th>Tanggal</th>
                                 <th style="width:220px; text-align:center;">Aksi</th>
                             </tr>
                         </thead>
@@ -668,12 +668,12 @@ if ($stmt) {
                                 <tr>
                                     <td style="text-align:center;"><?= intval($r['id']); ?></td>
                                     <td><?= htmlspecialchars($r['nomor_surat'] ?? '-'); ?></td>
+                                    <td><?= date('d-M-Y H:i', strtotime($r['tanggal_opname'])); ?></td>
                                     <td><?= htmlspecialchars($r['username']); ?></td>
                                     <td><?= 'Rp. ' . number_format($r['subtotal_fisik'], 0, ',', '.'); ?></td>
                                     <td><?= 'Rp. ' . number_format($r['fisik_total'], 0, ',', '.'); ?></td>
                                     <td><?= 'Rp. ' . number_format($r['saldo_sistem'], 0, ',', '.'); ?></td>
                                     <td><?= 'Rp. ' . number_format($r['selisih'], 0, ',', '.'); ?></td>
-                                    <td><?= date('d-M-Y H:i', strtotime($r['tanggal_opname'])); ?></td>
                                     <td>
                                         <div class="actions">
                                             <a href="stok_opname.php?edit=<?= intval($r['id']); ?>" class="btn btn-edit">
