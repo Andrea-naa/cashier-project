@@ -337,7 +337,7 @@ $last_nomor = get_last_nomor_surat('KT-KSK');
             flex-direction: column;
         }
         
-        /* Filter Section */
+        /* * Filter Section */ 
         .filter-container {
             max-width: 860px;
             margin: 20px auto 20px;
@@ -399,7 +399,7 @@ $last_nomor = get_last_nomor_surat('KT-KSK');
         .container { 
             width: 90%; 
             max-width: 900px; 
-            margin: 0 auto 40px; 
+            margin: 40px auto; 
             background-color: white; 
             padding: 40px; 
             border-radius: 14px; 
