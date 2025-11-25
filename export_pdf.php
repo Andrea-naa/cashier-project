@@ -14,6 +14,9 @@ set_error_handler(function($errno, $errstr, $errfile, $errline) {
 
 require __DIR__ . '/vendor/autoload.php';
 
+echo '<script src="https://printjs-4de6.kxcdn.com/print.min.js"></script>';
+echo '<link rel="stylesheet" href="https://printjs-4de6.kxcdn.com/print.min.css">';
+
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
@@ -44,6 +47,19 @@ function terbilang($angka) {
     }
     
     return trim($temp);
+}
+
+// Script auto-print
+$auto_print_script = '';
+if (isset($_GET['print']) && $_GET['print'] == '1') {
+    $auto_print_script = '
+    <script>
+        window.onload = function() {
+            setTimeout(function() {
+                window.print();
+            }, 500);
+        };
+    </script>';
 }
 
 // ngambil konfigurasi
@@ -119,6 +135,7 @@ if ($type === 'kas_masuk' || $type === 'kas_keluar') {
     
     // html untuk pdf 
     $html = '<!doctype html><html><head><meta charset="utf-8">
+    ' . $auto_print_script . '
     <style>
         @page { margin: 20mm 15mm; }
         body { 
@@ -374,6 +391,7 @@ elseif ($type === 'stok_opname') {
     $saldo_buku_kas = mysqli_fetch_assoc($q_saldo)['saldo_kas'] ?? 0;
     
     $html = '<!doctype html><html><head><meta charset="utf-8">
+    ' . $auto_print_script . '
     <style>
         @page { margin: 15mm 10mm; }
         body { 
@@ -780,7 +798,16 @@ elseif ($type === 'buku_kas') {
     $date_from = isset($_GET['date_from']) ? $_GET['date_from'] : date('Y-m-01');
     $date_to = isset($_GET['date_to']) ? $_GET['date_to'] : date('Y-m-t');
     
-    $sql = "SELECT * FROM transaksi WHERE DATE(tanggal_transaksi) BETWEEN '$date_from' AND '$date_to' ORDER BY tanggal_transaksi ASC";
+    $sql = "SELECT * FROM transaksi 
+        WHERE DATE(tanggal_transaksi) BETWEEN '$date_from' AND '$date_to' 
+        ORDER BY 
+            CASE 
+                WHEN jenis_transaksi = 'kas_terima' THEN 1 
+                WHEN jenis_transaksi = 'kas_keluar' THEN 2 
+                ELSE 3 
+            END ASC,
+            tanggal_transaksi ASC";
+            
     $res = mysqli_query($conn, $sql);
     $rows = [];
     while ($r = mysqli_fetch_assoc($res)) $rows[] = $r;
@@ -792,6 +819,7 @@ elseif ($type === 'buku_kas') {
     $tanggal_formatted = date('d-M-Y', $tanggal_to);
     
     $html = '<!doctype html><html><head><meta charset="utf-8">
+    ' . $auto_print_script . '
     <style>
         @page { margin: 20mm 15mm; }
         body { 
@@ -1064,9 +1092,54 @@ try {
     $dompdf->loadHtml($html);
     $dompdf->setPaper('A4', 'portrait');
     $dompdf->render();
-    $dompdf->stream($filename, array("Attachment" => false));
+    $temp_folder = __DIR__ . '/temp_pdf/';
+    if (!file_exists($temp_folder)) {
+        mkdir($temp_folder, 0755, true);
+    }
+    
+    // Generate nama file unik
+    $pdf_filename = date('YmdHis') . '_' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $filename);
+    $pdf_path = $temp_folder . $pdf_filename;
+    
+    // Simpan PDF
+    $output = $dompdf->output();
+    file_put_contents($pdf_path, $output);
+    
+    // Jika ada parameter print=1, buka PDF di tab baru dan auto print
+    if (isset($_GET['print']) && $_GET['print'] == '1') {
+        echo '<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Cetak PDF</title>
+            <script>
+                window.onload = function() {
+                    // Buka PDF di iframe
+                    var iframe = document.createElement("iframe");
+                    iframe.style.display = "none";
+                    iframe.src = "temp_pdf/' . $pdf_filename . '";
+                    document.body.appendChild(iframe);
+                    
+                    // Auto print setelah load
+                    iframe.onload = function() {
+                        setTimeout(function() {
+                            iframe.contentWindow.print();
+                        }, 500);
+                    };
+                };
+            </script>
+        </head>
+        <body>
+            <p>Sedang memproses dokumen...</p>
+            <p><a href="temp_pdf/' . $pdf_filename . '" target="_blank">Jika mau memastikan data pdf nya ,bisa diklik di sini</a></p>
+        </body>
+        </html>';
+    } else {
+        // Redirect ke PDF
+        header("Location: temp_pdf/" . $pdf_filename);
+    }
     
 } catch (Exception $e) {
-    die('ERROR saat generate PDF: ' . $e->getMessage());
+    die('ERROR saat menyimpan PDF: ' . $e->getMessage());
 }
 ?>

@@ -16,6 +16,7 @@ $user_id = $_SESSION['user_id'] ?? 0;
 $username = $_SESSION['username'] ?? 'Guest';
 $nama_lengkap = $_SESSION['nama_lengkap'] ?? $_SESSION['username'] ?? 'User';
 $role = $_SESSION['role'] ?? 'Kasir';
+
 // bagian filter data tanggal transaksi
 $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
 $date_condition = '';
@@ -33,86 +34,7 @@ switch($filter) {
     default:
         $date_condition = '';
 }
-// bagian hapus data
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
-    $del_id = intval($_POST['delete_id']);
-    $stmt = mysqli_prepare($conn, "DELETE FROM stok_opname WHERE id = ?");
-    if ($stmt) {
-        mysqli_stmt_bind_param($stmt, 'i', $del_id);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-    }
-    header("Location: tabel_stok_opname.php?deleted=1");
-    exit;
-}
 
-// Pagination setup
-$limit = 10;
-$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-$start = ($page - 1) * $limit;
-
-// ngitung total data
-$qCount = mysqli_query($conn, "SELECT COUNT(*) as total FROM stok_opname $date_condition");
-$total = 0;
-if ($qCount) {
-    $resultCount = mysqli_fetch_assoc($qCount);
-    $total = $resultCount['total'] ?? 0;
-    mysqli_free_result($qCount);
-}
-$totalPages = max(1, ceil($total / $limit));
-
-// ngambil data stok opname dengan pagination
-$rows = [];
-$query = "SELECT * FROM stok_opname $date_condition ORDER BY tanggal_opname DESC LIMIT ?, ?";
-$stmt = mysqli_prepare($conn, $query);
-if ($stmt) {
-    mysqli_stmt_bind_param($stmt, 'ii', $start, $limit);
-    mysqli_stmt_execute($stmt);
-    $res = mysqli_stmt_get_result($stmt);
-    if ($res) {
-        while ($r = mysqli_fetch_assoc($res)) {
-            $rows[] = $r;
-        }
-    }
-    mysqli_stmt_close($stmt);
-}
-?>
-
-<?php
-// Aktifkan error reporting untuk debugging
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-require_once 'config/conn_db.php';
-
-// Cek apakah user sudah login
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit;
-}
-
-// Ambil informasi user dari session dengan fallback untuk mencegah undefined variable
-$user_id = $_SESSION['user_id'] ?? 0;
-$username = $_SESSION['username'] ?? 'Guest';
-$nama_lengkap = $_SESSION['nama_lengkap'] ?? $_SESSION['username'] ?? 'User';
-$role = $_SESSION['role'] ?? 'Kasir';
-// bagian filter data tanggal transaksi
-$filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
-$date_condition = '';
-
-switch($filter) {
-    case 'today':
-        $date_condition = " WHERE DATE(tanggal_opname) = CURDATE()";
-        break;
-    case '7days':
-        $date_condition = " WHERE DATE(tanggal_opname) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
-        break;
-    case 'month':
-        $date_condition = " WHERE MONTH(tanggal_opname) = MONTH(CURDATE()) AND YEAR(tanggal_opname) = YEAR(CURDATE())";
-        break;
-    default:
-        $date_condition = '';
-}
 // bagian hapus data
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
     $del_id = intval($_POST['delete_id']);
@@ -165,6 +87,8 @@ if ($stmt) {
     <title>Daftar Stok Opname</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://printjs-4de6.kxcdn.com/print.min.js"></script>
+    <link rel="stylesheet" href="https://printjs-4de6.kxcdn.com/print.min.css">
     <style>
         * {
             margin: 0;
@@ -876,7 +800,10 @@ if ($stmt) {
                                                     Delete
                                                 </button>
                                             </form>
-                                            <a href="export_pdf.php?type=stok_opname&id=<?= intval($r['id']); ?>" target="_blank" class="btn btn-pdf">
+                                            <a href="export_pdf.php?type=kas_masuk&id=<?php echo $row['id']; ?>&print=1" 
+                                            target="_blank" 
+                                            class="btn btn-pdf btn-sm" 
+                                            title="Cetak PDF">
                                                 PDF
                                             </a>
                                         </div>
@@ -945,6 +872,16 @@ if ($stmt) {
     </div>
 
     <script>
+        
+        function autoPrint(pdfUrl) { 
+            printJS({ 
+                printable: pdfUrl, 
+                type: 'pdf', 
+                showModal: true, 
+                modalMessage: 'Memproses dokumen...' 
+            }); 
+        }
+
         // Sidebar script
         const menuBurger = document.getElementById('menuBurger');
         const sidebar = document.getElementById('sidebar');

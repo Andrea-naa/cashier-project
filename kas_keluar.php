@@ -146,6 +146,8 @@ $last_nomor = get_last_nomor_surat('KK-KSK');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kas Keluar - Sistem Kas Kebun</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://printjs-4de6.kxcdn.com/print.min.js"></script>
+    <link rel="stylesheet" href="https://printjs-4de6.kxcdn.com/print.min.css">
     <style>
         * { 
             margin: 0; 
@@ -835,7 +837,10 @@ $last_nomor = get_last_nomor_surat('KK-KSK');
                                                 <a href="kas_keluar.php?delete=<?php echo $row['id']; ?>" class="btn btn-delete btn-sm" onclick="return confirm('Yakin ingin menghapus data ini?')" title="Hapus">
                                                     Delete
                                                 </a>
-                                                <a href="export_pdf.php?type=kas_keluar&id=<?php echo $row['id']; ?>" target="_blank" class="btn btn-pdf btn-sm" title="Export PDF">
+                                                <a href="export_pdf.php?type=kas_masuk&id=<?php echo $row['id']; ?>&print=1" 
+                                                target="_blank" 
+                                                class="btn btn-pdf btn-sm" 
+                                                title="Cetak PDF">
                                                     PDF
                                                 </a>
                                             </div>
@@ -899,6 +904,16 @@ $last_nomor = get_last_nomor_surat('KK-KSK');
     </div>
 
     <script>
+                
+        function autoPrint(pdfUrl) { 
+            printJS({ 
+                printable: pdfUrl, 
+                type: 'pdf', 
+                showModal: true, 
+                modalMessage: 'Memproses dokumen...' 
+            }); 
+        }
+
         // sidebar script
         const menuBurger = document.getElementById('menuBurger');
         const sidebar = document.getElementById('sidebar');
