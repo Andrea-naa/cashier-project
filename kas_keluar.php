@@ -8,6 +8,7 @@ $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
 $nama_lengkap = $_SESSION['nama_lengkap'];
 $role = $_SESSION['role'] ?? 'Kasir';
+
 // bagian filter data tanggal transaksi
 $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
 $date_condition = '';
@@ -25,6 +26,7 @@ switch($filter) {
     default:
         $date_condition = '';
 }
+
 $success_message = '';
 $edit_mode = false;
 $edit_data = [];
