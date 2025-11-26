@@ -135,8 +135,7 @@ if ($res) {
     mysqli_free_result($res);
 }
 
-// ngambil nomor terakhir
-$last_nomor = get_last_nomor_surat('KK-KSK');
+
 ?>
 
 <!DOCTYPE html>
@@ -729,6 +728,14 @@ $last_nomor = get_last_nomor_surat('KK-KSK');
             </li>
             <?php endif; ?>
             </li>
+            <?php if ($role === 'Administrator'): ?>
+            <li class="menu-item">
+                <a href="approval.php">
+                    <i class="fas fa-check-circle menu-icon"></i>
+                    <span>Approval</span>
+                </a>
+            </li>
+            <?php endif; ?>
             <li class="menu-item">
                 <a href="logout.php">
                     <img src="assets/gambar/icon/logout.png" class="menu-icon">

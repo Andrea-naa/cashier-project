@@ -207,4 +207,43 @@ function validate_number($value, $default = 0) {
     $value = str_replace(['.', ','], ['', '.'], $value);
     return is_numeric($value) ? floatval($value) : $default;
 }
+
+// fungsi untuk cek apakah data sudah di approve
+function is_data_approved($table, $id) {
+    global $conn;
+    $stmt = $conn->prepare("SELECT is_approved FROM $table WHERE id = ? LIMIT 1");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $data = $result->fetch_assoc();
+    $stmt->close();
+
+    return ($data && $data['is_approved']== 1);
+}
+
+// fungsi untuk cek apakah user boleh mengedit atau menghapus data
+function can_modify_data ($table, $id, $user_role) {
+    // admin bisa edit dan delete terus
+    if (stripos($user_role, 'Administrator')!== false){
+        return true;
+    }
+    // kasir hanya bisa edit dan delete pada saat data belom di approve
+    return !is_data_approved($table. $id);
+}
+
+// fungsi untuk approve data
+function approve_data($table, $id, $admin_id, $admin_username) {
+    global $conn;
+    
+    $stmt = $conn->prepare("UPDATE $table SET is_approved = 1, approved_by = ?, approved_at = NOW() WHERE id = ?");
+    $stmt->bind_param("ii", $admin_id, $id);
+    $success = $stmt->execute();
+    $stmt->close();
+    
+    if ($success) {
+        log_audit($admin_id, $admin_username, "Approve data dari tabel $table ID: $id");
+    }
+    
+    return $success;
+}
 ?>

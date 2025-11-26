@@ -793,6 +793,14 @@ if ($res_keluar) {
                     <span>Home</span>
                 </a>
             </li>
+            <?php if ($role === 'Administrator'): ?>
+            <li class="menu-item">
+                <a href="approval.php">
+                    <i class="fas fa-check-circle menu-icon"></i>
+                    <span>Approval</span>
+                </a>
+            </li>
+            <?php endif; ?>
             <li class="menu-item">
                 <a href="logout.php">
                     <img src="assets/gambar/icon/logout.png" class="menu-icon" alt="">
@@ -938,7 +946,10 @@ if ($res_keluar) {
                                                         Delete
                                                     </a>
 
-                                                    <a href="export_pdf.php?type=kas_masuk&id=<?php echo $row['id']; ?>" target="_blank" class="btn btn-pdf btn-s" title="Export PDF">
+                                                     <a href="export_pdf.php?type=kas_masuk&id=<?php echo $row['id']; ?>&print=1" 
+                                                    target="_blank" 
+                                                    class="btn btn-pdf btn-sm" 
+                                                    title="Cetak PDF">
                                                         PDF
                                                     </a>
                                                 </div>
