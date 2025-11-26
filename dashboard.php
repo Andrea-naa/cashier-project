@@ -654,7 +654,7 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
                         <?php if ($role === 'Administrator'): ?>
             <li class="menu-item">
                 <a href="approval.php">
-                    <i class="fas fa-check-circle menu-icon"></i>
+                    <img src="assets/gambar/icon/approve.png" class="menu-icon">
                     <span>Approval</span>
                 </a>
             </li>
