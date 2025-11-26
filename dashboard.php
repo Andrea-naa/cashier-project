@@ -651,6 +651,14 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
                 </a>
             </li>
             <?php endif; ?>
+                        <?php if ($role === 'Administrator'): ?>
+            <li class="menu-item">
+                <a href="approval_dashboard.php">
+                    <i class="fas fa-check-circle menu-icon"></i>
+                    <span>Approval</span>
+                </a>
+            </li>
+            <?php endif; ?>
             <li class="menu-item">
                 <a href="kelola_user.php">
                     <img src="assets/gambar/icon/kelola_user.png" class="menu-icon">
