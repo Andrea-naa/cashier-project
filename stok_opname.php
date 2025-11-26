@@ -508,7 +508,7 @@ if (isset($_POST['simpan'])) {
             font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            width: 200px;
+            width: 350px;
             margin-top: 15px;
             display: block;
             margin-left: auto;

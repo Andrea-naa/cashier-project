@@ -209,7 +209,6 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
         }
         
         .user-role {
-            
             font-size: 12px;
             opacity: 0.9;
         }
@@ -305,7 +304,6 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
         .footer-logo {
             width: 70px;
             height: 70px;
-            /* background: white; */
             padding: 8px;
             border-radius: 10px;
         }
@@ -341,7 +339,7 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             display: flex;
             align-items: start;
             gap: 10px;
-            color: black    ;
+            color: black;
         }
 
         .footer-icon {
@@ -353,7 +351,7 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
 
         .link-item {
             text-decoration: none;
-            color: black ;
+            color: black;
         }
 
         .link-item:hover {
@@ -384,25 +382,130 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
                 padding: 15px 0;
             }
             
+            .sidebar-header {
+                flex-direction: row;
+                padding: 10px 15px;
+            }
+            
+            .sidebar-header img {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .company-title h4 {
+                font-size: 10px;
+            }
+            
+            .company-title p {
+                font-size: 8px;
+            }
+            
+            .menu-title {
+                padding: 10px 15px;
+                font-size: 11px;
+            }
+            
             .menu-list {
                 display: flex;
                 overflow-x: auto;
                 padding: 10px 0;
+                gap: 10px;
             }
             
             .menu-item {
                 margin: 0 5px;
                 white-space: nowrap;
+                flex-shrink: 0;
+            }
+            
+            .menu-item a {
+                padding: 10px 15px;
+                font-size: 13px;
+            }
+            
+            .menu-icon {
+                width: 24px;
+                height: 24px;
             }
             
             .header {
                 flex-direction: column;
-                text-align: center;
+                padding: 20px 15px;
                 gap: 15px;
+            }
+            
+            .header-left {
+                width: 100%;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .welcome-text {
+                font-size: 24px;
+            }
+            
+            .saldo-kas-info {
+                font-size: 13px;
+                margin-top: 5px;
+            }
+            
+            .user-info {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .user-avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+            
+            .user-name {
+                font-size: 13px;
+            }
+            
+            .user-role {
+                font-size: 11px;
+            }
+            
+            .content-area {
+                padding: 20px 15px;
+            }
+            
+            .menu-grid {
+                gap: 20px;
+                max-width: 100%;
+            }
+            
+            .menu-row {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .menu-card {
+                width: 100%;
+                max-width: 350px;
+                margin: 0 auto;
+                padding: 30px 20px;
+            }
+            
+            .menu-card-icon {
+                width: 70px;
+                height: 70px;
+                font-size: 36px;
+            }
+            
+            .menu-card-title {
+                font-size: 16px;
+            }
+            
+            .ksk-footer {
+                padding: 20px 15px;
             }
             
             .footer-content {
                 flex-direction: column;
+                gap: 20px;
             }
 
             .footer-left, .footer-right {
@@ -411,20 +514,105 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
 
             .footer-left {
                 flex-direction: column;
+                align-items: center;
                 text-align: center;
+                gap: 15px;
             }
 
             .footer-logo {
                 margin: 0 auto;
+                width: 60px;
+                height: 60px;
+            }
+            
+            .footer-text h2 {
+                font-size: 16px;
+            }
+            
+            .footer-text .subtitle {
+                font-size: 12px;
+            }
+            
+            .footer-text .description {
+                font-size: 12px;
+                text-align: justify;
             }
 
             .footer-right {
-                text-align: center;
                 align-items: center;
+            }
+            
+            .footer-item {
+                justify-content: center;
+                text-align: left;
+                font-size: 13px;
+            }
+            
+            .footer-icon {
+                width: 18px;
+                height: 18px;
             }
         }
 
-
+        /* Untuk HP yang sangat kecil */
+        @media (max-width: 480px) {
+            .welcome-text {
+                font-size: 20px;
+            }
+            
+            .saldo-kas-info {
+                font-size: 12px;
+            }
+            
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 14px;
+            }
+            
+            .content-area {
+                padding: 15px 10px;
+            }
+            
+            .menu-card {
+                padding: 25px 15px;
+                max-width: 300px;
+            }
+            
+            .menu-card-icon {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .menu-card-title {
+                font-size: 14px;
+            }
+            
+            .footer-text h2 {
+                font-size: 14px;
+            }
+            
+            .footer-text .subtitle {
+                font-size: 11px;
+            }
+            
+            .footer-text .description {
+                font-size: 11px;
+            }
+            
+            .footer-item {
+                font-size: 12px;
+            }
+            
+            .sidebar-header {
+                padding: 10px 10px;
+            }
+            
+            .menu-item a {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -472,7 +660,7 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             <?php endif; ?>
             <li class="menu-item">
                 <a href="kas_transaksi.php">
-                    <img src="assets/gambar/icon/kasdashboard.png" class="menu-icon">
+                    <img src="assets/gambar/icon/folderkas.png" class="menu-icon">
                     <span>Kas Transaksi</span>
                 </a>
             </li>
@@ -534,51 +722,50 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
         </div>
         
         <footer class="ksk-footer">
-  <div class="footer-content">
+            <div class="footer-content">
+                <!-- bagian kiri futer -->
+                <div class="footer-left">
+                    <img src="assets/gambar/logoksk.jpg" alt="KSK Logo" class="footer-logo">
 
-    <!-- bagian kiri futer -->
-    <div class="footer-left">
-      <img src="assets/gambar/logoksk.jpg" alt="KSK Logo" class="footer-logo">
+                    <div class="footer-text">
+                        <h2>KALIMANTAN SAWIT KUSUMA GROUP</h2>
+                        <p class="subtitle">Oil Palm Plantation & Industries</p>
 
-      <div class="footer-text">
-        <h2>KALIMANTAN SAWIT KUSUMA GROUP</h2>
-        <p class="subtitle">Oil Palm Plantation & Industries</p>
+                        <p class="description">
+                            Kalimantan Sawit Kusuma (KSK) adalah sebuah grup perusahaan yang memiliki beberapa 
+                            perusahaan afiliasi yang bergerak di berbagai bidang usaha, yaitu perkebunan kelapa 
+                            sawit dan hortikultura, kontraktor alat berat dan pembangunan perkebunan serta jasa 
+                            transportasi laut.
+                        </p>
+                    </div>
+                </div>
 
-        <p class="description">
-          Kalimantan Sawit Kusuma (KSK) adalah sebuah grup perusahaan yang memiliki beberapa 
-          perusahaan afiliasi yang bergerak di berbagai bidang usaha, yaitu perkebunan kelapa 
-          sawit dan hortikultura, kontraktor alat berat dan pembangunan perkebunan serta jasa 
-          transportasi laut.
-        </p>
-      </div>
+                <!-- bagian kanan futer -->
+                <div class="footer-right">
+                    <a href="https://kskgroup.co.id" target="_blank" class="footer-item link-item">
+                        <img src="assets/gambar/icon/browser.png" class="footer-icon">
+                        <span>kskgroup.co.id</span>
+                    </a>
+
+                    <a href="tel:+62561733035" class="footer-item link-item">
+                        <img src="assets/gambar/icon/telfon.png" class="footer-icon">
+                        <span>
+                            T. (+62 561) 733 035 (hunting)<br>
+                            F. (+62 561) 733 014
+                        </span>
+                    </a>
+
+                    <a href="https://maps.app.goo.gl/MdtmPLQTTagexjF59" target="_blank" class="footer-item link-item">
+                        <img src="assets/gambar/icon/lokasi.png" class="footer-icon">
+                        <span>
+                            Jl. W.R Supratman No. 42 Pontianak,<br>
+                            Kalimantan Barat 78122
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </footer>
     </div>
-
-<!-- bagian kanan futer -->
-<div class="footer-right">
-
-  <a href="https://kskgroup.co.id" target="_blank" class="footer-item link-item">
-    <img src="assets/gambar/icon/browser.png" class="footer-icon">
-    <span>kskgroup.co.id</span>
-  </a>
-
-  <a href="tel:+62561733035" class="footer-item link-item">
-    <img src="assets/gambar/icon/telfon.png" class="footer-icon">
-    <span>
-      T. (+62 561) 733 035 (hunting)<br>
-      F. (+62 561) 733 014
-    </span>
-  </a>
-
-  <a href="https://maps.app.goo.gl/MdtmPLQTTagexjF59" target="_blank" class="footer-item link-item">
-    <img src="assets/gambar/icon/lokasi.png" class="footer-icon">
-    <span>
-      Jl. W.R Supratman No. 42 Pontianak,<br>
-      Kalimantan Barat 78122
-    </span>
-  </a>
-
-</div>
-</footer>
     
 </body>
 </html>

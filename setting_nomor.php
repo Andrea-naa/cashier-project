@@ -451,21 +451,22 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
             border-radius: 8px;
             cursor: pointer;
             border: none;
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 18px;
+            font-weight: 650;
             transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
+            justify-content: center; /* Menambahkan ini untuk center alignment */
             gap: 8px;
             text-decoration: none;
             font-family: 'Inter', sans-serif;
+            flex: 1; /* Dipindahkan ke class .btn agar semua button sama besar */
         }
 
         .btn-primary {
             background: #2d7a3e;
             color: white;
             box-shadow: 0 2px 8px rgba(45, 122, 62, 0.3);
-            flex: 1;
         }
 
         .btn-primary:hover {
@@ -693,11 +694,11 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
 
                     <div class="button-group">
                         <button type="submit" name="update_config" class="btn btn-primary">
-                            <i class="fas fa-save"></i>
+                            <i class=""></i>
                             Simpan Perubahan
                         </button>
                         <a href="dashboard.php" class="btn btn-secondary">
-                            <i class="fas fa-times"></i>
+                            <i class=""></i>
                             Batal
                         </a>
                     </div>
