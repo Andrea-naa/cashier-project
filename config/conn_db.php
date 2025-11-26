@@ -24,11 +24,20 @@ if (session_status() === PHP_SESSION_NONE) {
  * Generate nomor surat berikutnya (per menu)
  * Format: 001/KODE/XI/2025
  * 
- * @param string $kode - Kode surat (KT-KSK, KK-KSK, KAS-KSK)
+ * @param string $prefix - Prefix surat (KT, KK, KAS)
  * @return array ['nomor' => 'formatted', 'urut' => 1]
  */
-function get_next_nomor_surat($kode = 'KT-KSK') {
+function get_next_nomor_surat($prefix = 'KT') {
     global $conn;
+    
+    // Ambil kode perusahaan dari tabel konfigurasi
+    $query_config = "SELECT kode_perusahaan FROM konfigurasi LIMIT 1";
+    $result_config = mysqli_query($conn, $query_config);
+    $config = mysqli_fetch_assoc($result_config);
+    $kode_perusahaan = $config['kode_perusahaan'] ?? 'KSK';
+    
+    // Buat kode lengkap
+    $kode = $prefix . '-' . $kode_perusahaan;
     
     $tahun = date('Y');
     $bulan = date('n'); // 1-12
@@ -37,7 +46,7 @@ function get_next_nomor_surat($kode = 'KT-KSK') {
     mysqli_begin_transaction($conn);
     
     try {
-        // Lock row for update
+        // Cek apakah sudah ada entri untuk jenis_dokumen/tahun/bulan
         $stmt = $conn->prepare("SELECT counter FROM nomor_surat WHERE jenis_dokumen = ? AND tahun = ? AND bulan = ? FOR UPDATE");
         $stmt->bind_param("sii", $kode, $tahun, $bulan);
         $stmt->execute();
@@ -53,7 +62,7 @@ function get_next_nomor_surat($kode = 'KT-KSK') {
             $stmt->execute();
             $stmt->close();
         } else {
-            // Insert untuk jenis_dokumen/bulan/tahun ini
+            // Insert untuk jenis_dokumen bulan atau tahun ini
             $counter = 1;
             $stmt = $conn->prepare("INSERT INTO nomor_surat (jenis_dokumen, tahun, bulan, counter) VALUES (?, ?, ?, ?)");
             $stmt->bind_param("siii", $kode, $tahun, $bulan, $counter);
@@ -85,11 +94,20 @@ function get_next_nomor_surat($kode = 'KT-KSK') {
 /**
  * Get nomor surat terakhir - PER MENU
  * 
- * @param string $kode - Kode surat
+ * @param string $prefix - Prefix surat (KT, KK, KAS)
  * @return string - Nomor surat terakhir atau default
  */
-function get_last_nomor_surat($kode = 'KT-KSK') {
+function get_last_nomor_surat($prefix = 'KT') {
     global $conn;
+    
+    // Ambil kode perusahaan dari tabel konfigurasi
+    $query_config = "SELECT kode_perusahaan FROM konfigurasi LIMIT 1";
+    $result_config = mysqli_query($conn, $query_config);
+    $config = mysqli_fetch_assoc($result_config);
+    $kode_perusahaan = $config['kode_perusahaan'] ?? 'KSK';
+    
+    // Buat kode lengkap
+    $kode = $prefix . '-' . $kode_perusahaan;
     
     $tahun = date('Y');
     $bulan = date('n');

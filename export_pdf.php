@@ -1322,12 +1322,7 @@ elseif ($type === 'buku_kas') {
         </div>
     </div>
     
-    <div class="summary-row balance-row">
-        <div class="summary-label">Balance</div>
-        <div class="summary-values">
-            <span>' . number_format($total_debet, 2, ',', '.') . '</span>
-            <span>' . number_format($total_debet, 2, ',', '.') . '</span>
-        </div>
+    <div class="summary-row balance-row"> 
     </div>';
     
     // futer
@@ -1380,7 +1375,7 @@ try {
     $output = $dompdf->output();
     file_put_contents($pdf_path, $output);
     
-    // Jika ada parameter print=1, tampilkan halaman loading yang menarik
+    // Jika ada parameter print=1
     if (isset($_GET['print']) && $_GET['print'] == '1') {
         
         // Tentukan judul berdasarkan type

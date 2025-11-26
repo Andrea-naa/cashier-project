@@ -654,6 +654,14 @@ $balance = $total_debet;
                     <span>Home</span>
                 </a>
             </li>
+            <?php if ($role === 'Administrator'): ?>
+            <li class="menu-item">
+                <a href="setting_nomor.php">
+                    <img src="assets/gambar/icon/settings.png" class="menu-icon">
+                    <span>Pengaturan Nomor Surat</span>
+                </a>
+            </li>
+            <?php endif; ?>
             <li class="menu-item">
                 <a href="logout.php">
                     <img src="assets/gambar/icon/logout.png" class="menu-icon">
@@ -770,7 +778,11 @@ $balance = $total_debet;
                 </div>
 
                 <div class="button-group">
-                    <a href="export_pdf.php?type=buku_kas&date_from=<?php echo urlencode($date_from); ?>&date_to=<?php echo urlencode($date_to); ?>" target="_blank" class="btn btn-primary">Export ke PDF</a>
+                        <a href="export_pdf.php?type=buku_kas&date_from=<?php echo urlencode($date_from); ?>&date_to=<?php echo urlencode($date_to); ?>&print=1" 
+                        target="_blank" 
+                        class="btn btn-primary">
+                            Export ke PDF
+                        </a>
                     <button class="btn btn-secondary" onclick="window.location.href='dashboard.php'">Kembali</button>
                 </div>
             </div>

@@ -455,6 +455,14 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
                     <span>Audit Log</span>
                 </a>
             </li>
+            <?php if ($role === 'Administrator'): ?>
+            <li class="menu-item">
+                <a href="setting_nomor.php">
+                    <img src="assets/gambar/icon/settings.png" class="menu-icon">
+                    <span>Pengaturan Nomor Surat</span>
+                </a>
+            </li>
+            <?php endif; ?>
             <li class="menu-item">
                 <a href="kelola_user.php">
                     <img src="assets/gambar/icon/kelola_user.png" class="menu-icon">

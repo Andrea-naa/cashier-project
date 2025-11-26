@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
             // bagian tombol simpan
             
             // Generate nomor surat GLOBAL
-            $nomor_data = get_next_nomor_surat('KT-KSK');
+            $nomor_data = get_next_nomor_surat('KT');
             $nomor_surat = $nomor_data['nomor'];
             
             $stmt = mysqli_prepare($conn, "INSERT INTO transaksi (user_id, username, jenis_transaksi, nominal, keterangan, nomor_surat, tanggal_transaksi) VALUES (?, ?, 'kas_terima', ?, ?, ?, NOW())");
@@ -718,6 +718,14 @@ $last_nomor = get_last_nomor_surat('KT-KSK');
                     <span>Home</span>
                 </a>
             </li>
+            <?php if ($role === 'Administrator'): ?>
+            <li class="menu-item">
+                <a href="setting_nomor.php">
+                    <img src="assets/gambar/icon/settings.png" class="menu-icon">
+                    <span>Pengaturan Nomor Surat</span>
+                </a>
+            </li>
+            <?php endif; ?>
             <li class="menu-item">
                 <a href="logout.php">
                     <img src="assets/gambar/icon/logout.png" class="menu-icon">

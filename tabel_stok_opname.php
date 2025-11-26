@@ -679,6 +679,14 @@ if ($stmt) {
                     <span>Home</span>
                 </a>
             </li>
+            <?php if ($role === 'Administrator'): ?>
+            <li class="menu-item">
+                <a href="setting_nomor.php">
+                    <img src="assets/gambar/icon/settings.png" class="menu-icon">
+                    <span>Pengaturan Nomor Surat</span>
+                </a>
+            </li>
+            <?php endif; ?>
             <li class="menu-item">
                 <a href="logout.php">
                     <img src="assets/gambar/icon/logout.png" class="menu-icon">
@@ -800,11 +808,11 @@ if ($stmt) {
                                                     Delete
                                                 </button>
                                             </form>
-                                            <a href="export_pdf.php?type=kas_masuk&id=<?php echo $row['id']; ?>&print=1" 
-                                            target="_blank" 
-                                            class="btn btn-pdf btn-sm" 
-                                            title="Cetak PDF">
-                                                PDF
+                                            <a href="export_pdf.php?type=stok_opname&id=<?= intval($r['id']); ?>&print=1" 
+                                                target="_blank" 
+                                                class="btn btn-pdf btn-sm" 
+                                                title="Cetak PDF">
+                                                    PDF
                                             </a>
                                         </div>
                                     </td>

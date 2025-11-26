@@ -89,7 +89,7 @@ if (isset($_POST['simpan'])) {
     // aksi simpan ke database
     if (!$edit_mode) {
 
-        $nomor_data = get_next_nomor_surat('KAS-KSK');
+        $nomor_data = get_next_nomor_surat('STOK');
         $nomor_surat = $nomor_data['nomor'];
 
         $stmt = mysqli_prepare($conn,
@@ -694,10 +694,21 @@ if (isset($_POST['simpan'])) {
             // Hitung selisih = Saldo Buku Kas - Jumlah Saldo Fisik
             let selisih = saldoBukuKas - saldoFisik;
             
+            // Update tampilan
             document.getElementById('total-fisik').textContent = formatRupiah(totalFisik);
             document.getElementById('saldo-fisik').textContent = formatRupiah(saldoFisik);
             document.getElementById('saldo-buku').textContent = formatRupiah(saldoBukuKas);
             document.getElementById('selisih').textContent = formatRupiah(selisih);
+            
+            // Debug log untuk melihat perhitungan
+            console.log('Total Fisik:', totalFisik);
+            console.log('Bon Sementara:', bonSementara);
+            console.log('Uang Rusak:', uangRusak);
+            console.log('Materai:', materialNilai);
+            console.log('Lain-lain:', lainLain);
+            console.log('Saldo Fisik:', saldoFisik);
+            console.log('Saldo Buku Kas:', saldoBukuKas);
+            console.log('Selisih:', selisih);
         }
 
         // memuat fungsi halaman
@@ -706,9 +717,10 @@ if (isset($_POST['simpan'])) {
             let inputs = document.querySelectorAll('.input-field, .input-number');
             inputs.forEach(function(input) {
                 input.addEventListener('input', hitungTotal);
+                input.addEventListener('change', hitungTotal); // Tambahkan event change
             });
             
-            // Hitung total 
+            // Hitung total pertama kali
             hitungTotal();
         };
     </script>
@@ -735,6 +747,14 @@ if (isset($_POST['simpan'])) {
                     <span>Home</span>
                 </a>
             </li>
+            <?php if ($role === 'Administrator'): ?>
+            <li class="menu-item">
+                <a href="setting_nomor.php">
+                    <img src="assets/gambar/icon/settings.png" class="menu-icon">
+                    <span>Pengaturan Nomor Surat</span>
+                </a>
+            </li>
+            <?php endif; ?> 
             <li class="menu-item">
                 <a href="logout.php">
                     <img src="assets/gambar/icon/logout.png" class="menu-icon">
