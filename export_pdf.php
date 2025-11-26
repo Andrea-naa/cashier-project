@@ -14,8 +14,8 @@ set_error_handler(function($errno, $errstr, $errfile, $errline) {
 
 require __DIR__ . '/vendor/autoload.php';
 
-echo '<script src="https://printjs-4de6.kxcdn.com/print.min.js"></script>';
-echo '<link rel="stylesheet" href="https://printjs-4de6.kxcdn.com/print.min.css">';
+// echo '<script src="https://printjs-4de6.kxcdn.com/print.min.js"></script>';
+// echo '<link rel="stylesheet" href="https://printjs-4de6.kxcdn.com/print.min.css">';
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -79,11 +79,164 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 if (empty($type)) {
-    die('ERROR: Parameter "type" harus diisi. Contoh: export_pdf.php?type=kas_masuk&id=1');
+    echo '<!DOCTYPE html>
+    <html lang="id">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Error - Sistem Kas Keuangan</title>
+        <style>
+            body {
+                font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+            .container {
+                background: white;
+                border-radius: 20px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                padding: 50px;
+                max-width: 600px;
+                text-align: center;
+            }
+            .error-icon {
+                font-size: 64px;
+                margin-bottom: 20px;
+            }
+            h1 {
+                color: #dc3545;
+                font-size: 28px;
+                margin-bottom: 15px;
+            }
+            p {
+                color: #6c757d;
+                font-size: 16px;
+                margin-bottom: 30px;
+            }
+            .code-box {
+                background: #f8f9fa;
+                border-left: 4px solid #dc3545;
+                padding: 15px;
+                margin: 20px 0;
+                text-align: left;
+                font-family: monospace;
+                font-size: 14px;
+                color: #495057;
+            }
+            .btn {
+                padding: 14px 32px;
+                background: linear-gradient(135deg, #dc3545, #c82333);
+                color: white;
+                text-decoration: none;
+                border-radius: 10px;
+                display: inline-block;
+                font-weight: 600;
+            }
+            .btn:hover {
+                background: linear-gradient(135deg, #c82333, #bd2130);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="error-icon">⚠️</div>
+            <h1>Parameter Tidak Lengkap</h1>
+            <p>Parameter <strong>"type"</strong> harus diisi.</p>
+            <div class="code-box">
+                <strong>Contoh penggunaan:</strong><br>
+                export_pdf.php?type=kas_masuk&id=1&print=1<br>
+                export_pdf.php?type=kas_keluar&id=2&print=1<br>
+                export_pdf.php?type=stok_opname&id=3&print=1<br>
+                export_pdf.php?type=buku_kas&date_from=2024-01-01&date_to=2024-01-31&print=1
+            </div>
+            <a href="dashboard.php" class="btn">Kembali ke Dashboard</a>
+        </div>
+    </body>
+    </html>';
+    exit;
 }
 
 if ($id <= 0 && $type !== 'buku_kas') {
-    die('ERROR: Parameter "id" harus diisi. Contoh: export_pdf.php?type=kas_masuk&id=1');
+    echo '<!DOCTYPE html>
+    <html lang="id">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Error - Sistem Kas Keuangan</title>
+        <style>
+            body {
+                font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+            .container {
+                background: white;
+                border-radius: 20px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                padding: 50px;
+                max-width: 600px;
+                text-align: center;
+            }
+            .error-icon {
+                font-size: 64px;
+                margin-bottom: 20px;
+            }
+            h1 {
+                color: #dc3545;
+                font-size: 28px;
+                margin-bottom: 15px;
+            }
+            p {
+                color: #6c757d;
+                font-size: 16px;
+                margin-bottom: 30px;
+            }
+            .code-box {
+                background: #f8f9fa;
+                border-left: 4px solid #dc3545;
+                padding: 15px;
+                margin: 20px 0;
+                text-align: left;
+                font-family: monospace;
+                font-size: 14px;
+                color: #495057;
+            }
+            .btn {
+                padding: 14px 32px;
+                background: linear-gradient(135deg, #dc3545, #c82333);
+                color: white;
+                text-decoration: none;
+                border-radius: 10px;
+                display: inline-block;
+                font-weight: 600;
+            }
+            .btn:hover {
+                background: linear-gradient(135deg, #c82333, #bd2130);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="error-icon">⚠️</div>
+            <h1>Parameter Tidak Lengkap</h1>
+            <p>Parameter <strong>"id"</strong> harus diisi untuk tipe <strong>' . htmlspecialchars($type) . '</strong>.</p>
+            <div class="code-box">
+                <strong>Contoh penggunaan:</strong><br>
+                export_pdf.php?type=' . htmlspecialchars($type) . '&id=1&print=1
+            </div>
+            <a href="dashboard.php" class="btn">Kembali ke Dashboard</a>
+        </div>
+    </body>
+    </html>';
+    exit;
 }
 
 $html = '';
@@ -92,17 +245,89 @@ $html = '';
 // bagian kas masuk / keluar
 if ($type === 'kas_masuk' || $type === 'kas_keluar') {
     
-    $jenis_transaksi = ($type === 'kas_masuk') ? 'kas_terima' : 'kas_keluar';
-    
-    $stmt = mysqli_prepare($conn, "SELECT * FROM transaksi WHERE id = ? AND jenis_transaksi = ? LIMIT 1");
-    mysqli_stmt_bind_param($stmt, 'is', $id, $jenis_transaksi);
+    // Ambil data dulu tanpa filter jenis_transaksi
+    $stmt = mysqli_prepare($conn, "SELECT * FROM transaksi WHERE id = ? LIMIT 1");
+    mysqli_stmt_bind_param($stmt, 'i', $id);
     mysqli_stmt_execute($stmt);
     $res = mysqli_stmt_get_result($stmt);
     $data = mysqli_fetch_assoc($res);
     mysqli_stmt_close($stmt);
     
     if (!$data) {
-        die('ERROR: Data transaksi tidak ditemukan (ID: ' . $id . ')');
+        echo '<!DOCTYPE html>
+        <html lang="id">
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Error - Sistem Kas Keuangan</title>
+            <style>
+                body {
+                    font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+                    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 20px;
+                }
+                .container {
+                    background: white;
+                    border-radius: 20px;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                    padding: 50px;
+                    max-width: 600px;
+                    text-align: center;
+                }
+                .error-icon {
+                    font-size: 64px;
+                    margin-bottom: 20px;
+                }
+                h1 {
+                    color: #dc3545;
+                    font-size: 28px;
+                    margin-bottom: 15px;
+                }
+                p {
+                    color: #6c757d;
+                    font-size: 16px;
+                    margin-bottom: 30px;
+                }
+                .btn {
+                    padding: 14px 32px;
+                    background: linear-gradient(135deg, #dc3545, #c82333);
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 10px;
+                    display: inline-block;
+                    font-weight: 600;
+                }
+                .btn:hover {
+                    background: linear-gradient(135deg, #c82333, #bd2130);
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="error-icon">⚠️</div>
+                <h1>Data Tidak Ditemukan</h1>
+                <p>Data transaksi dengan ID <strong>' . $id . '</strong> tidak ditemukan dalam database.</p>
+                <a href="dashboard.php" class="btn">Kembali ke Dashboard</a>
+            </div>
+        </body>
+        </html>';
+        exit;
+    }
+    
+    // Auto-detect jenis transaksi dari database
+    $jenis_transaksi_db = $data['jenis_transaksi'];
+    
+    // Tentukan jenis berdasarkan data dari database (bukan dari parameter)
+    if ($jenis_transaksi_db == 'kas_terima') {
+        $jenis = 'MASUK';
+        $type = 'kas_masuk'; // Update type agar konsisten
+    } else {
+        $jenis = 'KELUAR';
+        $type = 'kas_keluar'; // Update type agar konsisten
     }
     
     $jenis = ($type === 'kas_masuk') ? 'MASUK' : 'KELUAR';
@@ -348,6 +573,7 @@ if ($type === 'kas_masuk' || $type === 'kas_keluar') {
 }
 
 // bagian stok opname
+// bagian stok opname
 elseif ($type === 'stok_opname') {
     
     $stmt = mysqli_prepare($conn, "SELECT * FROM stok_opname WHERE id = ? LIMIT 1");
@@ -358,11 +584,72 @@ elseif ($type === 'stok_opname') {
     mysqli_stmt_close($stmt);
     
     if (!$data) {
-        die('ERROR: Data stok opname tidak ditemukan (ID: ' . $id . ')');
+        echo '<!DOCTYPE html>
+        <html lang="id">
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Error - Sistem Kas Keuangan</title>
+            <style>
+                body {
+                    font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+                    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 20px;
+                }
+                .container {
+                    background: white;
+                    border-radius: 20px;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                    padding: 50px;
+                    max-width: 600px;
+                    text-align: center;
+                }
+                .error-icon {
+                    font-size: 64px;
+                    margin-bottom: 20px;
+                }
+                h1 {
+                    color: #dc3545;
+                    font-size: 28px;
+                    margin-bottom: 15px;
+                }
+                p {
+                    color: #6c757d;
+                    font-size: 16px;
+                    margin-bottom: 30px;
+                }
+                .btn {
+                    padding: 14px 32px;
+                    background: linear-gradient(135deg, #dc3545, #c82333);
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 10px;
+                    display: inline-block;
+                    font-weight: 600;
+                }
+                .btn:hover {
+                    background: linear-gradient(135deg, #c82333, #bd2130);
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="error-icon">⚠️</div>
+                <h1>Data Tidak Ditemukan</h1>
+                <p>Data stok opname dengan ID <strong>' . $id . '</strong> tidak ditemukan dalam database.</p>
+                <a href="dashboard.php" class="btn">Kembali ke Dashboard</a>
+            </div>
+        </body>
+        </html>';
+        exit;
     }
     
     $nomor = $data['nomor_surat'];
-        if (empty($nomor)) {
+    if (empty($nomor)) {
         $dt = strtotime($data['tanggal_opname']);
         $bulan_romawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
         $nomor = sprintf('%03d/KAS-KSK/%s/%04d', $data['id'], $bulan_romawi[date('n', $dt)], date('Y', $dt));
@@ -490,7 +777,6 @@ elseif ($type === 'stok_opname') {
             text-align: right; 
         }
         
-        /* Summary section */
         .summary-section {
             margin: 15px 0;
         }
@@ -585,12 +871,6 @@ elseif ($type === 'stok_opname') {
             padding: 0;
             min-height: 15px;
         }
-        .keterangan-dots {
-            border-bottom: 1px dotted #999;
-            height: 1px;
-            width: 100%;
-            margin: 2px 0;
-        }
         
         .signature {
             margin-top: 40px;
@@ -645,7 +925,6 @@ elseif ($type === 'stok_opname') {
     </style>
     </head><body>';
     
-    // header
     $html .= '<div class="header-row">
         <div class="header-left">' . htmlspecialchars($config['nama_perusahaan']) . '</div>
         <div class="header-center">
@@ -665,7 +944,6 @@ elseif ($type === 'stok_opname') {
         </div>
     </div>';
     
-    // tabel untuk pecahan
     $html .= '<div class="section-title">I. Pemeriksaan Fisik Uang Kas</div>
     <table>
         <thead><tr><th class="no-col">NO</th><th>URAIAN</th><th>SATUAN</th><th>JUMLAH</th><th class="amount-col">NILAI</th></tr></thead>
@@ -743,7 +1021,7 @@ elseif ($type === 'stok_opname') {
         </div>
     </div>';
     
-    $html .= '</div>'; // akhir dari bagian summary-section
+    $html .= '</div>';
 
     $html .= '<div class="total-fisik-section">
         <div class="total-row">
@@ -760,12 +1038,10 @@ elseif ($type === 'stok_opname') {
         </div>
     </div>';
     
-    // Keterangan
     $html .= '<div class="keterangan-label">Keterangan</div>';
     $keterangan_text = !empty($data['keterangan_lainnya']) ? htmlspecialchars($data['keterangan_lainnya']) : '';
     $html .= '<div class="keterangan-box">' . $keterangan_text . '</div>';
     
-    // Lokasi dan tanggal
     $html .= '<div class="location-date">' 
         . htmlspecialchars($config['kota']) . ', ' 
         . date('d-F-Y', strtotime($data['tanggal_opname'])) . '</div>';
@@ -1080,7 +1356,6 @@ elseif ($type === 'buku_kas') {
     $filename = 'Buku_Kas_Harian_' . date('Ymd', strtotime($date_to)) . '.pdf';
 }
 
-
 // biar bisa generate pdf
 try {
     $options = new Options();
@@ -1105,37 +1380,320 @@ try {
     $output = $dompdf->output();
     file_put_contents($pdf_path, $output);
     
-    // Jika ada parameter print=1, buka PDF di tab baru dan auto print
+    // Jika ada parameter print=1, tampilkan halaman loading yang menarik
     if (isset($_GET['print']) && $_GET['print'] == '1') {
+        
+        // Tentukan judul berdasarkan type
+        $judul_dokumen = 'Dokumen';
+        switch($type) {
+            case 'kas_masuk':
+                $judul_dokumen = 'Bukti Kas Masuk';
+                break;
+            case 'kas_keluar':
+                $judul_dokumen = 'Bukti Kas Keluar';
+                break;
+            case 'stok_opname':
+                $judul_dokumen = 'Stok Opname Kas';
+                break;
+            case 'buku_kas':
+                $judul_dokumen = 'Buku Kas Harian';
+                break;
+        }
+        
         echo '<!DOCTYPE html>
-        <html>
+        <html lang="id">
         <head>
-            <meta charset="utf-8">
-            <title>Cetak PDF</title>
-            <script>
-                window.onload = function() {
-                    // Buka PDF di iframe
-                    var iframe = document.createElement("iframe");
-                    iframe.style.display = "none";
-                    iframe.src = "temp_pdf/' . $pdf_filename . '";
-                    document.body.appendChild(iframe);
-                    
-                    // Auto print setelah load
-                    iframe.onload = function() {
-                        setTimeout(function() {
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Cetak PDF - Sistem Kas Keuangan</title>
+        <script src="https://printjs-4de6.kxcdn.com/print.min.js"></script>
+        <link rel="stylesheet" href="https://printjs-4de6.kxcdn.com/print.min.css">
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #1e7e34 0%, #28a745 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+
+            .container {
+                background: white;
+                border-radius: 20px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                padding: 50px;
+                max-width: 600px;
+                width: 100%;
+                text-align: center;
+                animation: slideIn 0.5s ease-out;
+            }
+
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .logo {
+                width: 80px;
+                height: 80px;
+                background: linear-gradient(135deg, #28a745, #20c997);
+                border-radius: 50%;
+                margin: 0 auto 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+            }
+
+            .logo svg {
+                width: 45px;
+                height: 45px;
+                fill: white;
+            }
+
+            h1 {
+                color: #1e7e34;
+                font-size: 28px;
+                margin-bottom: 10px;
+                font-weight: 700;
+            }
+
+            .subtitle {
+                color: #6c757d;
+                font-size: 16px;
+                margin-bottom: 30px;
+            }
+
+            .status {
+                background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+                border-left: 4px solid #28a745;
+                padding: 20px;
+                border-radius: 10px;
+                margin-bottom: 30px;
+            }
+
+            .status-icon {
+                font-size: 48px;
+                margin-bottom: 10px;
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes pulse {
+                0%, 100% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.1);
+                }
+            }
+
+            .status-text {
+                color: #1e7e34;
+                font-size: 18px;
+                font-weight: 600;
+                margin-bottom: 8px;
+            }
+
+            .status-detail {
+                color: #495057;
+                font-size: 14px;
+            }
+
+            .progress-bar {
+                width: 100%;
+                height: 8px;
+                background: #e9ecef;
+                border-radius: 10px;
+                overflow: hidden;
+                margin: 20px 0;
+            }
+
+            .progress-fill {
+                height: 100%;
+                background: linear-gradient(90deg, #28a745, #20c997);
+                width: 0%;
+                animation: loading 2s ease-in-out forwards;
+            }
+
+            @keyframes loading {
+                to {
+                    width: 100%;
+                }
+            }
+
+            .button-group {
+                display: flex;
+                gap: 15px;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .btn {
+                padding: 14px 32px;
+                border: none;
+                border-radius: 10px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+
+            .btn-primary {
+                background: linear-gradient(135deg, #28a745, #20c997);
+                color: white;
+            }
+
+            .btn-primary:hover {
+                background: linear-gradient(135deg, #218838, #1aa87c);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
+            }
+
+            .btn-secondary {
+                background: white;
+                color: #28a745;
+                border: 2px solid #28a745;
+            }
+
+            .btn-secondary:hover {
+                background: #f8f9fa;
+                transform: translateY(-2px);
+            }
+
+            .icon {
+                width: 20px;
+                height: 20px;
+                fill: currentColor;
+            }
+
+            .info-box {
+                background: #f8f9fa;
+                border-radius: 10px;
+                padding: 15px;
+                margin-top: 20px;
+                font-size: 13px;
+                color: #6c757d;
+                text-align: left;
+            }
+
+            .info-box strong {
+                color: #1e7e34;
+            }
+
+            @media (max-width: 600px) {
+                .container {
+                    padding: 30px 20px;
+                }
+
+                h1 {
+                    font-size: 24px;
+                }
+
+                .button-group {
+                    flex-direction: column;
+                }
+
+                .btn {
+                    width: 100%;
+                    justify-content: center;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                </svg>
+            </div>
+
+            <h1>' . htmlspecialchars($judul_dokumen) . '</h1>
+            <p class="subtitle">Sistem Kas Keuangan KSK Group</p>
+
+            <div class="status">
+                <div class="status-icon">📄</div>
+                <div class="status-text">PDF Berhasil Dibuat!</div>
+                <div class="status-detail">Dokumen Anda siap untuk dicetak</div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+
+            <div class="button-group">
+                <a href="#" class="btn btn-primary" id="openPdfBtn">
+                    <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z" fill="currentColor"/>
+                    </svg>
+                    Buka PDF
+                </a>
+                <a href="dashboard.php" class="btn btn-secondary">
+                    <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" fill="currentColor"/>
+                    </svg>
+                    Kembali ke Dashboard
+                </a>
+            </div>
+
+            <div class="info-box">
+                <strong>💡 Tips:</strong><br>
+                • Jendela cetak akan terbuka otomatis<br>
+                • Pastikan printer Anda sudah terhubung<br>
+                • Pilih orientasi Portrait untuk hasil terbaik<br>
+                • Simpan PDF jika ingin menyimpan salinan digital
+            </div>
+        </div>
+
+        <script>
+            const pdfUrl = "temp_pdf/' . $pdf_filename . '";
+            
+            // Update tombol dengan URL yang benar
+            document.getElementById("openPdfBtn").href = pdfUrl;
+
+            // Auto open PDF dan trigger print setelah halaman dimuat
+            window.onload = function() {
+                // Buat iframe tersembunyi untuk load PDF
+                const iframe = document.createElement("iframe");
+                iframe.style.display = "none";
+                iframe.src = pdfUrl;
+                document.body.appendChild(iframe);
+                
+                // Trigger print dialog setelah PDF dimuat
+                iframe.onload = function() {
+                    setTimeout(function() {
+                        try {
                             iframe.contentWindow.print();
-                        }, 500);
-                    };
+                        } catch(e) {
+                            console.log("Auto print blocked, user can manually print");
+                        }
+                    }, 800);
                 };
-            </script>
-        </head>
-        <body>
-            <p>Sedang memproses dokumen...</p>
-            <p><a href="temp_pdf/' . $pdf_filename . '" target="_blank">Jika mau memastikan data pdf nya ,bisa diklik di sini</a></p>
-        </body>
-        </html>';
+            };
+        </script>
+    </body>
+    </html>';
     } else {
-        // Redirect ke PDF
+        // Redirect ke PDF jika tanpa parameter print
         header("Location: temp_pdf/" . $pdf_filename);
     }
     
