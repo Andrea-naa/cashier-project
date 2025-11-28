@@ -1,16 +1,17 @@
 <?php
-// error reporting untuk debugging
+
+// nampilin error untuk debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-
+// koneksi ke database
 require_once 'config/conn_db.php';
 
-// Cek apakah user sudah login
+// Check login
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
-
+// ngambil sesi serta role user
 $user_id = $_SESSION['user_id'] ?? 0;
 $username = $_SESSION['username'] ?? 'Guest';
 $nama_lengkap = $_SESSION['nama_lengkap'] ?? $_SESSION['username'] ?? 'User';

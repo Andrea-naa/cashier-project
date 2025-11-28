@@ -1,14 +1,12 @@
 <?php
-
 // Koneksi ke database
 require_once 'config/conn_db.php';
-// cek login
+
+// cek login dan sesi
 if (!isset($_SESSION['user_id'])) {
     header("Location: index.php");
     exit();
 }
-
-// dapetin info dari sesi
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
 $nama_lengkap = $_SESSION['nama_lengkap'];
@@ -18,7 +16,7 @@ $query_config = "SELECT * FROM konfigurasi LIMIT 1";
 $result_config = mysqli_query($conn, $query_config);
 $config = mysqli_fetch_assoc($result_config);
 
-// Ambil role user dari session
+// Ambil role user dari sesi
 $role = $_SESSION['role'] ?? 'Kasir';
 
 // Hitung saldo kas (Kas Masuk - Kas Keluar) dari tabel transaksi

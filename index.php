@@ -1,7 +1,8 @@
 <?php
+// koneksi ke database
 require_once 'config/conn_db.php';
 
-// Jika sudah login, redirect ke dashboard
+// check login
 if (isset($_SESSION['user_id'])) {
     header("Location: dashboard.php");
     exit();

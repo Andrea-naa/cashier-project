@@ -1,11 +1,11 @@
 <?php
-
+// konfigurasi koneksi database
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "cashier";
 
-// koneksi database
+// laporan eoror
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 try {
@@ -72,7 +72,7 @@ function get_next_nomor_surat($prefix = 'KT') {
         
         mysqli_commit($conn);
         
-        // Format nomor
+        // Format nomor surat
         $bulan_romawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
         $nomor_formatted = sprintf('%03d/%s/%s/%04d', $counter, $kode, $bulan_romawi[$bulan], $tahun);
         

@@ -1,8 +1,9 @@
 <?php
+// koneksi ke databse
 require_once 'config/conn_db.php';
 
 check_admin();
-
+// ngambil sesi serta role user
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
 $nama_lengkap = $_SESSION['nama_lengkap'];

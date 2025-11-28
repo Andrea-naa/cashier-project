@@ -1,7 +1,8 @@
 <?php
+// koneksi ke database
 require_once 'config/conn_db.php';
 
-// mengambil data user login
+// // ngambil sesi serta role user
 $user_id      = $_SESSION['user_id'];
 $username     = $_SESSION['username'];
 $nama_lengkap = $_SESSION['nama_lengkap'];

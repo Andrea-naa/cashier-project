@@ -1,4 +1,5 @@
 <?php
+// koneksi ke database
 require_once 'config/conn_db.php';
 
 // Pastikan login 

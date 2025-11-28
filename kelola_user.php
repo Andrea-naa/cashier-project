@@ -1,7 +1,8 @@
 <?php
+// koneksi ke database
 require_once 'config/conn_db.php';
 
-// Hanya untuk admin
+// check login
 if (!isset($_SESSION['user_id'])) {
     header('Location: index.php');
     exit();
