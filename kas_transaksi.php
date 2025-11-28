@@ -1,5 +1,4 @@
 <?php
-// kas_transaksi.php
 require_once 'config/conn_db.php';
 
 check_login();
@@ -29,7 +28,7 @@ switch($filter) {
 $success_message = '';
 $edit_mode = false;
 $edit_data = [];
-$active_tab = $_GET['tab'] ?? 'masuk'; // default tab masuk
+$active_tab = $_GET['tab'] ?? 'masuk';
 
 // Bagian tombol aksi edit
 if (isset($_GET['edit']) && intval($_GET['edit']) > 0) {
@@ -50,7 +49,7 @@ if (isset($_GET['edit']) && intval($_GET['edit']) > 0) {
     }
 }
 
-// Bagian tombol aksi simpan (insert/update)
+// Bagian tombol aksi simpan 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
     $keterangan = clean_input($_POST['keterangan'] ?? '');
     $jumlah_raw = trim($_POST['jumlah'] ?? '0');
@@ -772,7 +771,7 @@ if ($res_keluar) {
 </head>
 
 <body>
-    <!-- Sidebar -->
+    <!-- buat menu burger -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -810,7 +809,7 @@ if ($res_keluar) {
         </ul>
     </div>
 
-    <!-- Main Wrapper -->
+    <!-- konten utama -->
     <div class="main-wrapper">
         <div class="header">
             <div class="header-left">
@@ -826,7 +825,7 @@ if ($res_keluar) {
             </div>
         </div>
 
-    <!-- Filter Section -->
+    <!-- bagian filter -->
     <div class="content-wrapper">
         <div class="filter-container">
             <div class="filter-wrapper">
@@ -855,7 +854,7 @@ if ($res_keluar) {
             <?php endif; ?>
 
             <div class="container">
-                <!-- Tab Navigation -->
+                <!-- menu tab navigasi -->
                 <div class="tab-container">
                     <button
                         class="tab-button <?php echo $active_tab === 'masuk' ? 'active' : ''; ?>"
@@ -874,7 +873,7 @@ if ($res_keluar) {
                     </button>
                 </div>
 
-                <!-- Tab Content: Kas Masuk -->
+                <!-- bagian kas masuk -->
                 <div id="tab-masuk" class="tab-content <?php echo $active_tab === 'masuk' ? 'active' : ''; ?>">
                     <form method="POST">
                         <?php if ($edit_mode && $edit_data['jenis_transaksi'] === 'kas_terima'): ?>
@@ -969,7 +968,7 @@ if ($res_keluar) {
                     </div>
                 </div>
 
-                <!-- Tab Content: Kas Keluar -->
+                <!-- bagian kas keluar -->
                 <div id="tab-keluar" class="tab-content <?php echo $active_tab === 'keluar' ? 'active' : ''; ?>">
                     <form method="POST">
                         <?php if ($edit_mode && $edit_data['jenis_transaksi'] === 'kas_keluar'): ?>
@@ -1106,7 +1105,7 @@ if ($res_keluar) {
     </div>
 
     <script>
-        // Sidebar script
+        // script menu burger
         const menuBurger = document.getElementById('menuBurger');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -1134,47 +1133,41 @@ if ($res_keluar) {
             }
         });
 
-        // Tab switching script
+        // script untuk tab navigasi
         function switchTab(evt, tabName) {
-            // Update URL without reload
             const url = new URL(window.location);
             url.searchParams.set('tab', tabName);
             window.history.pushState({}, '', url);
-
-            // Hide all tab contents
             const tabContents = document.querySelectorAll('.tab-content');
             tabContents.forEach(content => {
                 content.classList.remove('active');
             });
-
-            // Remove active class from all buttons
+            // hilangin semua active di button
             const tabButtons = document.querySelectorAll('.tab-button');
             tabButtons.forEach(button => {
                 button.classList.remove('active');
             });
 
-            // Show selected tab
+            // nampilin tab yang dipilih
             const targetTab = document.getElementById('tab-' + tabName);
             if (targetTab) {
                 targetTab.classList.add('active');
             }
 
-            // Add active class to clicked button
+            // aktifin button yang dipilih
             if (evt && evt.currentTarget) {
                 evt.currentTarget.classList.add('active');
             } else {
-                // fallback: activate button by data-tab
                 const btn = document.querySelector(`.tab-button[data-tab="${tabName}"]`);
                 if (btn) btn.classList.add('active');
             }
         }
 
-        // Handle browser back/forward
+        // memantau perubahan history 
         window.addEventListener('popstate', function() {
             const urlParams = new URLSearchParams(window.location.search);
             const tab = urlParams.get('tab') || 'masuk';
 
-            // Update tabs based on URL
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });

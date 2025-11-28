@@ -1,7 +1,7 @@
 <?php
 require_once 'config/conn_db.php';
 
-// Pastikan login
+// Pastikan login 
 if (!isset($_SESSION['user_id'])) {
     header('Location: index.php');
     exit();
@@ -181,6 +181,7 @@ $res = mysqli_query($conn, $sql);
             background: #236030; 
         }
 
+        /* bagian tabel */
         .table-wrap {
             background: white; 
             padding: 20px; 

@@ -1,5 +1,4 @@
 <?php
-// kas_keluar.php
 require_once 'config/conn_db.php';
 
 check_login();
@@ -59,7 +58,7 @@ if (isset($_GET['edit']) && intval($_GET['edit']) > 0) {
     }
 }
 
-// Bagian tombol aksi simpan (insert/update)
+// Bagian tombol aksi simpan 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
     $keterangan = clean_input($_POST['keterangan'] ?? '');
     $jumlah_raw = trim($_POST['jumlah'] ?? '0');
@@ -85,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
             
         } else {
             
-            // Generate nomor surat GLOBAL
+            // Generate nomor surat
             $nomor_data = get_next_nomor_surat('KK');;
             $nomor_surat = $nomor_data['nomor'];
             
@@ -170,7 +169,7 @@ if ($res) {
             display: flex;
         }
         
-        /* Sidebar */
+        /* menu burger */
         .sidebar {
             width: 280px;
             background: #E7E7E7FF;
@@ -278,7 +277,7 @@ if ($res) {
             display: block;
         }
         
-        /* Main Content Wrapper */
+        /* konten utama */
         .main-wrapper {
             flex: 1;
             display: flex;
@@ -349,7 +348,7 @@ if ($res) {
             display: flex;
             flex-direction: column;
         }
-        /* * Filter Section */ 
+        /* * bagian filter */ 
         .filter-container {
             max-width: 860px;
             margin: 20px auto 20px;
@@ -755,7 +754,7 @@ if ($res) {
         </ul>
     </div>
     
-    <!-- Main Wrapper -->
+    <!-- konten utama -->
     <div class="main-wrapper">
         <div class="header">
             <div class="header-left">
@@ -771,7 +770,7 @@ if ($res) {
             </div>
         </div>
 
-             <!-- Filter Section -->
+             <!-- bagian filter -->
         <div class="content-wrapper">
             <div class="filter-container">
                 <div class="filter-wrapper">
@@ -938,7 +937,7 @@ if ($res) {
             }); 
         }
 
-        // sidebar script
+        // script menu burger
         const menuBurger = document.getElementById('menuBurger');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');

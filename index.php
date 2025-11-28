@@ -208,7 +208,7 @@ $show_login = isset($_GET['login']) || $_SERVER['REQUEST_METHOD'] == 'POST';
             justify-content: center;
             font-size: 16px;
         }
-        /* logo dan informasi company*/
+        /* logo dan informasi perusahaan */
         .top-left-info {
             position: fixed;
             top: 30px;
@@ -262,7 +262,7 @@ $show_login = isset($_GET['login']) || $_SERVER['REQUEST_METHOD'] == 'POST';
         }
         
         
-        /* Login Box */
+        /* login box */
         .login-box {
             background: linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 255, 240, 0.98) 100%);
             backdrop-filter: blur(25px);
@@ -303,21 +303,21 @@ $show_login = isset($_GET['login']) || $_SERVER['REQUEST_METHOD'] == 'POST';
         }
         
         .login-title {
-    font-size: 36px;
-    font-weight: 700;
-    color: #1f6e3e;
-    text-align: center;
-    margin-bottom: 5px;
-}
+            font-size: 36px;
+            font-weight: 700;
+            color: #1f6e3e;
+            text-align: center;
+            margin-bottom: 5px;
+        }
 
-.title-underline {
-    width: 110px;
-    height: 6px;
-    margin: 0 auto 25px auto;
-    border-radius: 6px;
-    background: linear-gradient(to right, #0d5e2a, #3fb950);
-    box-shadow: 0 8px 18px rgba(0, 128, 0, 0.25);
-}
+        .title-underline {
+            width: 110px;
+            height: 6px;
+            margin: 0 auto 25px auto;
+            border-radius: 6px;
+            background: linear-gradient(to right, #0d5e2a, #3fb950);
+            box-shadow: 0 8px 18px rgba(0, 128, 0, 0.25);
+        }
 
         
         .login-title::after {
@@ -487,7 +487,6 @@ $show_login = isset($_GET['login']) || $_SERVER['REQUEST_METHOD'] == 'POST';
             transform: translateX(-3px);
         }
         
-        /* Responsive */
         @media (max-width: 768px) {
             .top-left-info {
                 top: 20px;
@@ -529,7 +528,7 @@ $show_login = isset($_GET['login']) || $_SERVER['REQUEST_METHOD'] == 'POST';
 </head>
 <body class="<?php echo $show_login ? 'login-bg' : 'welcome-bg'; ?>">
     <?php if (!$show_login): ?>
-    <!-- Welcome Screen -->
+    <!-- welcome screen -->
     <div class="welcome-screen">
         <div class="logo-container">
             <img src="assets/gambar/logoksk.jpg" alt="Logo KSK" 
@@ -545,9 +544,9 @@ $show_login = isset($_GET['login']) || $_SERVER['REQUEST_METHOD'] == 'POST';
     </div>
     
     <?php else: ?>
-    <!-- Login Screen -->
+    <!-- login screen -->
     <div class="login-screen">
-        <!-- Logo dan informasi company-->
+        <!-- Logo dan informasi perusahaan -->
         <div class="top-left-info">
             <img src="assets/gambar/logoksk.jpg" alt="Logo KSK"
                  onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22%3E%3Cdefs%3E%3ClinearGradient id=%22grad2%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22%3E%3Cstop offset=%220%25%22 style=%22stop-color:%232d7c3e;stop-opacity:1%22 /%3E%3Cstop offset=%22100%25%22 style=%22stop-color:%233fb950;stop-opacity:1%22 /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2260%22 height=%2260%22 fill=%22url(%23grad2)%22 rx=%2212%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2224%22 fill=%22white%22 font-weight=%22bold%22%3EKSK%3C/text%3E%3C/svg%3E'">
@@ -557,14 +556,14 @@ $show_login = isset($_GET['login']) || $_SERVER['REQUEST_METHOD'] == 'POST';
             </div>
         </div>
         
-        <!-- Login Box -->
+        <!-- box login -->
         <div class="login-box">
             <h2 class="login-title">LOGIN</h2>
             <div class="title-underline"></div>
 
             <?php if ($error): ?>
             <div class="error-message">
-                <span>⚠️</span>
+                <span></span>
                 <span><?php echo $error; ?></span>
             </div>
             <?php endif; ?>

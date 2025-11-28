@@ -1,5 +1,5 @@
 <?php
-// Database configuration
+
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -36,7 +36,7 @@ function get_next_nomor_surat($prefix = 'KT') {
     $config = mysqli_fetch_assoc($result_config);
     $kode_perusahaan = $config['kode_perusahaan'] ?? 'KSK';
     
-    // Buat kode lengkap
+    // Buat kode perusahaan
     $kode = $prefix . '-' . $kode_perusahaan;
     
     $tahun = date('Y');
@@ -46,7 +46,7 @@ function get_next_nomor_surat($prefix = 'KT') {
     mysqli_begin_transaction($conn);
     
     try {
-        // Cek apakah sudah ada entri untuk jenis_dokumen/tahun/bulan
+        // Cek apakah sudah ada entri untuk jenis_dokumen tahun dan bulan
         $stmt = $conn->prepare("SELECT counter FROM nomor_surat WHERE jenis_dokumen = ? AND tahun = ? AND bulan = ? FOR UPDATE");
         $stmt->bind_param("sii", $kode, $tahun, $bulan);
         $stmt->execute();
@@ -55,14 +55,14 @@ function get_next_nomor_surat($prefix = 'KT') {
         $stmt->close();
         
         if ($row) {
-            // Update counter
+            // update counter
             $counter = intval($row['counter']) + 1;
             $stmt = $conn->prepare("UPDATE nomor_surat SET counter = ?, updated_at = NOW() WHERE jenis_dokumen = ? AND tahun = ? AND bulan = ?");
             $stmt->bind_param("isii", $counter, $kode, $tahun, $bulan);
             $stmt->execute();
             $stmt->close();
         } else {
-            // Insert untuk jenis_dokumen bulan atau tahun ini
+            // input untuk jenis_dokumen bulan atau tahun ini
             $counter = 1;
             $stmt = $conn->prepare("INSERT INTO nomor_surat (jenis_dokumen, tahun, bulan, counter) VALUES (?, ?, ?, ?)");
             $stmt->bind_param("siii", $kode, $tahun, $bulan, $counter);
@@ -70,7 +70,6 @@ function get_next_nomor_surat($prefix = 'KT') {
             $stmt->close();
         }
         
-        // Commit
         mysqli_commit($conn);
         
         // Format nomor
@@ -92,7 +91,7 @@ function get_next_nomor_surat($prefix = 'KT') {
 }
 
 /**
- * Get nomor surat terakhir - PER MENU
+ * Get nomor surat terakhir - per menu
  * 
  * @param string $prefix - Prefix surat (KT, KK, KAS)
  * @return string - Nomor surat terakhir atau default
@@ -106,7 +105,7 @@ function get_last_nomor_surat($prefix = 'KT') {
     $config = mysqli_fetch_assoc($result_config);
     $kode_perusahaan = $config['kode_perusahaan'] ?? 'KSK';
     
-    // Buat kode lengkap
+    // bagian kode perusahaan
     $kode = $prefix . '-' . $kode_perusahaan;
     
     $tahun = date('Y');
@@ -208,7 +207,7 @@ function validate_number($value, $default = 0) {
     return is_numeric($value) ? floatval($value) : $default;
 }
 
-// fungsi untuk cek apakah data sudah di approve
+// bagian untuk cek apakah data sudah di approve
 function is_data_approved($table, $id) {
     global $conn;
     $stmt = $conn->prepare("SELECT is_approved FROM $table WHERE id = ? LIMIT 1");
@@ -221,17 +220,17 @@ function is_data_approved($table, $id) {
     return ($data && $data['is_approved']== 1);
 }
 
-// fungsi untuk cek apakah user boleh mengedit atau menghapus data
+// bagian untuk cek apakah user boleh mengedit atau menghapus data
 function can_modify_data ($table, $id, $user_role) {
-    // admin bisa edit dan delete terus
+    // admin boleh selalu mengedit atau hapus
     if (stripos($user_role, 'Administrator')!== false){
         return true;
     }
-    // kasir hanya bisa edit dan delete pada saat data belom di approve
+    // selain admin, hanya boleh jika data belum di approve
     return !is_data_approved($table. $id);
 }
 
-// fungsi untuk approve data
+// bagian untuk approve data
 function approve_data($table, $id, $admin_id, $admin_username) {
     global $conn;
     

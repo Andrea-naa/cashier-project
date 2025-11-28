@@ -82,7 +82,7 @@ $balance = $total_debet;
             display: flex;
         }
 
-        /* Sidebar */
+        /* menu burger */
         .sidebar {
             width: 280px;
             background: #E7E7E7FF;
@@ -570,7 +570,6 @@ $balance = $total_debet;
             opacity: 0.7;
         }
 
-        /* biar bisa responsive */
         @media (max-width: 780px) {
             .footer-content {
                 flex-direction: column;
@@ -679,7 +678,7 @@ $balance = $total_debet;
         </ul>
     </div>
 
-    <!-- Main Wrapper -->
+    <!-- konten utama -->
     <div class="main-wrapper">
         <div class="header">
             <div class="header-left">
@@ -699,7 +698,7 @@ $balance = $total_debet;
             <div class="container">
                 <h2 class="page-title">BUKU KAS HARIAN</h2>
 
-                <!-- pilter section -->
+                <!-- bagian filter -->
                 <div class="filter-section">
                     <form method="GET" class="filter-form">
                         <div class="form-group">
@@ -853,7 +852,7 @@ $balance = $total_debet;
             }); 
         }
 
-        // sidebar script
+        //  script menu burger
         const menuBurger = document.getElementById('menuBurger');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');

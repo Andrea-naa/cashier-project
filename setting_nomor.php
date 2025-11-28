@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_config'])) {
     }
 }
 
-// Ambil contoh nomor surat
+//  contoh nomor surat
 $kode = $config['kode_perusahaan'] ?? 'KSK';
 $tahun = date('Y');
 $bulan_romawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
@@ -112,7 +112,7 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
             display: flex;
         }
 
-        /* Sidebar */
+        /* menu burger */
         .sidebar {
             width: 280px;
             background: #E7E7E7FF;
@@ -219,7 +219,7 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
             display: block;
         }
 
-        /* Main Wrapper */
+        /* konten utama */
         .main-wrapper {
             flex: 1;
             display: flex;
@@ -456,11 +456,11 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
             transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
-            justify-content: center; /* Menambahkan ini untuk center alignment */
+            justify-content: center;
             gap: 8px;
             text-decoration: none;
             font-family: 'Inter', sans-serif;
-            flex: 1; /* Dipindahkan ke class .btn agar semua button sama besar */
+            flex: 1; 
         }
 
         .btn-primary {
@@ -512,7 +512,7 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
 </head>
 
 <body>
-    <!-- Sidebar -->
+    <!-- menu burger -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -567,7 +567,7 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
         </ul>
     </div>
 
-    <!-- Main Wrapper -->
+    <!-- konten utama -->
     <div class="main-wrapper">
         <div class="header">
             <div class="header-left">
@@ -708,7 +708,7 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
     </div>
 
     <script>
-        // Sidebar script
+        // script menu burger
         const menuBurger = document.getElementById('menuBurger');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -735,8 +735,7 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
                 toggleSidebar();
             }
         });
-
-        // Auto uppercase untuk kode perusahaan
+        // input kode perusahaan kapita secara otomatis
         const kodeInput = document.querySelector('input[name="kode_perusahaan"]');
         if (kodeInput) {
             kodeInput.addEventListener('input', function() {

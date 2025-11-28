@@ -14,8 +14,6 @@ set_error_handler(function($errno, $errstr, $errfile, $errline) {
 
 require __DIR__ . '/vendor/autoload.php';
 
-// echo '<script src="https://printjs-4de6.kxcdn.com/print.min.js"></script>';
-// echo '<link rel="stylesheet" href="https://printjs-4de6.kxcdn.com/print.min.css">';
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -49,7 +47,7 @@ function terbilang($angka) {
     return trim($temp);
 }
 
-// Script auto-print
+// Script auto print
 $auto_print_script = '';
 if (isset($_GET['print']) && $_GET['print'] == '1') {
     $auto_print_script = '
@@ -143,7 +141,7 @@ if (empty($type)) {
     </head>
     <body>
         <div class="container">
-            <div class="error-icon">⚠️</div>
+            <div class="error-icon"></div>
             <h1>Parameter Tidak Lengkap</h1>
             <p>Parameter <strong>"type"</strong> harus diisi.</p>
             <div class="code-box">
@@ -225,7 +223,7 @@ if ($id <= 0 && $type !== 'buku_kas') {
     </head>
     <body>
         <div class="container">
-            <div class="error-icon">⚠️</div>
+            <div class="error-icon"></div>
             <h1>Parameter Tidak Lengkap</h1>
             <p>Parameter <strong>"id"</strong> harus diisi untuk tipe <strong>' . htmlspecialchars($type) . '</strong>.</p>
             <div class="code-box">
@@ -318,16 +316,16 @@ if ($type === 'kas_masuk' || $type === 'kas_keluar') {
         exit;
     }
     
-    // Auto-detect jenis transaksi dari database
+    // deteksi jenis transaksi dari database
     $jenis_transaksi_db = $data['jenis_transaksi'];
     
-    // Tentukan jenis berdasarkan data dari database (bukan dari parameter)
+    // menentukan jenis dan tipe
     if ($jenis_transaksi_db == 'kas_terima') {
         $jenis = 'MASUK';
-        $type = 'kas_masuk'; // Update type agar konsisten
+        $type = 'kas_masuk'; 
     } else {
         $jenis = 'KELUAR';
-        $type = 'kas_keluar'; // Update type agar konsisten
+        $type = 'kas_keluar'; 
     }
     
     $jenis = ($type === 'kas_masuk') ? 'MASUK' : 'KELUAR';

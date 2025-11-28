@@ -1,5 +1,5 @@
 <?php
-// Aktifkan error reporting untuk debugging
+// error reporting untuk debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -11,7 +11,6 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// Ambil informasi user dari session dengan fallback untuk mencegah undefined variable
 $user_id = $_SESSION['user_id'] ?? 0;
 $username = $_SESSION['username'] ?? 'Guest';
 $nama_lengkap = $_SESSION['nama_lengkap'] ?? $_SESSION['username'] ?? 'User';
@@ -183,7 +182,7 @@ if ($stmt) {
             opacity: 0.9;
         }
 
-        /* Sidebar */
+        /* menu burger */
         .sidebar {
             width: 280px;
             background: #E7E7E7FF;
@@ -291,7 +290,7 @@ if ($stmt) {
             display: block;
         }
 
-        /*  Main Wrapper  */
+        /*  konten utama  */
         .main-wrapper {
             flex: 1;
             display: flex;
@@ -305,7 +304,7 @@ if ($stmt) {
             flex-direction: column;
         }
         
-        /* Filter Section - UPDATED STYLE */
+        /* bagian filter*/
         .filter-container {
             max-width: 860px;
             margin: 20px auto 20px;
@@ -672,7 +671,7 @@ if ($stmt) {
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
+    <!-- buat menu burger -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <div class="sidebar" id="sidebar">
@@ -719,7 +718,7 @@ if ($stmt) {
         </ul>
     </div>
 
-    <!-- Main Wrapper -->
+    <!-- konten utama -->
     <div class="main-wrapper">
         <div class="header">
             <div class="header-left">
@@ -738,7 +737,7 @@ if ($stmt) {
         </div>
 
         <div class="content-wrapper">
-            <!-- Filter Section - UPDATED -->
+            <!-- bagian filter -->
             <div class="filter-container">
                 <div class="filter-wrapper">
                     <span class="filter-label">Filter:</span>
@@ -765,9 +764,8 @@ if ($stmt) {
                 </div>
             </div>
 
-            <!-- CONTAINER -->
             <div class="container">
-                <!-- Notifikasi -->
+                <!-- notif -->
                 <?php if (isset($_GET['success'])): ?>
                     <div class="notice">✓ Data berhasil disimpan.</div>
                 <?php endif; ?>
@@ -778,7 +776,6 @@ if ($stmt) {
                     <div class="notice">✓ Data berhasil diupdate.</div>
                 <?php endif; ?>
 
-                <!-- Button Group -->
                 <div class="button-group">
                     <a href="dashboard.php" class="btn btn-primary">
                         Kembali ke Dashboard
@@ -788,7 +785,7 @@ if ($stmt) {
                     </a>
                 </div>
 
-                <!-- Tabel Stok Opname -->
+                <!-- tabel -->
                 <div class="table-wrapper">
                     <table>
                         <thead>
@@ -913,7 +910,7 @@ if ($stmt) {
             }); 
         }
 
-        // Sidebar script
+        //  script menu burger
         const menuBurger = document.getElementById('menuBurger');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');

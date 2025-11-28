@@ -448,7 +448,7 @@ $users = mysqli_query($conn, "SELECT id, username, nama_lengkap, role, created_a
                 padding: 12px 8px;
             }
         }
-        /* Modal konfirmasi hapus */
+        /*  konfirmasi hapus */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -625,7 +625,7 @@ $users = mysqli_query($conn, "SELECT id, username, nama_lengkap, role, created_a
         </div>
         <?php endif; ?>
     </div>
-    <!-- Model Konfirmasi Hapus -->
+    <!-- Konfirmasi Hapus -->
     <div id="modalOverlay" class="modal-overlay" aria-hidden="true">
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
             <h4 id="modalTitle">Konfirmasi Penghapusan</h4>
@@ -638,6 +638,7 @@ $users = mysqli_query($conn, "SELECT id, username, nama_lengkap, role, created_a
     </div>
 
     <script>
+        // script untuk menampilkan dan menyembunyikan form tambah user
         document.getElementById('btnShowAdd').onclick = function () {
             document.getElementById('addForm').classList.remove('hidden');
             document.getElementById('addForm').scrollIntoView({ behavior: 'smooth' });
@@ -645,7 +646,7 @@ $users = mysqli_query($conn, "SELECT id, username, nama_lengkap, role, created_a
         document.getElementById('btnCancelAdd').onclick = function () {
             document.getElementById('addForm').classList.add('hidden');
         };
-
+        // script untuk konfirmasi hapus user
         (function(){
             var overlay = document.getElementById('modalOverlay');
             var modalMessage = document.getElementById('modalMessage');
@@ -685,7 +686,6 @@ $users = mysqli_query($conn, "SELECT id, username, nama_lengkap, role, created_a
 
             modalConfirm.addEventListener('click', function(){
                 if (!targetId) return closeModal();
-                // mengalihkan ke tindakan hapus (server mengharapkan GET hapus)
                 window.location.href = 'kelola_user.php?action=delete&id=' + encodeURIComponent(targetId);
             });
         })();

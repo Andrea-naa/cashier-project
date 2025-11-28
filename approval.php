@@ -67,7 +67,7 @@ $total_pending = count($pending_transaksi) + count($pending_stok);
             display: flex;
         }
         
-        /* Sidebar */
+        /* menu burger */
         .sidebar {
             width: 280px;
             background: #E7E7E7FF;
@@ -159,7 +159,7 @@ $total_pending = count($pending_transaksi) + count($pending_stok);
             font-size: 16px;
         }
         
-        /* Overlay */
+        /* overlay */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -175,7 +175,7 @@ $total_pending = count($pending_transaksi) + count($pending_stok);
             display: block;
         }
         
-        /* Main Content Wrapper */
+        /* konten utama */
         .main-wrapper {
             flex: 1;
             display: flex;
@@ -252,7 +252,7 @@ $total_pending = count($pending_transaksi) + count($pending_stok);
             flex-direction: column;
         }
         
-        /* Stats Container */
+        /* status */
         .stats-container {
             max-width: 1200px;
             margin: 20px auto;
@@ -289,7 +289,7 @@ $total_pending = count($pending_transaksi) + count($pending_stok);
             line-height: 1.3;
         }
         
-        /* Alert */
+        /* alert */
         .alert { 
             max-width: 1200px; 
             margin: 20px auto 0; 
@@ -488,10 +488,9 @@ $total_pending = count($pending_transaksi) + count($pending_stok);
     </style>
 </head>
 <body>
-    <!-- Sidebar Overlay -->
+    <!-- buat menu burger -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <img src="assets/gambar/logoksk.jpg" alt="KSK Logo"
@@ -532,7 +531,7 @@ $total_pending = count($pending_transaksi) + count($pending_stok);
         </ul>
     </div>
 
-    <!-- Main Content -->
+    <!-- konten utama -->
     <div class="main-wrapper">
         <div class="header">
             <div class="header-left">
@@ -549,7 +548,7 @@ $total_pending = count($pending_transaksi) + count($pending_stok);
         </div>
 
         <div class="content-wrapper">
-            <!-- Stats Container -->
+            <!-- kontener untuk jumlah pending -->
             <div class="stats-container">
                 <div class="stat-card">
                     <div class="stat-info">
@@ -577,7 +576,7 @@ $total_pending = count($pending_transaksi) + count($pending_stok);
                 <?php echo $success_message; ?>
             <?php endif; ?>
 
-            <!-- Transaksi Pending -->
+            <!-- bagian transaksi/kasmasuk dan kas keluar -->
             <div class="container">
                 <div class="section-header">
                     <h2 class="section-title">Transaksi Yang Menunggu Di Approve</h2>
@@ -646,7 +645,7 @@ $total_pending = count($pending_transaksi) + count($pending_stok);
                 <?php endif; ?>
             </div>
             
-            <!-- Stok Opname Pending -->
+            <!-- stok opname -->
             <div class="container">
                 <div class="section-header">
                     <h2 class="section-title">Stok Opname Menunggu Approval</h2>
@@ -712,7 +711,7 @@ $total_pending = count($pending_transaksi) + count($pending_stok);
         </body>
 
         <script>
-// Fungsi untuk toggle semua checkbox
+// untuk chcekbox
 function toggleAll(type, checked) {
     const checkboxes = document.querySelectorAll('.checkbox-' + type);
     checkboxes.forEach(checkbox => {
@@ -720,7 +719,7 @@ function toggleAll(type, checked) {
     });
 }
 
-// Fungsi untuk mengecek apakah semua checkbox sudah dipilih
+// checkbox tapi select semua
 function checkAllSelected(type) {
     const checkboxes = document.querySelectorAll('.checkbox-' + type);
     const selectAllCheckbox = document.getElementById('selectAll' + type.charAt(0).toUpperCase() + type.slice(1));
@@ -734,7 +733,7 @@ function checkAllSelected(type) {
     }
 }
 
-// Event listener untuk checkbox individual
+// script untuk event listener untuk checkbox berdasarkan tipe
 document.addEventListener('DOMContentLoaded', function() {
     // Untuk transaksi
     const checkboxesTransaksi = document.querySelectorAll('.checkbox-transaksi');
@@ -752,7 +751,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Toggle sidebar
+    // menu burger
     const menuBurger = document.getElementById('menuBurger');
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');

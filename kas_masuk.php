@@ -921,6 +921,7 @@ $res = mysqli_query($conn, "SELECT t.*, u.nama_lengkap as approved_by_name FROM 
                                     <th style="width:130px;">TANGGAL</th>
                                     <th>KETERANGAN</th>
                                     <th style="width:130px;">JUMLAH</th>
+                                    <th style="width:150px;">Username</th>
                                     <th style="width:220px;">AKSI</th>          
                                     <th style="width:100px;">STATUS</th>
                                 </tr>
@@ -935,7 +936,7 @@ $res = mysqli_query($conn, "SELECT t.*, u.nama_lengkap as approved_by_name FROM 
                                             <td style="text-align:center;"><?php echo date('d-M-Y', strtotime($row['tanggal_transaksi'])); ?></td>
                                             <td><?php echo htmlspecialchars($row['keterangan']); ?></td>
                                             <td style="text-align:left;">Rp. <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
-                                            
+                                            <td><strong><?php echo htmlspecialchars($row['username']); ?></strong></td>
                                             <td style="text-align:center;">
                                                 <div class="action-buttons">
                                                     <a href="kas_masuk.php?edit=<?php echo $row['id']; ?>" 

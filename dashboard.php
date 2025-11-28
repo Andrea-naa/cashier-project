@@ -18,19 +18,6 @@ $query_config = "SELECT * FROM konfigurasi LIMIT 1";
 $result_config = mysqli_query($conn, $query_config);
 $config = mysqli_fetch_assoc($result_config);
 
-// Jika belum ada konfigurasi, set default
-if (!$config) {
-    $insert_config = "INSERT INTO konfigurasi (nama_perusahaan, alamat, kota, telepon, email) 
-                      VALUES ('PT. Kalimantan Sawit Kusuma', 'Jl. W.R Supratman No. 42 Pontianak', 
-                              'Sungai Buluh', '0778-123456', 'info@msl.com')";
-    mysqli_query($conn, $insert_config);
-    
-    $result_config = mysqli_query($conn, $query_config);
-    $config = mysqli_fetch_assoc($result_config);
-}
-
-$nama_perusahaan = $config['nama_perusahaan'] ?? 'PT. Mitra Saudara Lestari';
-
 // Ambil role user dari session
 $role = $_SESSION['role'] ?? 'Kasir';
 
@@ -53,7 +40,7 @@ if ($result_keluar) {
     $saldo_kas -= $row_keluar['total'] ?? 0;
 }
 
-// Format saldo kas dengan pemisah ribuan
+// Format saldo kasn
 $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
 ?>
 
@@ -77,7 +64,7 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             min-height: 100vh;
         }
         
-        /* Sidebar */
+        /* menu burger */
         .sidebar {
             width: 280px;
             background: #E7E7E7FF;
@@ -371,7 +358,6 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             margin-top: -5px;
         }
         
-        /* biar responsive */
         @media (max-width: 768px) {
             body {
                 flex-direction: column;
@@ -554,7 +540,6 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             }
         }
 
-        /* Untuk HP yang sangat kecil */
         @media (max-width: 480px) {
             .welcome-text {
                 font-size: 20px;

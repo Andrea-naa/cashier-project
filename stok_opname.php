@@ -23,7 +23,7 @@ $fisik_uang_kas = [
     ['no'=>11,'uraian'=>'Satu Ratusan Logam','satuan'=>'Keping','nominal'=>100],
 ];
 
-// Hitung saldo sistem (dipindahkan ke atas agar bisa dipakai di JavaScript)
+// Hitung saldo sistem
 $q_system = mysqli_query($conn,
     "SELECT 
         (SELECT IFNULL(SUM(nominal),0) FROM transaksi WHERE jenis_transaksi='kas_terima') -
@@ -198,7 +198,7 @@ if (isset($_POST['simpan'])) {
             display: flex;
         }
 
-        /* Sidebar */
+        /* menu burger */
         .sidebar {
             width: 280px;
             background: #E7E7E7FF;
@@ -306,7 +306,7 @@ if (isset($_POST['simpan'])) {
             display: block;
         }
         
-        /* Main Wrapper */
+        /* konten utama */
         .main-wrapper {
             flex: 1;
             display: flex;
@@ -689,7 +689,7 @@ if (isset($_POST['simpan'])) {
             // Hitung jumlah saldo fisik
             let saldoFisik = totalFisik + bonSementara + uangRusak + materialNilai + lainLain;
             
-            // Ambil saldo buku kas dari PHP
+            // Ambil saldo buku kas
             let saldoBukuKas = <?php echo $saldo_sistem; ?>;
             
             // Hitung selisih = Saldo Buku Kas - Jumlah Saldo Fisik
@@ -701,7 +701,7 @@ if (isset($_POST['simpan'])) {
             document.getElementById('saldo-buku').textContent = formatRupiah(saldoBukuKas);
             document.getElementById('selisih').textContent = formatRupiah(selisih);
             
-            // Debug log untuk melihat perhitungan
+            // log debugging untuk melihat perhitungan
             console.log('Total Fisik:', totalFisik);
             console.log('Bon Sementara:', bonSementara);
             console.log('Uang Rusak:', uangRusak);
@@ -773,7 +773,7 @@ if (isset($_POST['simpan'])) {
         </ul>
     </div>
 
-    <!-- Main Wrapper -->
+    <!-- konten utama -->
     <div class="main-wrapper">
         <div class="header">
             <div class="header-left">
@@ -919,7 +919,7 @@ if (isset($_POST['simpan'])) {
     </div>
 
     <script>
-        // Sidebar script
+        // script menu burger
         const menuBurger = document.getElementById('menuBurger');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
