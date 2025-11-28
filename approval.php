@@ -580,7 +580,7 @@ $total_pending = count($pending_transaksi) + count($pending_stok);
             <!-- Transaksi Pending -->
             <div class="container">
                 <div class="section-header">
-                    <h2 class="section-title">Transaksi Menunggu Approval</h2>
+                    <h2 class="section-title">Transaksi Yang Menunggu Di Approve</h2>
                     <a href="dashboard.php" class="btn btn-primary">
                         <i class="fas fa-home"></i> Dashboard
                     </a>

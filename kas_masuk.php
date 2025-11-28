@@ -7,6 +7,8 @@ $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
 $nama_lengkap = $_SESSION['nama_lengkap'];
 $role = $_SESSION['role'] ?? 'Kasir';
+$is_admin = (stripos($role, 'Administrator') !== false);
+
 // bagian filter tanggal
 $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
 $date_condition = '';
@@ -25,6 +27,13 @@ switch($filter) {
         $date_condition = '';
 }
 
+$approval_status = isset($_GET['approval_status']) ? $_GET['approval_status'] : 'all';
+if ($approval_status === 'pending') {
+    $date_condition .= " AND is_approved = 0";
+} elseif ($approval_status === 'approved') {
+    $date_condition .= " AND is_approved = 1";
+}
+
 $success_message = '';
 $edit_mode = false;
 $edit_data = [];
@@ -40,13 +49,30 @@ if (isset($_GET['edit']) && intval($_GET['edit']) > 0) {
     mysqli_stmt_close($stmt);
     
     if ($edit_data) {
-        $edit_mode = true;
+        // mengecek role user
+        if (!$is_admin) {
+            // // mengecek apabila kasir mencoba edit data yang sudah di approve
+            if ($edit_data['is_approved'] == 1) {
+                $success_message = '<div class="alert alert-error">Data sudah di-approve, kamu tidak dapat melakukan edit lagi!</div>';
+                $edit_mode = false;
+            }
+            // // mengecek apabila kasir mencoba edit data yang dimiliki user lain
+            else if ($edit_data['user_id'] != $user_id) {
+                $success_message = '<div class="alert alert-error">Kamu tidak memiliki akses untuk mengedit data ini!</div>';
+                $edit_mode = false;
+            }
+            else {
+                $edit_mode = true;
+            }
+        } else {
+            $edit_mode = true;
+        }
     } else {
         $success_message = '<div class="alert alert-error">Data tidak ditemukan!</div>';
     }
 }
 
-// bagian tombol aksi simpan (insert/update)
+// bagian tombol aksi simpan
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
     $keterangan = clean_input($_POST['keterangan'] ?? '');
     $jumlah_raw = trim($_POST['jumlah'] ?? '0');
@@ -59,26 +85,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
         if ($edit_mode && isset($_POST['edit_id'])) {
             // bagian tombol update
             $edit_id = intval($_POST['edit_id']);
-            $stmt = mysqli_prepare($conn, "UPDATE transaksi SET nominal = ?, keterangan = ? WHERE id = ? AND jenis_transaksi = 'kas_terima'");
-            mysqli_stmt_bind_param($stmt, 'dsi', $jumlah, $keterangan, $edit_id);
             
-            if (mysqli_stmt_execute($stmt)) {
-                log_audit($user_id, $username, "Update Kas Masuk #$edit_id: " . rupiah_fmt($jumlah));
-                mysqli_stmt_close($stmt);
-                header('Location: kas_masuk.php?success=2');
-                exit();
+            // proses validasi data
+            if (!$is_admin) {
+                $check_stmt = mysqli_prepare($conn, "SELECT is_approved, user_id FROM transaksi WHERE id = ? AND jenis_transaksi = 'kas_terima'");
+                mysqli_stmt_bind_param($check_stmt, 'i', $edit_id);
+                mysqli_stmt_execute($check_stmt);
+                $check_result = mysqli_stmt_get_result($check_stmt);
+                $check_data = mysqli_fetch_assoc($check_result);
+                mysqli_stmt_close($check_stmt);
+                
+                if ($check_data) {
+                    if ($check_data['is_approved'] == 1) {
+                        $success_message = '<div class="alert alert-error">Data sudah di-approve, kamu tidak dapat melakukan edit lagi!</div>';
+                        $edit_mode = false;
+                    } else if ($check_data['user_id'] != $user_id) {
+                        $success_message = '<div class="alert alert-error">Kamu tidak memiliki akses untuk mengedit data ini!</div>';
+                        $edit_mode = false;
+                    }
+                }
             }
-            mysqli_stmt_close($stmt);
+            
+            if ($edit_mode || $is_admin) {
+                $stmt = mysqli_prepare($conn, "UPDATE transaksi SET nominal = ?, keterangan = ? WHERE id = ? AND jenis_transaksi = 'kas_terima'");
+                mysqli_stmt_bind_param($stmt, 'dsi', $jumlah, $keterangan, $edit_id);
+                
+                if (mysqli_stmt_execute($stmt)) {
+                    log_audit($user_id, $username, "Update Kas Masuk #$edit_id: " . rupiah_fmt($jumlah));
+                    mysqli_stmt_close($stmt);
+                    header('Location: kas_masuk.php?success=2');
+                    exit();
+                }
+                mysqli_stmt_close($stmt);
+            }
             
         } else {
             // bagian tombol simpan
-            
-            // Generate nomor surat GLOBAL
             $nomor_data = get_next_nomor_surat('KT');
             $nomor_surat = $nomor_data['nomor'];
             
-            $stmt = mysqli_prepare($conn, "INSERT INTO transaksi (user_id, username, jenis_transaksi, nominal, keterangan, nomor_surat, tanggal_transaksi) VALUES (?, ?, 'kas_terima', ?, ?, ?, NOW())");
-            mysqli_stmt_bind_param($stmt, 'isdss', $user_id, $username, $jumlah, $keterangan, $nomor_surat);
+            $is_approved = $is_admin ? 1 : 0;
+            
+            $stmt = mysqli_prepare($conn, "INSERT INTO transaksi (user_id, username, jenis_transaksi, nominal, keterangan, nomor_surat, tanggal_transaksi, is_approved) VALUES (?, ?, 'kas_terima', ?, ?, ?, NOW(), ?)");
+            mysqli_stmt_bind_param($stmt, 'isdssi', $user_id, $username, $jumlah, $keterangan, $nomor_surat, $is_approved);
             
             if (mysqli_stmt_execute($stmt)) {
                 log_audit($user_id, $username, "Kas Masuk #$nomor_surat: " . rupiah_fmt($jumlah));
@@ -89,24 +138,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
             mysqli_stmt_close($stmt);
         }
     } else {
-        $success_message = '<div class="alert alert-error">Jumlah kas harus lebih dari 0!</div>';
+        $success_message = '<div class="alert alert-error">Jumlah kas yang di inputkan harus lebih dari 0!</div>';
     }
 }
 
-// bagian tombol aksi delete
 if (isset($_GET['delete']) && intval($_GET['delete']) > 0) {
     $delete_id = intval($_GET['delete']);
-    $stmt = mysqli_prepare($conn, "DELETE FROM transaksi WHERE id = ? AND jenis_transaksi = 'kas_terima'");
-    mysqli_stmt_bind_param($stmt, 'i', $delete_id);
+    // mengecek validasi data sebelum melakukan delete
+    $check_stmt = mysqli_prepare($conn, "SELECT is_approved, user_id FROM transaksi WHERE id = ? AND jenis_transaksi = 'kas_terima'");
+    mysqli_stmt_bind_param($check_stmt, 'i', $delete_id);
+    mysqli_stmt_execute($check_stmt);
+    $check_result = mysqli_stmt_get_result($check_stmt);
+    $check_data = mysqli_fetch_assoc($check_result);
+    mysqli_stmt_close($check_stmt);
     
-    if (mysqli_stmt_execute($stmt)) {
-        log_audit($user_id, $username, "Hapus Kas Masuk #$delete_id");
+    if ($check_data) {
+        if (!$is_admin) {
+            // mengecek apabila kasir mencoba mendelete data yang sudah di approve
+            if ($check_data['is_approved'] == 1) {
+                header('Location: kas_masuk.php?error=approved_delete');
+                exit();
+            }
+            // mengecek apabila kasir mencoba mendelete data yang dimiliki user lain
+            if ($check_data['user_id'] != $user_id) {
+                header('Location: kas_masuk.php?error=unauthorized_delete');
+                exit();
+            }
+        }
+        
+        // melanjutkan proses delete
+        $stmt = mysqli_prepare($conn, "DELETE FROM transaksi WHERE id = ? AND jenis_transaksi = 'kas_terima'");
+        mysqli_stmt_bind_param($stmt, 'i', $delete_id);
+        
+        if (mysqli_stmt_execute($stmt)) {
+            log_audit($user_id, $username, "Hapus Kas Masuk #$delete_id");
+            mysqli_stmt_close($stmt);
+            header('Location: kas_masuk.php?success=3');
+            exit();
+        }
         mysqli_stmt_close($stmt);
-        header('Location: kas_masuk.php?success=3');
-        exit();
     }
-    mysqli_stmt_close($stmt);
 }
+
 
 // pesan kalo berhasil
 if (isset($_GET['success'])) {
@@ -122,11 +195,21 @@ if (isset($_GET['success'])) {
             break;
     }
 }
+// pesan kalo error
+if (isset($_GET['error'])) {
+    switch ($_GET['error']) {
+        case 'approved_delete':
+            $success_message = '<div class="alert alert-error">Data sudah di-approve, kamu tidak dapat menghapus data ini!</div>';
+            break;
+        case 'unauthorized_delete':
+            $success_message = '<div class="alert alert-error">Kamu tidak memiliki akses untuk menghapus data ini!</div>';
+            break;
+    }
+}
 
-// Ambil data kas masuk
+// ngambil data kas masuk
 $data_kas = [];
-$res = mysqli_query($conn, "SELECT * FROM transaksi WHERE jenis_transaksi = 'kas_terima' $date_condition ORDER BY tanggal_transaksi DESC");
-if ($res) {
+$res = mysqli_query($conn, "SELECT t.*, u.nama_lengkap as approved_by_name FROM transaksi t LEFT JOIN users u ON t.approved_by = u.id WHERE t.jenis_transaksi = 'kas_terima' $date_condition ORDER BY t.tanggal_transaksi DESC");if ($res) {
     while ($r = mysqli_fetch_assoc($res)) {
         $data_kas[] = $r;
     }
@@ -157,7 +240,7 @@ if ($res) {
             display: flex;
         }
         
-        /* Sidebar */
+        /* menu burger */
         .sidebar {
             width: 280px;
             background: #E7E7E7FF;
@@ -249,7 +332,7 @@ if ($res) {
             font-size: 16px;
         }
         
-        /* operlay */
+        /* overlay */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -265,7 +348,7 @@ if ($res) {
             display: block;
         }
         
-        /* Main Content Wrapper */
+        /* konten utama */
         .main-wrapper {
             flex: 1;
             display: flex;
@@ -337,7 +420,7 @@ if ($res) {
             flex-direction: column;
         }
         
-        /* * Filter Section */ 
+        /* bagian filter */ 
         .filter-container {
             max-width: 860px;
             margin: 20px auto 20px;
@@ -741,7 +824,7 @@ if ($res) {
         </ul>
     </div>
 
-    <!-- Main Content -->
+    <!-- konten utama -->
     <div class="main-wrapper">
         <div class="header">
             <div class="header-left">
@@ -757,7 +840,7 @@ if ($res) {
             </div>
         </div>
 
-        <!-- Filter Section -->
+        <!-- bagian filter -->
         <div class="content-wrapper">
             <div class="filter-container">
                 <div class="filter-wrapper">
@@ -774,6 +857,16 @@ if ($res) {
                        class="btn btn-filter btn-sm <?php echo $filter === 'month' ? 'btn-primary' : 'btn-secondary'; ?>">
                         <i class="fas fa-calendar-alt"></i> Bulan Ini
                     </a>
+                        <?php if ($is_admin): ?>
+                        <a href="kas_masuk.php?filter=<?= $filter ?>&approval_status=pending" 
+                        class="btn btn-filter btn-sm <?php echo $approval_status === 'pending' ? 'btn-primary' : 'btn-secondary'; ?>">
+                            <i class="fas fa-clock"></i> Pending Approval
+                        </a>
+                        <a href="kas_masuk.php?filter=<?= $filter ?>&approval_status=approved" 
+                        class="btn btn-filter btn-sm <?php echo $approval_status === 'approved' ? 'btn-primary' : 'btn-secondary'; ?>">
+                            <i class="fas fa-check-circle"></i> Sudah Approved
+                        </a>
+                    <?php endif; ?>
                     <a href="kas_masuk.php<?php echo $edit_mode ? '?edit='.$edit_data['id'] : ''; ?>" 
                        class="btn btn-filter btn-sm <?php echo $filter === 'all' ? 'btn-primary' : 'btn-secondary'; ?>">
                         <i class="fas fa-list"></i> Semua
@@ -828,43 +921,60 @@ if ($res) {
                                     <th style="width:130px;">TANGGAL</th>
                                     <th>KETERANGAN</th>
                                     <th style="width:130px;">JUMLAH</th>
-                                    <th style="width:220px;">AKSI</th>
+                                    <th style="width:220px;">AKSI</th>          
+                                    <th style="width:100px;">STATUS</th>
                                 </tr>
                             </thead>
+
                             <tbody>
-                            <?php if (!empty($data_kas)): ?>
-                                <?php $i = 1; foreach ($data_kas as $row): ?>
+                                <?php if (!empty($data_kas)): ?>
+                                    <?php $i = 1; foreach ($data_kas as $row): ?>
+                                        <tr>
+                                            <td style="text-align:center;"><?php echo $i; ?></td>
+                                            <td style="text-align:center;"><?php echo htmlspecialchars($row['nomor_surat'] ?? '-'); ?></td>
+                                            <td style="text-align:center;"><?php echo date('d-M-Y', strtotime($row['tanggal_transaksi'])); ?></td>
+                                            <td><?php echo htmlspecialchars($row['keterangan']); ?></td>
+                                            <td style="text-align:left;">Rp. <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
+                                            
+                                            <td style="text-align:center;">
+                                                <div class="action-buttons">
+                                                    <a href="kas_masuk.php?edit=<?php echo $row['id']; ?>" 
+                                                    class="btn btn-edit btn-sm" title="Edit">Edit</a>
+                                                    
+                                                    <a href="kas_masuk.php?delete=<?php echo $row['id']; ?>" 
+                                                    class="btn btn-delete btn-sm" 
+                                                    onclick="return confirm('Yakin ingin menghapus data ini?')" 
+                                                    title="Hapus">Delete</a>
+                                                    
+                                                    <a href="export_pdf.php?type=kas_masuk&id=<?php echo $row['id']; ?>&print=1" 
+                                                    target="_blank" 
+                                                    class="btn btn-pdf btn-sm" 
+                                                    title="Cetak PDF">PDF</a>
+                                                </div>
+                                            </td>
+                                            
+                                            <!-- tampilan status -->
+                                            <td style="text-align:center;">
+                                                <?php if ($row['is_approved'] == 1): ?>
+                                                    <span style="background:#d4edda; color:#155724; padding:4px 8px; border-radius:4px; font-size:11px;">
+                                                         Approved
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span style="background:#fff3cd; color:#856404; padding:4px 8px; border-radius:4px; font-size:11px;">
+                                                         Pending
+                                                    </span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php $i++; endforeach; ?>
+                                <?php else: ?>
                                     <tr>
-                                        <td style="text-align:center;"><?php echo $i; ?></td>
-                                        <td style="text-align:center;"><?php echo htmlspecialchars($row['nomor_surat'] ?? '-'); ?></td>
-                                        <td style="text-align:center;"><?php echo date('d-M-Y', strtotime($row['tanggal_transaksi'])); ?></td>
-                                        <td><?php echo htmlspecialchars($row['keterangan']); ?></td>
-                                        <td style="text-align:right;">Rp. <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
-                                        <td style="text-align:center;">
-                                            <div class="action-buttons">
-                                                <a href="kas_masuk.php?edit=<?php echo $row['id']; ?>" class="btn btn-edit btn-sm" title="Edit">
-                                                    Edit
-                                                </a>
-                                                <a href="kas_masuk.php?delete=<?php echo $row['id']; ?>" class="btn btn-delete btn-sm" onclick="return confirm('Yakin ingin menghapus data ini?')" title="Hapus">
-                                                    Delete
-                                                <a href="export_pdf.php?type=kas_masuk&id=<?php echo $row['id']; ?>&print=1" 
-                                                target="_blank" 
-                                                class="btn btn-pdf btn-sm" 
-                                                title="Cetak PDF">
-                                                    PDF
-                                                </a>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php $i++; endforeach; ?>
-                <?php else: ?>
-                    <tr>
-                        <td colspan="6" style="text-align:center; padding:20px; color:#999;">
-                            Belum ada data kas masuk
-                        </td>
-                    </tr>
-                <?php endif; ?>
-                </tbody>
+                                        <td colspan="<?php echo $is_admin ? '8' : '7'; ?>" style="text-align:center; padding:20px; color:#999;">
+                                            Belum ada data kas masuk
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
+                        </tbody>
             </table>
         </div>
     </div>
@@ -913,7 +1023,7 @@ if ($res) {
     </div>
 
     <script>
-                
+            // script untuk print pdf
         function autoPrint(pdfUrl) { 
             printJS({ 
                 printable: pdfUrl, 
@@ -923,7 +1033,7 @@ if ($res) {
             }); 
         }
 
-        // sidebar script
+        // sript untuk menu burger
         const menuBurger = document.getElementById('menuBurger');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');

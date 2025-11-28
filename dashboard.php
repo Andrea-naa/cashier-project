@@ -647,7 +647,7 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             <li class="menu-item">
                 <a href="setting_nomor.php">
                     <img src="assets/gambar/icon/settings.png" class="menu-icon">
-                    <span>Pengaturan Nomor Surat</span>
+                    <span>Letter Formatting</span>
                 </a>
             </li>
             <?php endif; ?>
@@ -662,14 +662,14 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             <li class="menu-item">
                 <a href="kelola_user.php">
                     <img src="assets/gambar/icon/kelola_user.png" class="menu-icon">
-                    <span>Kelola User</span>
+                    <span>User Management</span>
                 </a>
             </li>
             <?php endif; ?>
             <li class="menu-item">
                 <a href="kas_transaksi.php">
                     <img src="assets/gambar/icon/folderkas.png" class="menu-icon">
-                    <span>Kas Transaksi</span>
+                    <span>Transaction</span>
                 </a>
             </li>
             <li class="menu-item">

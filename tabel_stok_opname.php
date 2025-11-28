@@ -21,6 +21,21 @@ $role = $_SESSION['role'] ?? 'Kasir';
 $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
 $date_condition = '';
 
+$is_admin = (stripos($role, 'Administrator') !== false);
+
+// Filter approval status
+$approval_filter = '';
+if (!$is_admin) {
+    $approval_filter = " AND (is_approved = 0 OR user_id = $user_id)";
+}
+
+$approval_status = isset($_GET['approval_status']) ? $_GET['approval_status'] : 'all';
+if ($approval_status === 'pending') {
+    $approval_filter .= " AND is_approved = 0";
+} elseif ($approval_status === 'approved') {
+    $approval_filter .= " AND is_approved = 1";
+}
+
 switch($filter) {
     case 'today':
         $date_condition = " WHERE DATE(tanggal_opname) = CURDATE()";
@@ -54,7 +69,7 @@ $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $start = ($page - 1) * $limit;
 
 // ngitung total data
-$qCount = mysqli_query($conn, "SELECT COUNT(*) as total FROM stok_opname $date_condition");
+$qCount = mysqli_query($conn, "SELECT COUNT(*) as total FROM stok_opname WHERE 1=1 $date_condition $approval_filter");
 $total = 0;
 if ($qCount) {
     $resultCount = mysqli_fetch_assoc($qCount);
@@ -65,7 +80,7 @@ $totalPages = max(1, ceil($total / $limit));
 
 // ngambil data stok opname dengan pagination
 $rows = [];
-$query = "SELECT * FROM stok_opname $date_condition ORDER BY tanggal_opname DESC LIMIT ?, ?";
+$query = "SELECT s.*, u.nama_lengkap as approved_by_name FROM stok_opname s LEFT JOIN users u ON s.approved_by = u.id WHERE 1=1 $date_condition $approval_filter ORDER BY s.tanggal_opname DESC LIMIT ?, ?";
 $stmt = mysqli_prepare($conn, $query);
 if ($stmt) {
     mysqli_stmt_bind_param($stmt, 'ii', $start, $limit);

@@ -6,6 +6,7 @@ $user_id      = $_SESSION['user_id'];
 $username     = $_SESSION['username'];
 $nama_lengkap = $_SESSION['nama_lengkap'];
 $role = $_SESSION['role'] ?? 'Kasir';
+$is_admin = (stripos($role, 'Administrator') !== false);
 
 // list pecahan fisik uang kas
 $fisik_uang_kas = [
@@ -74,16 +75,16 @@ if (isset($_POST['simpan'])) {
         $subtotal_fisik += ($jumlah * $item['nominal']);
     }
 
-    // bagian input lainnya
+    // bagian input lain lainnya
     $bon_sementara = floatval($_POST['bon_sementara'] ?? 0);
     $uang_rusak    = floatval($_POST['uang_rusak'] ?? 0);
     $materai = floatval($_POST['material'] ?? 0); // Simpan jumlah lembar
     $lain_lain     = floatval($_POST['lain_lain'] ?? 0);
 
-    // Kalikan materai dengan 10.000 untuk perhitungan fisik_total
+    // materai dikali 10.000
     $fisik_total = $subtotal_fisik + $bon_sementara + $uang_rusak + ($materai * 10000) + $lain_lain;
 
-    // Selisih = Saldo Buku Kas - Jumlah Saldo Fisik
+    // selisih
     $selisih = $saldo_sistem - $fisik_total;
 
     // aksi simpan ke database

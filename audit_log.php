@@ -181,12 +181,10 @@ $res = mysqli_query($conn, $sql);
             $totalPages = max(1, ceil($total / $perPage));
             $baseUrl = 'audit_log.php?username=' . urlencode($username) . '&action_q=' . urlencode($actionq) . '&date_from=' . urlencode($date_from) . '&date_to=' . urlencode($date_to) . '&page=';
             
-            // Previous
             if ($page > 1) {
                 echo '<a class="page-link" href="' . $baseUrl . ($page-1) . '"><i class="fas fa-chevron-left"></i></a>';
             }
-            
-            // Pages
+
             for ($p = 1; $p <= $totalPages; $p++) {
                 if ($p == $page) {
                     echo '<span class="page-link active">' . $p . '</span>';
@@ -195,7 +193,6 @@ $res = mysqli_query($conn, $sql);
                 }
             }
             
-            // Next
             if ($page < $totalPages) {
                 echo '<a class="page-link" href="' . $baseUrl . ($page+1) . '"><i class="fas fa-chevron-right"></i></a>';
             }

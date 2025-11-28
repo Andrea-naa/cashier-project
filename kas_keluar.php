@@ -8,6 +8,7 @@ $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
 $nama_lengkap = $_SESSION['nama_lengkap'];
 $role = $_SESSION['role'] ?? 'Kasir';
+$is_admin = (stripos($role, 'Administrator') !== false);
 
 // bagian filter data tanggal transaksi
 $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
@@ -25,6 +26,16 @@ switch($filter) {
         break;
     default:
         $date_condition = '';
+}
+if (!$is_admin) {
+    $date_condition .= " AND (is_approved = 0 OR user_id = $user_id)";
+}
+
+$approval_status = isset($_GET['approval_status']) ? $_GET['approval_status'] : 'all';
+if ($approval_status === 'pending') {
+    $date_condition .= " AND is_approved = 0";
+} elseif ($approval_status === 'approved') {
+    $date_condition .= " AND is_approved = 1";
 }
 
 $success_message = '';
@@ -73,7 +84,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
             mysqli_stmt_close($stmt);
             
         } else {
-            // bagian tombol simpan
             
             // Generate nomor surat GLOBAL
             $nomor_data = get_next_nomor_surat('KK');;
@@ -842,7 +852,7 @@ if ($res) {
                                         <td style="text-align:center;"><?php echo htmlspecialchars($row['nomor_surat'] ?? '-'); ?></td>
                                         <td style="text-align:center;"><?php echo date('d-M-Y', strtotime($row['tanggal_transaksi'])); ?></td>
                                         <td><?php echo htmlspecialchars($row['keterangan']); ?></td>
-                                        <td style="text-align:right;">Rp. <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
+                                        <td style="text-align:left;">Rp. <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
                                         <td style="text-align:center;">
                                             <div class="action-buttons">
                                                 <a href="kas_keluar.php?edit=<?php echo $row['id']; ?>" class="btn btn-edit btn-sm" title="Edit">
