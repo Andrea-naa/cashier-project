@@ -20,7 +20,7 @@ if (stripos($role, 'Administrator') === false) {
     exit();
 }
 
-// Ambil filter dari query string
+// ngambil filter dari query string
 $username = isset($_GET['username']) ? clean_input($_GET['username']) : '';
 $actionq = isset($_GET['action_q']) ? clean_input($_GET['action_q']) : '';
 $date_from = isset($_GET['date_from']) ? clean_input($_GET['date_from']) : '';
@@ -37,7 +37,7 @@ if ($date_to !== '') $conds[] = "timestamp <= '" . $conn->real_escape_string($da
 $where = '';
 if (count($conds) > 0) $where = 'WHERE ' . implode(' AND ', $conds);
 
-// Hitung total
+// hitung total
 $countRes = mysqli_query($conn, "SELECT COUNT(*) AS total FROM audit_log $where");
 $total = 0;
 if ($countRes) {
@@ -88,37 +88,164 @@ $res = mysqli_query($conn, $sql);
             gap: 12px;
         }
 
-        .header h2 { color: #2d7a3e; font-size: 20px; display:flex; align-items:center; gap:10px; }
+        .header h2 {
+             color: #2d7a3e; 
+             font-size: 20px; 
+             display:flex; 
+             align-items:center; 
+             gap:10px; 
+            }
 
-        .page-actions { display:flex; gap:10px; }
+        .page-actions { 
+            display:flex; 
+            gap:10px; 
+        }
 
-        .btn { padding: 10px 16px; border-radius: 8px; cursor: pointer; border: none; font-weight: 600; display:inline-flex; align-items:center; gap:8px; text-decoration:none; transition: all 0.3s ease; }
-        .btn-primary { background: #2d7a3e; color: white; }
-        .btn-outline { background: white; border: 2px solid #2d7a3e; color: #2d7a3e; }
-        .btn-outline:hover { background: #2d7a3e; color: white; }
-        .btn:hover { transform: translateY(-2px); }
+        .btn { 
+            padding: 10px 16px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            border: none; 
+            font-weight: 600; 
+            display:inline-flex; 
+            align-items:center; 
+            gap:8px; 
+            text-decoration:none; 
+            transition: all 0.3s ease; }
+        .btn-primary { 
+            background: #2d7a3e; 
+            color: white; 
+        }
 
-        .form-filters { background: white; padding: 16px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 16px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-        .form-filters input[type=text], .form-filters input[type=date] { padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; }
-        .form-filters button { padding:10px 12px; border-radius:8px; border:none; background:#2d7a3e; color:white; cursor:pointer; font-weight: 600; }
-        .form-filters button:hover { background: #236030; }
+        .btn-outline { 
+            background: white; 
+            border: 2px 
+            solid #2d7a3e; 
+            color: #2d7a3e; 
+        }
 
-        .table-wrap { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow-x:auto; }
-        table { width:100%; border-collapse: collapse; min-width: 720px; }
-        thead th { background: #2d7a3e; color: white; padding:12px; text-align:left; font-size:13px; }
-        tbody td { padding:12px; border-bottom:1px solid #f1f5f4; color:#475057; font-size:14px; }
-        tbody tr:hover { background: #f7fafc; }
+        .btn-outline:hover { 
+            background: #2d7a3e; 
+            color: white; 
+        }
 
-        .muted { color:#6b7280; font-size:13px; }
-        .pagination { margin-top:12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-        .page-link { padding:6px 10px; border-radius:8px; border:1px solid #e5e7eb; background:white; text-decoration:none; color:#374151; transition: all 0.3s ease; }
-        .page-link:hover { background: #f3f4f6; }
-        .page-link.active { background:#2d7a3e; color:white; border-color:#2d7a3e }
+        .btn:hover { 
+            transform: translateY(-2px); 
+        }
+
+        .form-filters { 
+            background: white; 
+            padding: 16px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
+            margin-bottom: 16px; 
+            display:flex; 
+            gap:10px; 
+            flex-wrap:wrap; 
+            align-items:center; 
+        }
+
+        .form-filters input[type=text], 
+        .form-filters input[type=date] {
+             padding:10px 12px; 
+             border:1px solid #e2e8f0; 
+             border-radius:8px; 
+            }
+
+        .form-filters button { 
+            padding:10px 12px; 
+            border-radius:8px; 
+            border:none; 
+            background:#2d7a3e; 
+            color:white; 
+            cursor:pointer; 
+            font-weight: 600; 
+        }
+
+        .form-filters button:hover { 
+            background: #236030; 
+        }
+
+        .table-wrap {
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); 
+            overflow-x:auto; 
+        }
+
+        table { 
+            width:100%; 
+            border-collapse: collapse; 
+            min-width: 720px; 
+        }
+
+        thead th { 
+            background: #2d7a3e; 
+            color: white; 
+            padding:12px; 
+            text-align:left; 
+            font-size:13px; 
+        }
+
+        tbody td { 
+            padding:12px; 
+            border-bottom:1px solid #f1f5f4; 
+            color:#475057; 
+            font-size:14px; 
+        }
+
+        tbody tr:hover { 
+            background: #f7fafc; 
+        }
+
+        .muted { 
+            color:#6b7280; 
+            font-size:13px; 
+        }
+
+        .pagination {
+            margin-top:12px; 
+            display:flex; 
+            gap:8px; 
+            align-items:center; 
+            flex-wrap:wrap; 
+        }
+
+        .page-link { 
+            padding:6px 10px; 
+            border-radius:8px; 
+            border:1px solid #e5e7eb;
+            background:white;
+            text-decoration:none; 
+            color:#374151; 
+            transition: all 0.3s ease;
+         }
+
+        .page-link:hover { 
+            background: #f3f4f6; 
+        }
+
+        .page-link.active { 
+            background:#2d7a3e; 
+            color:white; 
+            border-color:#2d7a3e 
+        }
 
         @media (max-width: 768px) {
-            .header { flex-direction: column; align-items: flex-start; }
-            .form-filters { flex-direction: column; align-items: stretch; }
-            .page-actions .btn { width: 100%; }
+            .header { 
+                flex-direction: column; 
+                align-items: flex-start; 
+            }
+
+            .form-filters { 
+                flex-direction: column;
+                 align-items: stretch; 
+                }
+
+            .page-actions .btn { 
+                width: 100%; 
+            }
         }
     </style>
 </head>

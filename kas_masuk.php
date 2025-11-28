@@ -959,10 +959,6 @@ $res = mysqli_query($conn, "SELECT t.*, u.nama_lengkap as approved_by_name FROM 
                                                     <span style="background:#d4edda; color:#155724; padding:4px 8px; border-radius:4px; font-size:11px;">
                                                          Approved
                                                     </span>
-                                                <?php else: ?>
-                                                    <span style="background:#fff3cd; color:#856404; padding:4px 8px; border-radius:4px; font-size:11px;">
-                                                         Pending
-                                                    </span>
                                                 <?php endif; ?>
                                             </td>
                                         </tr>
