@@ -59,10 +59,20 @@ $res = mysqli_query($conn, $sql);
     <title>Audit Log - Sistem Kas Kebun</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin:0; padding:0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #e8f0e8; min-height: 100vh; }
+        * { 
+            margin:0; 
+            padding:0; 
+            box-sizing: border-box; 
+        }
 
-        .container { max-width: 100%; margin: 0; padding: 0 20px 40px; }
+        body { 
+            font-family: 'Inter', sans-serif; background: #e8f0e8; min-height: 100vh; }
+
+        .container { 
+            max-width: 100%; 
+            margin: 0; 
+            padding: 0 20px 40px; 
+        }
 
         .top-header {
             background: #2d7a3e;
@@ -74,7 +84,11 @@ $res = mysqli_query($conn, $sql);
             margin-bottom: 20px;
         }
 
-        .top-header h1 { font-size: 20px; margin: 0; font-weight: 700; }
+        .top-header h1 { 
+            font-size: 20px; 
+            margin: 0; 
+            font-weight: 700; 
+        }
 
         .header {
             background: white;
@@ -133,6 +147,7 @@ $res = mysqli_query($conn, $sql);
             transform: translateY(-2px); 
         }
 
+        /* bagian filter */
         .form-filters { 
             background: white; 
             padding: 16px; 
