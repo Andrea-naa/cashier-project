@@ -657,7 +657,35 @@ $totalPages_masuk = max (1, ceil($total_masuk / $limit_masuk));
             font-weight: 700; 
             color: #333; 
         }
-        
+
+        /* pagination  */
+        .pager {
+            margin-top: 20px;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .pager a {
+            padding: 8px 14px;
+            background-color: #009844;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: 0.25s;
+        }
+
+        .pager a:hover {
+            background-color: #017033;
+        }
+
+        .pager a.active {
+            background-color: #017033;
+            font-weight: bold;
+        }
+
         .ksk-footer { 
             width: 100%; 
             padding: 30px 40px; 
@@ -985,9 +1013,34 @@ $totalPages_masuk = max (1, ceil($total_masuk / $limit_masuk));
                                             Belum ada data kas masuk
                                         </td>
                                     </tr>
-                                <?php endif; ?>
-                        </tbody>
+                            <?php endif; ?>
+                    </tbody>
             </table>
+            
+            <div>
+                <?php if($totalPages_masuk > 1): ?>
+                    <div class="pager">
+                        <?php $baseUrl_masuk = 'kas_masuk?filter=' . $filter . 'approval_status' . $approval_status . ($edit_mode ? '$edit='.$edit_data['id'] : '') . '$page=';
+
+                        if ($page_masuk > 1) {
+                            echo '<a class="btn btn-secondary btn-sm" href=' . $baseUrl_masuk .($page_masuk-1) . '"><i class="fas fa-chevron-left"></i></a>';
+                        }
+
+                        for ($p = 1; $p <= $totalPages_masuk; $p++) {
+                            if ($p == $page_masuk) {
+                                echo '<span class="btn btn-primary btn-sm" style="cursor: default;">' . $p . '</span>';
+                            } else {
+                                echo '<a class="btn btn-secondary btn-sm" href="' . $baseUrl_masuk . $p . '">' . $p . '</a>';
+                            }
+                        }
+                        
+                        if ($page_masuk < $totalPages_masuk) {
+                            echo 'a class="btn btn-secondary btn-sm" href="' . $baseUrl_masuk . ($page_masuk+1) . '"><i class="fas fa-chevron-right"></i></a>';
+                        }
+                        ?>
+                    <?php endif; ?>
+            <div>
+
         </div>
     </div>
     </div>
