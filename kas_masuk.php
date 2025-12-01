@@ -210,12 +210,26 @@ if (isset($_GET['error'])) {
 
 // ngambil data kas masuk
 $data_kas = [];
-$res = mysqli_query($conn, "SELECT t.*, u.nama_lengkap as approved_by_name FROM transaksi t LEFT JOIN users u ON t.approved_by = u.id WHERE t.jenis_transaksi = 'kas_terima' $date_condition ORDER BY t.tanggal_transaksi DESC");if ($res) {
+$res = mysqli_query($conn, "SELECT t. *, u.nama_lengkap as approved_by_name FROM transaksi t LEFT JOIN users u ON t. approved_by = u.id WHERE t.jenis_transaksi = 'kas_terima' $date_condition ORDER BY t.tanggal_transaksi DESC LIMIT $star_masuk, $limit_masuk");
     while ($r = mysqli_fetch_assoc($res)) {
         $data_kas[] = $r;
     }
     mysqli_free_result($res);
+
+// bagian pagination
+$limit_masuk = 5;
+$page_masuk = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$start_masuk = ($page_masuk - 1) * $limit_masuk;
+
+// hitung total data
+$qCount_masuk = mysql_query($conn, "SELECT COUNT(*) as total FROM transaksi WHERE jenis_transaksi = 'kas_terima' $date_conditions");
+$total_masuk = 0;
+if ($qCount_masuk) {
+    $resultCount_masuk = mysqli_fetch_assoc($qCount_masuk);
+    $total_masuk = $resultCount_masuk['total'] ?? 0;
+    mysqli_free_result($qCount_masuk);
 }
+$totalPages_masuk = max (1, ceil($total_masuk / $limit_masuk));
 
 ?>
 
