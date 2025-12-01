@@ -24,7 +24,7 @@ $fisik_uang_kas = [
     ['no'=>11,'uraian'=>'Satu Ratusan Logam','satuan'=>'Keping','nominal'=>100],
 ];
 
-// Hitung saldo sistem
+// hitung saldo sistem
 $q_system = mysqli_query($conn,
     "SELECT 
         (SELECT IFNULL(SUM(nominal),0) FROM transaksi WHERE jenis_transaksi='kas_terima') -
@@ -58,7 +58,7 @@ if ($edit_id > 0) {
 // aksi simpan data
 if (isset($_POST['simpan'])) {
 
-    // Hitung pecahan uang kas
+    // hitung pecahan uang kas
     $subtotal_fisik = 0;
     $jumlah_items   = [];
 
@@ -199,7 +199,6 @@ if (isset($_POST['simpan'])) {
             display: flex;
         }
 
-        /* menu burger */
         .sidebar {
             width: 280px;
             background: #E7E7E7FF;
@@ -290,8 +289,7 @@ if (isset($_POST['simpan'])) {
             justify-content: center;
             font-size: 16px;
         }
-        
-        /* operlay */
+   
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -674,29 +672,29 @@ if (isset($_POST['simpan'])) {
         function hitungTotal() {
             let totalFisik = 0;
             
-            // Hitung total fisik uang kas
+            // hitung total fisik uang kas
             <?php foreach($fisik_uang_kas as $item): ?>
             let jumlah<?php echo $item['no']; ?> = parseFloat(document.getElementsByName('jumlah_<?php echo $item['no']; ?>')[0].value) || 0;
             totalFisik += jumlah<?php echo $item['no']; ?> * <?php echo $item['nominal']; ?>;
             <?php endforeach; ?>
             
-            // Ambil nilai input lainnya
+            // ambil nilai input lainnya
             let bonSementara = parseFloat(document.getElementsByName('bon_sementara')[0].value) || 0;
             let uangRusak = parseFloat(document.getElementsByName('uang_rusak')[0].value) || 0;
             let material = parseFloat(document.getElementsByName('material')[0].value) || 0;
             let materialNilai = material * 10000; // Kalikan dengan 10.000
             let lainLain = parseFloat(document.getElementsByName('lain_lain')[0].value) || 0;
             
-            // Hitung jumlah saldo fisik
+            // hitung jumlah saldo fisik
             let saldoFisik = totalFisik + bonSementara + uangRusak + materialNilai + lainLain;
             
-            // Ambil saldo buku kas
+            // ambil saldo buku kas
             let saldoBukuKas = <?php echo $saldo_sistem; ?>;
             
-            // Hitung selisih = Saldo Buku Kas - Jumlah Saldo Fisik
+            // hitung selisih = saldo buku kas - jumlah saldo fisik
             let selisih = saldoBukuKas - saldoFisik;
             
-            // Update tampilan
+            // update tampilan
             document.getElementById('total-fisik').textContent = formatRupiah(totalFisik);
             document.getElementById('saldo-fisik').textContent = formatRupiah(saldoFisik);
             document.getElementById('saldo-buku').textContent = formatRupiah(saldoBukuKas);
@@ -721,8 +719,7 @@ if (isset($_POST['simpan'])) {
                 input.addEventListener('input', hitungTotal);
                 input.addEventListener('change', hitungTotal); // Tambahkan event change
             });
-            
-            // Hitung total pertama kali
+           
             hitungTotal();
         };
     </script>

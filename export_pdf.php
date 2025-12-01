@@ -243,7 +243,7 @@ $html = '';
 // bagian kas masuk / keluar
 if ($type === 'kas_masuk' || $type === 'kas_keluar') {
     
-    // Ambil data dulu tanpa filter jenis_transaksi
+    // ambil data dulu tanpa filter jenis_transaksi
     $stmt = mysqli_prepare($conn, "SELECT * FROM transaksi WHERE id = ? LIMIT 1");
     mysqli_stmt_bind_param($stmt, 'i', $id);
     mysqli_stmt_execute($stmt);
@@ -333,7 +333,7 @@ if ($type === 'kas_masuk' || $type === 'kas_keluar') {
     // ngambil nomor dari database
     $nomor = $data['nomor_surat'];
     
-    // Jika nomor_surat NULL, generate manual
+    // kalau nomor_surat NULL, generate manual
     if (empty($nomor)) {
         $dt = strtotime($data['tanggal_transaksi']);
         $bulan_romawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
@@ -348,7 +348,7 @@ if ($type === 'kas_masuk' || $type === 'kas_keluar') {
     $rupiah_bulat = floor($nominal);
     $sen = round(($nominal - $rupiah_bulat) * 100);
     
-    // Buat teks terbilang
+    // buat teks terbilang 
     $terbilang_raw = terbilang($rupiah_bulat);
     $terbilang_text = ucfirst($terbilang_raw);
     if ($sen > 0) {
@@ -571,7 +571,6 @@ if ($type === 'kas_masuk' || $type === 'kas_keluar') {
 }
 
 // bagian stok opname
-// bagian stok opname
 elseif ($type === 'stok_opname') {
     
     $stmt = mysqli_prepare($conn, "SELECT * FROM stok_opname WHERE id = ? LIMIT 1");
@@ -655,7 +654,7 @@ elseif ($type === 'stok_opname') {
     
     $tanggal = date('d-M-Y', strtotime($data['tanggal_opname']));
     
-    // Ambil detail
+    // anbil detail
     $qd = mysqli_prepare($conn, "SELECT * FROM stok_opname_detail WHERE stok_opname_id = ? ORDER BY no_urut ASC");
     mysqli_stmt_bind_param($qd, 'i', $id);
     mysqli_stmt_execute($qd);
@@ -666,7 +665,7 @@ elseif ($type === 'stok_opname') {
     }
     mysqli_stmt_close($qd);
     
-    // Hitung saldo kas dari database
+    // hitung saldo kas dari database
     $q_saldo = mysqli_query($conn,
         "SELECT 
             (SELECT IFNULL(SUM(nominal),0) FROM transaksi WHERE jenis_transaksi='kas_terima') -
@@ -1299,7 +1298,7 @@ elseif ($type === 'buku_kas') {
     
     $html .= '</tbody></table>';
     
-    // Summary Section
+    // summary Section
     $saldo = $total_debet - $total_kredit;
     
     $html .= '<div class="summary-divider"></div>
@@ -1365,18 +1364,16 @@ try {
         mkdir($temp_folder, 0755, true);
     }
     
-    // Generate nama file unik
+    // buat generate nama file unik
     $pdf_filename = date('YmdHis') . '_' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $filename);
     $pdf_path = $temp_folder . $pdf_filename;
     
-    // Simpan PDF
+    // simpan PDF
     $output = $dompdf->output();
     file_put_contents($pdf_path, $output);
-    
-    // Jika ada parameter print=1
+ 
     if (isset($_GET['print']) && $_GET['print'] == '1') {
-        
-        // Tentukan judul berdasarkan type
+  
         $judul_dokumen = 'Dokumen';
         switch($type) {
             case 'kas_masuk':
@@ -1659,19 +1656,15 @@ try {
 
         <script>
             const pdfUrl = "temp_pdf/' . $pdf_filename . '";
-            
-            // Update tombol dengan URL yang benar
+
             document.getElementById("openPdfBtn").href = pdfUrl;
 
-            // Auto open PDF dan trigger print setelah halaman dimuat
             window.onload = function() {
-                // Buat iframe tersembunyi untuk load PDF
                 const iframe = document.createElement("iframe");
                 iframe.style.display = "none";
                 iframe.src = pdfUrl;
                 document.body.appendChild(iframe);
                 
-                // Trigger print dialog setelah PDF dimuat
                 iframe.onload = function() {
                     setTimeout(function() {
                         try {
@@ -1686,7 +1679,6 @@ try {
     </body>
     </html>';
     } else {
-        // Redirect ke PDF jika tanpa parameter print
         header("Location: temp_pdf/" . $pdf_filename);
     }
     

@@ -73,7 +73,7 @@ if (isset($_GET['edit']) && intval($_GET['edit']) > 0) {
     }
 }
 
-// bagian tombol aksi simpan
+// bagian tombol simpan
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
     $keterangan = clean_input($_POST['keterangan'] ?? '');
     $jumlah_raw = trim($_POST['jumlah'] ?? '0');
@@ -254,8 +254,7 @@ $totalPages_masuk = max (1, ceil($total_masuk / $limit_masuk));
             min-height: 100vh; 
             display: flex;
         }
-        
-        /* menu burger */
+
         .sidebar {
             width: 280px;
             background: #E7E7E7FF;
@@ -346,8 +345,7 @@ $totalPages_masuk = max (1, ceil($total_masuk / $limit_masuk));
             justify-content: center;
             font-size: 16px;
         }
-        
-        /* overlay */
+
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -434,8 +432,7 @@ $totalPages_masuk = max (1, ceil($total_masuk / $limit_masuk));
             display: flex;
             flex-direction: column;
         }
-        
-        /* bagian filter */ 
+
         .filter-container {
             max-width: 860px;
             margin: 20px auto 20px;

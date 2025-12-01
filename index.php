@@ -191,7 +191,7 @@ $show_login = isset($_GET['login']) || $_SERVER['REQUEST_METHOD'] == 'POST';
             background: rgba(0, 0, 0, 0.4);
         }
         
-        /* Login */
+        /* login */
         .login-screen {
             position: relative;
             width: 100%;
@@ -262,8 +262,6 @@ $show_login = isset($_GET['login']) || $_SERVER['REQUEST_METHOD'] == 'POST';
             margin: 1px;
         }
         
-        
-        /* login box */
         .login-box {
             background: linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 255, 240, 0.98) 100%);
             backdrop-filter: blur(25px);
@@ -289,7 +287,6 @@ $show_login = isset($_GET['login']) || $_SERVER['REQUEST_METHOD'] == 'POST';
             left: 0;
             right: 0;
             height: 4px;
-            /* background: linear-gradient(90deg, #0d5e2a 0%, #2d7c3e 50%, #3fb950 100%); */
         }
         
         @keyframes fadeInScale {
@@ -547,7 +544,6 @@ $show_login = isset($_GET['login']) || $_SERVER['REQUEST_METHOD'] == 'POST';
     <?php else: ?>
     <!-- login screen -->
     <div class="login-screen">
-        <!-- Logo dan informasi perusahaan -->
         <div class="top-left-info">
             <img src="assets/gambar/logoksk.jpg" alt="Logo KSK"
                  onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22%3E%3Cdefs%3E%3ClinearGradient id=%22grad2%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22%3E%3Cstop offset=%220%25%22 style=%22stop-color:%232d7c3e;stop-opacity:1%22 /%3E%3Cstop offset=%22100%25%22 style=%22stop-color:%233fb950;stop-opacity:1%22 /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2260%22 height=%2260%22 fill=%22url(%23grad2)%22 rx=%2212%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2224%22 fill=%22white%22 font-weight=%22bold%22%3EKSK%3C/text%3E%3C/svg%3E'">

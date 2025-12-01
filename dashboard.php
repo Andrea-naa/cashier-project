@@ -16,13 +16,13 @@ $query_config = "SELECT * FROM konfigurasi LIMIT 1";
 $result_config = mysqli_query($conn, $query_config);
 $config = mysqli_fetch_assoc($result_config);
 
-// Ambil role user dari sesi
+// ambil role user dari sesi
 $role = $_SESSION['role'] ?? 'Kasir';
 
-// Hitung saldo kas (Kas Masuk - Kas Keluar) dari tabel transaksi
+// hitung saldo kas (Kas Masuk - Kas Keluar) dari tabel transaksi
 $saldo_kas = 0;
 
-// Hitung kas terima (masuk)
+// Hitung kas masuk
 $query_masuk = "SELECT COALESCE(SUM(nominal), 0) as total FROM transaksi WHERE jenis_transaksi = 'kas_terima'";
 $result_masuk = mysqli_query($conn, $query_masuk);
 if ($result_masuk) {
@@ -38,7 +38,7 @@ if ($result_keluar) {
     $saldo_kas -= $row_keluar['total'] ?? 0;
 }
 
-// Format saldo kasn
+// format untuk saldo kas
 $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
 ?>
 
@@ -62,7 +62,6 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             min-height: 100vh;
         }
         
-        /* menu burger */
         .sidebar {
             width: 280px;
             background: #E7E7E7FF;
@@ -142,14 +141,12 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             font-size: 16px;
         }
         
-        /* konten utama */
         .main-content {
             flex: 1;
             display: flex;
             flex-direction: column;
         }
         
-        /* header */
         .header {
             background: linear-gradient(135deg, #009844 0%, #009844 100%);
             padding: 25px 40px;
@@ -198,7 +195,6 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             opacity: 0.9;
         }
         
-        /* area konten */
         .content-area {
             flex: 1;
             padding: 40px;
@@ -664,7 +660,6 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
         </ul>
     </div>
     
-    <!-- konten utama -->
     <div class="main-content">
         <!-- header -->
         <div class="header">
@@ -712,6 +707,7 @@ $saldo_kas_formatted = number_format($saldo_kas, 0, ',', '.');
             </div>
         </div>
         
+        <!-- futer lagi -->
         <footer class="ksk-footer">
             <div class="footer-content">
                 <!-- bagian kiri futer -->

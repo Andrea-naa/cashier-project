@@ -2,7 +2,7 @@
 // koneksi ke database
 require_once 'config/conn_db.php';
 
-// Cek login dan serta ngambil role user
+// cek login dan serta ngambil role user
 check_login();
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
@@ -16,19 +16,19 @@ if (stripos($role, 'Administrator') === false) {
 $success_message = '';
 $error_message = '';
 
-// Ambil data konfigurasi saat ini
+// ambil data konfigurasi saat ini
 $query = "SELECT * FROM konfigurasi LIMIT 1";
 $result = mysqli_query($conn, $query);
 $config = mysqli_fetch_assoc($result);
 
 if (!$config) {
-    // Jika belum ada, buat default
+    // Kalau belum ada, buat default
     mysqli_query($conn, "INSERT INTO konfigurasi (nama_perusahaan, kode_perusahaan, alamat, kota, telepon, email) VALUES ('PT. Kalimantan Sawit Kusuma', 'KSK', 'Jl. W.R Supratman No. 42 Pontianak', 'Pontianak', '0561-733035', 'info@ksk.com')");
     $result = mysqli_query($conn, $query);
     $config = mysqli_fetch_assoc($result);
 }
 
-// Proses update
+// proses update nomor suratnya 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_config'])) {
     $kode_perusahaan = strtoupper(clean_input($_POST['kode_perusahaan']));
     $nama_perusahaan = clean_input($_POST['nama_perusahaan']);
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_config'])) {
     $ttd_jabatan_3 = clean_input($_POST['ttd_jabatan_3']);
     $ttd_jabatan_4 = clean_input($_POST['ttd_jabatan_4']);
     
-    // Validasi kode perusahaan (hanya huruf, 2-10 karakter)
+    // validasi kode perusahaan (hanya huruf, 2-10 karakter)
     if (!preg_match('/^[A-Z]{2,10}$/', $kode_perusahaan)) {
         $error_message = 'Kode perusahaan harus terdiri dari 2-10 huruf kapital tanpa spasi atau karakter khusus!';
     } else {
@@ -70,7 +70,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_config'])) {
             log_audit($user_id, $username, "Update Konfigurasi Nomor Surat: Kode Perusahaan = $kode_perusahaan");
             $success_message = 'Konfigurasi berhasil diupdate!';
             
-            // Refresh data
             $result = mysqli_query($conn, $query);
             $config = mysqli_fetch_assoc($result);
         } else {
@@ -113,7 +112,6 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
             display: flex;
         }
 
-        /* menu burger */
         .sidebar {
             width: 280px;
             background: #E7E7E7FF;
@@ -220,7 +218,6 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
             display: block;
         }
 
-        /* konten utama */
         .main-wrapper {
             flex: 1;
             display: flex;
