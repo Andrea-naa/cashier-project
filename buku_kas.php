@@ -45,7 +45,7 @@ if ($res) {
     mysqli_free_result($res);
 }
 
-// Hitung total
+// hitung total
 $total_debet = 0;
 $total_kredit = 0;
 
@@ -83,7 +83,6 @@ $balance = $total_debet;
             display: flex;
         }
 
-        /* menu burger */
         .sidebar {
             width: 280px;
             background: #E7E7E7FF;
@@ -175,7 +174,6 @@ $balance = $total_debet;
             font-size: 16px;
         }
         
-        /* operlay */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -191,7 +189,6 @@ $balance = $total_debet;
             display: block;
         }
 
-        /* pembungkus utama */
         .main-wrapper {
             flex: 1;
             display: flex;
@@ -200,7 +197,6 @@ $balance = $total_debet;
             min-height: 100vh;
         }
 
-        /*  header  */
         .header {
             background-color: #009844;
             color: white;
@@ -264,7 +260,6 @@ $balance = $total_debet;
             opacity: .85;
         }
 
-        /*  kontener  */
         .content-wrapper {
             flex: 1;
             display: flex;
@@ -290,7 +285,6 @@ $balance = $total_debet;
             color: #333;
         }
 
-        /*  pilter  */
         .filter-section {
             background: #f8f9fa;
             padding: 20px;
@@ -412,7 +406,6 @@ $balance = $total_debet;
             background-color: #F0F0F0;
         }
 
-        /* summary  */
         .summary-section {
             margin: 30px 0;
             display: flex;
@@ -447,7 +440,7 @@ $balance = $total_debet;
             font-size: 15px;
         }
 
-        /* buttpons  */
+        /* tombol tombol */
         .button-group {
             display: flex;
             gap: 20px;
@@ -488,7 +481,7 @@ $balance = $total_debet;
             background-color: #c7c7c7;
         }
 
-        /* futer  */
+        /* bagian futer pokonya  */
         .ksk-footer {
             width: 100%;
             padding: 30px 40px;
@@ -794,7 +787,8 @@ $balance = $total_debet;
                     <button class="btn btn-secondary" onclick="window.location.href='dashboard.php'">Kembali</button>
                 </div>
             </div>
-
+            
+            <!-- futer lagi -->
             <footer class="ksk-footer">
                 <div class="footer-content">
                     <!-- bagian kiri futer -->

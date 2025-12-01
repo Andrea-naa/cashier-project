@@ -68,7 +68,6 @@ $total_pending = count($pending_transaksi) + count($pending_stok);
             display: flex;
         }
         
-        /* menu burger */
         .sidebar {
             width: 280px;
             background: #E7E7E7FF;
@@ -160,7 +159,6 @@ $total_pending = count($pending_transaksi) + count($pending_stok);
             font-size: 16px;
         }
         
-        /* overlay */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -176,7 +174,6 @@ $total_pending = count($pending_transaksi) + count($pending_stok);
             display: block;
         }
         
-        /* konten utama */
         .main-wrapper {
             flex: 1;
             display: flex;
@@ -253,7 +250,6 @@ $total_pending = count($pending_transaksi) + count($pending_stok);
             flex-direction: column;
         }
         
-        /* status */
         .stats-container {
             max-width: 1200px;
             margin: 20px auto;
@@ -290,7 +286,6 @@ $total_pending = count($pending_transaksi) + count($pending_stok);
             line-height: 1.3;
         }
         
-        /* alert */
         .alert { 
             max-width: 1200px; 
             margin: 20px auto 0; 
@@ -646,7 +641,7 @@ $total_pending = count($pending_transaksi) + count($pending_stok);
                 <?php endif; ?>
             </div>
             
-            <!-- stok opname -->
+            <!-- bagian stok opname -->
             <div class="container">
                 <div class="section-header">
                     <h2 class="section-title">Stok Opname Menunggu Approval</h2>
@@ -720,7 +715,7 @@ function toggleAll(type, checked) {
     });
 }
 
-// checkbox tapi select semua
+// checkbox tapi select semua datanya 
 function checkAllSelected(type) {
     const checkboxes = document.querySelectorAll('.checkbox-' + type);
     const selectAllCheckbox = document.getElementById('selectAll' + type.charAt(0).toUpperCase() + type.slice(1));

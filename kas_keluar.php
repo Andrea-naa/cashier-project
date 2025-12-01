@@ -39,7 +39,7 @@ $success_message = '';
 $edit_mode = false;
 $edit_data = [];
 
-// Bagian tombol aksi edit
+// bagian tombol edit
 if (isset($_GET['edit']) && intval($_GET['edit']) > 0) {
     $edit_id = intval($_GET['edit']);
     $stmt = mysqli_prepare($conn, "SELECT * FROM transaksi WHERE id = ? AND jenis_transaksi = 'kas_keluar' LIMIT 1");
@@ -73,7 +73,7 @@ if (isset($_GET['edit']) && intval($_GET['edit']) > 0) {
     }
 }
 
-// Bagian tombol aksi simpan 
+// bagian tombol simpan 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
     $keterangan = clean_input($_POST['keterangan'] ?? '');
     $jumlah_raw = trim($_POST['jumlah'] ?? '0');
@@ -142,7 +142,7 @@ if ($jumlah > 0) {
     }
 }
 
-// bagian tombol aksi delete
+// bagian tombol delete
 if (isset($_GET['delete']) && intval($_GET['delete']) > 0) {
     $delete_id = intval($_GET['delete']);
     // mengecek validasi data sebelum melakukan delete
@@ -231,8 +231,7 @@ if ($res) {
             min-height: 100vh; 
             display: flex;
         }
-        
-        /* menu burger */
+
         .sidebar {
             width: 280px;
             background: #E7E7E7FF;
@@ -323,8 +322,7 @@ if ($res) {
             justify-content: center;
             font-size: 16px;
         }
-        
-        /* operlay */
+ 
         .sidebar-overlay {
             display: none;
             position: fixed;

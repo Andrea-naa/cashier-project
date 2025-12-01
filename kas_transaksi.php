@@ -39,7 +39,7 @@ $edit_mode = false;
 $edit_data = [];
 $active_tab = $_GET['tab'] ?? 'masuk';
 
-// Bagian tombol aksi edit
+// bagian tombol edit
 if (isset($_GET['edit']) && intval($_GET['edit']) > 0) {
     $edit_id = intval($_GET['edit']);
     $jenis = $_GET['tab'] === 'keluar' ? 'kas_keluar' : 'kas_terima';
@@ -58,7 +58,7 @@ if (isset($_GET['edit']) && intval($_GET['edit']) > 0) {
     }
 }
 
-// Bagian tombol aksi simpan 
+// bagian tombol simpan 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
     $keterangan = clean_input($_POST['keterangan'] ?? '');
     $jumlah_raw = trim($_POST['jumlah'] ?? '0');
@@ -107,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
     }
 }
 
-// bagian tombol aksi delete
+// bagian tombol delete
 if (isset($_GET['delete']) && intval($_GET['delete']) > 0) {
     $delete_id = intval($_GET['delete']);
     $jenis = $_GET['tab'] === 'keluar' ? 'kas_keluar' : 'kas_terima';
@@ -181,7 +181,6 @@ if ($res_keluar) {
             display: flex;
         }
 
-        /* Sidebar */
         .sidebar {
             width: 280px;
             background: #E7E7E7FF;
@@ -273,7 +272,6 @@ if ($res_keluar) {
             font-size: 16px;
         }
 
-        /* overlay */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -289,7 +287,6 @@ if ($res_keluar) {
             display: block;
         }
 
-        /* Main Content Wrapper */
         .main-wrapper {
             flex: 1;
             display: flex;

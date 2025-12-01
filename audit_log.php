@@ -148,7 +148,6 @@ $res = mysqli_query($conn, $sql);
             transform: translateY(-2px); 
         }
 
-        /* bagian filter */
         .form-filters { 
             background: white; 
             padding: 16px; 
