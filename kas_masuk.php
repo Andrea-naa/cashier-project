@@ -208,29 +208,31 @@ if (isset($_GET['error'])) {
     }
 }
 
-// ngambil data kas masuk
-$data_kas = [];
-$res = mysqli_query($conn, "SELECT t. *, u.nama_lengkap as approved_by_name FROM transaksi t LEFT JOIN users u ON t. approved_by = u.id WHERE t.jenis_transaksi = 'kas_terima' $date_condition ORDER BY t.tanggal_transaksi DESC LIMIT $star_masuk, $limit_masuk");
-    while ($r = mysqli_fetch_assoc($res)) {
-        $data_kas[] = $r;
-    }
-    mysqli_free_result($res);
-
 // bagian pagination
 $limit_masuk = 5;
 $page_masuk = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $start_masuk = ($page_masuk - 1) * $limit_masuk;
 
 // hitung total data
-$qCount_masuk = mysql_query($conn, "SELECT COUNT(*) as total FROM transaksi WHERE jenis_transaksi = 'kas_terima' $date_conditions");
+$qCount_masuk = mysqli_query($conn, "SELECT COUNT(*) as total FROM transaksi WHERE jenis_transaksi = 'kas_terima' $date_condition");
 $total_masuk = 0;
 if ($qCount_masuk) {
     $resultCount_masuk = mysqli_fetch_assoc($qCount_masuk);
     $total_masuk = $resultCount_masuk['total'] ?? 0;
     mysqli_free_result($qCount_masuk);
 }
-$totalPages_masuk = max (1, ceil($total_masuk / $limit_masuk));
+$totalPages_masuk = max(1, ceil($total_masuk / $limit_masuk));
 
+// ngambil data kas masuk
+$data_kas = [];
+$res = mysqli_query($conn, "SELECT t.*, u.nama_lengkap as approved_by_name FROM transaksi t LEFT JOIN users u ON t.approved_by = u.id WHERE t.jenis_transaksi = 'kas_terima' $date_condition ORDER BY t.tanggal_transaksi DESC LIMIT $start_masuk, $limit_masuk");
+
+if ($res) {
+    while ($r = mysqli_fetch_assoc($res)) {
+        $data_kas[] = $r;
+    }
+    mysqli_free_result($res);
+}
 ?>
 
 <!DOCTYPE html>
@@ -493,7 +495,7 @@ $totalPages_masuk = max (1, ceil($total_masuk / $limit_masuk));
         
         .container { 
             width: 90%; 
-            max-width: 900px; 
+            max-width: 1400px; 
             margin: 40px auto; 
             background-color: white; 
             padding: 40px; 
@@ -618,15 +620,56 @@ $totalPages_masuk = max (1, ceil($total_masuk / $limit_masuk));
             align-items: center;
         }
         
-        .table-wrapper { 
-            overflow-x: auto; 
-            margin-top: 20px; 
-        }
-
         table { 
             width: 100%; 
             border-collapse: collapse; 
+            min-width: auto;
         }
+
+        th:nth-child(1), td:nth-child(1) { 
+            width: 50px; 
+        }
+
+        th:nth-child(2), td:nth-child(2) { 
+            width: 170px; 
+        } 
+
+        th:nth-child(3), td:nth-child(3) {
+            width: 110px; 
+        } 
+
+        th:nth-child(4), td:nth-child(4) { 
+            width: auto; 
+            min-width: 200px; 
+        } 
+
+        th:nth-child(5), td:nth-child(5) {
+            width: 150px; 
+            } 
+
+        th:nth-child(6), td:nth-child(6) { 
+            width: 120px; 
+        } 
+
+        th:nth-child(7), td:nth-child(7) {
+            width: 280px; 
+        }
+
+        th:nth-child(8), td:nth-child(8) { 
+            width: 100px; 
+        } 
+
+        td:nth-child(5) {
+            text-align: right;
+            padding-right: 15px;
+            white-space: nowrap;
+        }
+
+        .table-wrapper { 
+            overflow-x: visible;
+            margin-top: 20px; 
+        }
+
 
         thead { 
             background: #f2f2f2; 
@@ -653,34 +696,6 @@ $totalPages_masuk = max (1, ceil($total_masuk / $limit_masuk));
             margin: 12px 0; 
             font-weight: 700; 
             color: #333; 
-        }
-
-        /* pagination  */
-        .pager {
-            margin-top: 20px;
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .pager a {
-            padding: 8px 14px;
-            background-color: #009844;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 14px;
-            transition: 0.25s;
-        }
-
-        .pager a:hover {
-            background-color: #017033;
-        }
-
-        .pager a.active {
-            background-color: #017033;
-            font-weight: bold;
         }
 
         .ksk-footer { 
@@ -815,12 +830,78 @@ $totalPages_masuk = max (1, ceil($total_masuk / $limit_masuk));
                 justify-content: center;
             }
         }
+
+        /* pagination */
+        .pagination-wrapper {
+            margin-top: 20px;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 15px 0;
+        }
+
+        .pagination-btn {
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            border: none;
+            transition: all 0.3s ease;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+            min-width: 38px;
+            height: 38px;
+        }
+
+        .pagination-btn.active {
+            background-color: #009844;
+            color: white;
+            cursor: default;
+            box-shadow: 0 2px 6px rgba(0, 152, 68, 0.3);
+        }
+
+        .pagination-btn.inactive {
+            background-color: #dcdcdc;
+            color: #333
+        }
+
+        .pagination-btn.inactive:hover {
+            background-color: #c7c7c7;
+            transform: translateY(-2px);
+        }
+
+        .pagination-btn.active:hover {
+            transform: none;
+        }
+
+        .pagination-arrow {
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .pagination-wrapper {
+                gap: 6px;
+            }
+
+            .pagination-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+                min-width: 34px;
+                height: 34px;
+            }
+        }
+
     </style>
 </head>
 <body>
     <!-- buat menu burger -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <img src="assets/gambar/logoksk.jpg" alt="KSK Logo"
@@ -830,6 +911,7 @@ $totalPages_masuk = max (1, ceil($total_masuk / $limit_masuk));
                 <p>Oil Palm Plantation & Industries</p>
             </div>
         </div>
+        
         <div class="menu-title">Dashboard Menu</div>
         
         <ul class="menu-list">
@@ -841,20 +923,40 @@ $totalPages_masuk = max (1, ceil($total_masuk / $limit_masuk));
             </li>
             <?php if ($role === 'Administrator'): ?>
             <li class="menu-item">
+                <a href="audit_log.php">
+                    <img src="assets/gambar/icon/audit_log.png" class="menu-icon">
+                    <span>Audit Log</span>
+                </a>
+            </li>
+            <?php if ($role === 'Administrator'): ?>
+            <li class="menu-item">
                 <a href="setting_nomor.php">
                     <img src="assets/gambar/icon/settings.png" class="menu-icon">
-                    <span>Pengaturan Nomor Surat</span>
+                    <span>Letter Formatting</span>
                 </a>
             </li>
             <?php endif; ?>
-            <?php if ($role === 'Administrator'): ?>
+                        <?php if ($role === 'Administrator'): ?>
             <li class="menu-item">
                 <a href="approval.php">
-                    <i class="fas fa-check-circle menu-icon"></i>
+                    <img src="assets/gambar/icon/approve.png" class="menu-icon">
                     <span>Approval</span>
                 </a>
             </li>
             <?php endif; ?>
+            <li class="menu-item">
+                <a href="kelola_user.php">
+                    <img src="assets/gambar/icon/kelola_user.png" class="menu-icon">
+                    <span>User Management</span>
+                </a>
+            </li>
+            <?php endif; ?>
+            <li class="menu-item">
+                <a href="kas_transaksi.php">
+                    <img src="assets/gambar/icon/folderkas.png" class="menu-icon">
+                    <span>Transaction</span>
+                </a>
+            </li>
             <li class="menu-item">
                 <a href="logout.php">
                     <img src="assets/gambar/icon/logout.png" class="menu-icon">
@@ -972,10 +1074,12 @@ $totalPages_masuk = max (1, ceil($total_masuk / $limit_masuk));
                                     <?php $i = 1; foreach ($data_kas as $row): ?>
                                         <tr>
                                             <td style="text-align:center;"><?php echo $i; ?></td>
-                                            <td style="text-align:center;"><?php echo htmlspecialchars($row['nomor_surat'] ?? '-'); ?></td>
+                                            <td style="text-align:left;"><?php echo htmlspecialchars($row['nomor_surat'] ?? '-'); ?></td>
                                             <td style="text-align:center;"><?php echo date('d-M-Y', strtotime($row['tanggal_transaksi'])); ?></td>
                                             <td><?php echo htmlspecialchars($row['keterangan']); ?></td>
-                                            <td style="text-align:left;">Rp. <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
+                                            <td style="text-align:center; padding-right:15px white-space:nowrap;">
+                                                Rp <?php echo number_format($row['nominal'], 0, ',', '.'); ?>
+                                            </td>
                                             <td><strong><?php echo htmlspecialchars($row['username']); ?></strong></td>
                                             <td style="text-align:center;">
                                                 <div class="action-buttons">
@@ -1014,28 +1118,48 @@ $totalPages_masuk = max (1, ceil($total_masuk / $limit_masuk));
                     </tbody>
             </table>
             
-            <div>
-                <?php if($totalPages_masuk > 1): ?>
-                    <div class="pager">
-                        <?php $baseUrl_masuk = 'kas_masuk?filter=' . $filter . 'approval_status' . $approval_status . ($edit_mode ? '$edit='.$edit_data['id'] : '') . '$page=';
+            </div>  
+                <?php if ($totalPages_masuk > 1): ?>
+                <div class="pagination-wrapper">
+                    <?php
+                    $baseUrl_masuk = 'kas_masuk.php?filter=' . $filter . '&approval_status=' . $approval_status . ($edit_mode ? '&edit='.$edit_data['id'] : '') . '&page=';
+    
+                    if ($page_masuk > 1) {
+                        echo '<a class="pagination-btn inactive" href="' . $baseUrl_masuk . ($page_masuk-1) . '">
+                                <i class="fas fa-chevron-left pagination-arrow"></i>
+                            </a>';
+                    }
 
-                        if ($page_masuk > 1) {
-                            echo '<a class="btn btn-secondary btn-sm" href=' . $baseUrl_masuk .($page_masuk-1) . '"><i class="fas fa-chevron-left"></i></a>';
+                    echo '<a class="pagination-btn ' . ($page_masuk == 1 ? 'active' : 'inactive') . '" href="' . $baseUrl_masuk . '1">1</a>';
+                    
+                    if ($page_masuk > 3) {
+                        echo '<span class="pagination-btn inactive" style="cursor: default;">...</span>';
+                    }
+                    
+                    for ($p = max(2, $page_masuk - 1); $p <= min($totalPages_masuk - 1, $page_masuk + 1); $p++) {
+                        if ($p == $page_masuk) {
+                            echo '<span class="pagination-btn active">' . $p . '</span>';
+                        } else {
+                            echo '<a class="pagination-btn inactive" href="' . $baseUrl_masuk . $p . '">' . $p . '</a>';
                         }
+                    }
+                    
+                    if ($page_masuk < $totalPages_masuk - 2) {
+                        echo '<span class="pagination-btn inactive" style="cursor: default;">...</span>';
+                    }
+                    
+                    if ($totalPages_masuk > 1) {
+                        echo '<a class="pagination-btn ' . ($page_masuk == $totalPages_masuk ? 'active' : 'inactive') . '" href="' . $baseUrl_masuk . $totalPages_masuk . '">' . $totalPages_masuk . '</a>';
+                    }
 
-                        for ($p = 1; $p <= $totalPages_masuk; $p++) {
-                            if ($p == $page_masuk) {
-                                echo '<span class="btn btn-primary btn-sm" style="cursor: default;">' . $p . '</span>';
-                            } else {
-                                echo '<a class="btn btn-secondary btn-sm" href="' . $baseUrl_masuk . $p . '">' . $p . '</a>';
-                            }
-                        }
-                        
-                        if ($page_masuk < $totalPages_masuk) {
-                            echo 'a class="btn btn-secondary btn-sm" href="' . $baseUrl_masuk . ($page_masuk+1) . '"><i class="fas fa-chevron-right"></i></a>';
-                        }
-                        ?>
-                    <?php endif; ?>
+                    if ($page_masuk < $totalPages_masuk) {
+                        echo '<a class="pagination-btn inactive" href="' . $baseUrl_masuk . ($page_masuk+1) . '">
+                                <i class="fas fa-chevron-right pagination-arrow"></i>
+                            </a>';
+                    }
+                    ?>
+                </div>
+                <?php endif; ?>
             <div>
 
         </div>

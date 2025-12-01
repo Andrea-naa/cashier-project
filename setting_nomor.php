@@ -510,11 +510,12 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
 </head>
 
 <body>
-    <!-- menu burger -->
+    <!-- buat menu burger -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <img src="assets/gambar/logoksk.jpg" alt="KSK Logo">
+            <img src="assets/gambar/logoksk.jpg" alt="KSK Logo"
+                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%232e7d32%22 rx=%228%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2220%22 fill=%22white%22 font-weight=%22bold%22%3EKSK%3C/text%3E%3C/svg%3E'">
             <div class="company-title">
                 <h4>KALIMANTAN SAWIT KUSUMA GROUP</h4>
                 <p>Oil Palm Plantation & Industries</p>
@@ -537,23 +538,33 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
                     <span>Audit Log</span>
                 </a>
             </li>
+            <?php if ($role === 'Administrator'): ?>
+            <li class="menu-item active">
+                <a href="setting_nomor.php">
+                    <img src="assets/gambar/icon/settings.png" class="menu-icon">
+                    <span>Letter Formatting</span>
+                </a>
+            </li>
+            <?php endif; ?>
+                        <?php if ($role === 'Administrator'): ?>
+            <li class="menu-item">
+                <a href="approval.php">
+                    <img src="assets/gambar/icon/approve.png" class="menu-icon">
+                    <span>Approval</span>
+                </a>
+            </li>
+            <?php endif; ?>
             <li class="menu-item">
                 <a href="kelola_user.php">
                     <img src="assets/gambar/icon/kelola_user.png" class="menu-icon">
-                    <span>Kelola User</span>
-                </a>
-            </li>
-            <li class="menu-item active">
-                <a href="pengaturan_nomor.php">
-                    <i class="fas fa-cog menu-icon"></i>
-                    <span>Pengaturan Nomor Surat</span>
+                    <span>User Management</span>
                 </a>
             </li>
             <?php endif; ?>
             <li class="menu-item">
                 <a href="kas_transaksi.php">
-                    <img src="assets/gambar/icon/kasdashboard.png" class="menu-icon">
-                    <span>Kas Transaksi</span>
+                    <img src="assets/gambar/icon/folderkas.png" class="menu-icon">
+                    <span>Transaction</span>
                 </a>
             </li>
             <li class="menu-item">

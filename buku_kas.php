@@ -23,6 +23,21 @@ if (!$config) {
 // pilter untuk tanggal
 $date_from = isset($_GET['date_from']) ? $_GET['date_from'] : date('Y-m-01');
 $date_to = isset($_GET['date_to']) ? $_GET['date_to'] : date('Y-m-t');
+// bagian pagination
+$limit_buku = 10;
+$page_buku = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$start_buku = ($page_buku -1) * $limit_buku;
+
+// hitung total data
+$sql_count = "SELECT COUNT(*) as total FROM transaksi WHERE DATE(tanggal_transaksi) BETWEEN '$date_from' AND '$date_to'";
+$res_count = mysqli_query($conn, $sql_count);
+$total_buku = 0;
+if ($res_count) {
+    $row_count = mysqli_fetch_assoc($res_count);
+    $total_buku = $row_count['total'] ?? 0;
+    mysqli_free_result($res_count);
+}
+$totalPages_buku = max(1, ceil($total_buku / $limit_buku));
 
 // ngammbil data transaksi
 $sql = "SELECT * FROM transaksi 
@@ -34,7 +49,8 @@ $sql = "SELECT * FROM transaksi
                 ELSE 3 
             END ASC,
             tanggal_transaksi ASC,
-            id ASC";
+            id ASC
+        LIMIT $start_buku, $limit_buku";
 
 $res = mysqli_query($conn, $sql);
 $rows = [];
@@ -45,16 +61,21 @@ if ($res) {
     mysqli_free_result($res);
 }
 
-// hitung total
+$sql_total = "SELECT 
+                SUM(CASE WHEN jenis_transaksi = 'kas_terima' THEN nominal ELSE 0 END) as total_debet,
+                SUM(CASE WHEN jenis_transaksi = 'kas_keluar' THEN nominal ELSE 0 END) as total_kredit
+              FROM transaksi 
+              WHERE DATE(tanggal_transaksi) BETWEEN '$date_from' AND '$date_to'";
+
+$res_total = mysqli_query($conn, $sql_total);
 $total_debet = 0;
 $total_kredit = 0;
 
-foreach ($rows as $row) {
-    if ($row['jenis_transaksi'] == 'kas_terima') {
-        $total_debet += floatval($row['nominal']);
-    } else {
-        $total_kredit += floatval($row['nominal']);
-    }
+if ($res_total) {
+    $row_total = mysqli_fetch_assoc($res_total);
+    $total_debet = floatval($row_total['total_debet'] ?? 0);
+    $total_kredit = floatval($row_total['total_kredit'] ?? 0);
+    mysqli_free_result($res_total);
 }
 
 $saldo = $total_debet - $total_kredit;
@@ -622,11 +643,77 @@ $balance = $total_debet;
                 left: -100%;
             }
         }
+        /* pagination */
+        .pagination-wrapper {
+            margin-top: 20px;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 15px 0;
+        }
+
+        .pagination-btn {
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            border: none;
+            transition: all 0.3s ease;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+            min-width: 38px;
+            height: 38px;
+        }
+
+        .pagination-btn.active {
+            background-color: #009844;
+            color: white;
+            cursor: default;
+            box-shadow: 0 2px 6px rgba(0, 152, 68, 0.3);
+        }
+
+        .pagination-btn.inactive {
+            background-color: #dcdcdc;
+            color: #333
+        }
+
+        .pagination-btn.inactive:hover {
+            background-color: #c7c7c7;
+            transform: translateY(-2px);
+        }
+
+        .pagination-btn.active:hover {
+            transform: none;
+        }
+
+        .pagination-arrow {
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .pagination-wrapper {
+                gap: 6px;
+            }
+
+            .pagination-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+                min-width: 34px;
+                height: 34px;
+            }
+        }
+
     </style>
 </head>
 
 <body>
-   <!-- buat menu burger -->
+    <!-- buat menu burger -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -649,20 +736,40 @@ $balance = $total_debet;
             </li>
             <?php if ($role === 'Administrator'): ?>
             <li class="menu-item">
+                <a href="audit_log.php">
+                    <img src="assets/gambar/icon/audit_log.png" class="menu-icon">
+                    <span>Audit Log</span>
+                </a>
+            </li>
+            <?php if ($role === 'Administrator'): ?>
+            <li class="menu-item">
                 <a href="setting_nomor.php">
                     <img src="assets/gambar/icon/settings.png" class="menu-icon">
-                    <span>Pengaturan Nomor Surat</span>
+                    <span>Letter Formatting</span>
                 </a>
             </li>
             <?php endif; ?>
-            <?php if ($role === 'Administrator'): ?>
+                        <?php if ($role === 'Administrator'): ?>
             <li class="menu-item">
                 <a href="approval.php">
-                    <i class="fas fa-check-circle menu-icon"></i>
+                    <img src="assets/gambar/icon/approve.png" class="menu-icon">
                     <span>Approval</span>
                 </a>
             </li>
             <?php endif; ?>
+            <li class="menu-item">
+                <a href="kelola_user.php">
+                    <img src="assets/gambar/icon/kelola_user.png" class="menu-icon">
+                    <span>User Management</span>
+                </a>
+            </li>
+            <?php endif; ?>
+            <li class="menu-item">
+                <a href="kas_transaksi.php">
+                    <img src="assets/gambar/icon/folderkas.png" class="menu-icon">
+                    <span>Transaction</span>
+                </a>
+            </li>
             <li class="menu-item">
                 <a href="logout.php">
                     <img src="assets/gambar/icon/logout.png" class="menu-icon">
@@ -741,6 +848,33 @@ $balance = $total_debet;
                         </tbody>
                     </table>
                 </div>
+                <?php if ($totalPages_buku > 1): ?>
+                <div class="pagination-wrapper">
+                    <?php
+                    $baseUrl_buku = 'buku_kas.php?date_from=' . urlencode($date_from) . '&date_to=' . urlencode($date_to) . '&page=';
+
+                    if ($page_buku > 1) {
+                        echo '<a class="pagination-btn inactive" href="' . $baseUrl_buku . ($page_buku-1) . '" title="Halaman Sebelumnya">
+                                <i class="fas fa-chevron-left pagination-arrow"></i>
+                              </a>';
+                    }
+
+                    for ($p = 1; $p <= $totalPages_buku; $p++) {
+                        if ($p == $page_buku) {
+                            echo '<span class="pagination-btn active">' . $p . '</span>';
+                        } else {
+                            echo '<a class="pagination-btn inactive" href="' . $baseUrl_buku . $p . '">' . $p . '</a>';
+                        }
+                    }
+
+                    if ($page_buku < $totalPages_buku) {
+                        echo '<a class="pagination-btn inactive" href="' . $baseUrl_buku . ($page_buku+1) . '" title="Halaman Berikutnya">
+                                <i class="fas fa-chevron-right pagination-arrow"></i>
+                              </a>';
+                    }
+                    ?>
+                </div>
+                <?php endif; ?>
 
                 <div class="summary-section">
                     <div class="summary-row" style="border-top: 2px solid #333; padding-top: 15px;">

@@ -748,20 +748,40 @@ if (isset($_POST['simpan'])) {
             </li>
             <?php if ($role === 'Administrator'): ?>
             <li class="menu-item">
-                <a href="setting_nomor.php">
-                    <img src="assets/gambar/icon/settings.png" class="menu-icon">
-                    <span>Pengaturan Nomor Surat</span>
+                <a href="audit_log.php">
+                    <img src="assets/gambar/icon/audit_log.png" class="menu-icon">
+                    <span>Audit Log</span>
                 </a>
             </li>
-            <?php endif; ?> 
             <?php if ($role === 'Administrator'): ?>
             <li class="menu-item">
+                <a href="setting_nomor.php">
+                    <img src="assets/gambar/icon/settings.png" class="menu-icon">
+                    <span>Letter Formatting</span>
+                </a>
+            </li>
+            <?php endif; ?>
+                        <?php if ($role === 'Administrator'): ?>
+            <li class="menu-item">
                 <a href="approval.php">
-                    <i class="fas fa-check-circle menu-icon"></i>
+                    <img src="assets/gambar/icon/approve.png" class="menu-icon">
                     <span>Approval</span>
                 </a>
             </li>
             <?php endif; ?>
+            <li class="menu-item">
+                <a href="kelola_user.php">
+                    <img src="assets/gambar/icon/kelola_user.png" class="menu-icon">
+                    <span>User Management</span>
+                </a>
+            </li>
+            <?php endif; ?>
+            <li class="menu-item">
+                <a href="kas_transaksi.php">
+                    <img src="assets/gambar/icon/folderkas.png" class="menu-icon">
+                    <span>Transaction</span>
+                </a>
+            </li>
             <li class="menu-item">
                 <a href="logout.php">
                     <img src="assets/gambar/icon/logout.png" class="menu-icon">
