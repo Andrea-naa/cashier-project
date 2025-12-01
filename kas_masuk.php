@@ -52,12 +52,12 @@ if (isset($_GET['edit']) && intval($_GET['edit']) > 0) {
     if ($edit_data) {
         // mengecek role user
         if (!$is_admin) {
-            // // mengecek apabila kasir mencoba edit data yang sudah di approve
+            // mengecek apabila kasir mencoba edit data yang sudah di approve
             if ($edit_data['is_approved'] == 1) {
-                $success_message = '<div class="alert alert-error">Data sudah di-approve, kamu tidak dapat melakukan edit lagi!</div>';
+                $success_message = '<div class="alert alert-error">Data sudah di approve, kamu tidak dapat melakukan edit lagi!</div>';
                 $edit_mode = false;
             }
-            // // mengecek apabila kasir mencoba edit data yang dimiliki user lain
+            // mengecek apabila kasir mencoba edit data yang dimiliki user lain
             else if ($edit_data['user_id'] != $user_id) {
                 $success_message = '<div class="alert alert-error">Kamu tidak memiliki akses untuk mengedit data ini!</div>';
                 $edit_mode = false;
@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
                 
                 if ($check_data) {
                     if ($check_data['is_approved'] == 1) {
-                        $success_message = '<div class="alert alert-error">Data sudah di-approve, kamu tidak dapat melakukan edit lagi!</div>';
+                        $success_message = '<div class="alert alert-error">Data sudah di approve, kamu tidak dapat melakukan edit lagi!</div>';
                         $edit_mode = false;
                     } else if ($check_data['user_id'] != $user_id) {
                         $success_message = '<div class="alert alert-error">Kamu tidak memiliki akses untuk mengedit data ini!</div>';
@@ -121,10 +121,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
             }
             
         } else {
-            // bagian tombol simpan
+            // generate nomor surat
             $nomor_data = get_next_nomor_surat('KT');
             $nomor_surat = $nomor_data['nomor'];
-            
+            // bagian tombol simpan
             $is_approved = $is_admin ? 1 : 0;
             
             $stmt = mysqli_prepare($conn, "INSERT INTO transaksi (user_id, username, jenis_transaksi, nominal, keterangan, nomor_surat, tanggal_transaksi, is_approved) VALUES (?, ?, 'kas_terima', ?, ?, ?, NOW(), ?)");

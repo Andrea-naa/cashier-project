@@ -27,6 +27,13 @@ switch($filter) {
         $date_condition = '';
 }
 
+$approval_status = isset($_GET['approval_status']) ? $_GET['approval_status'] : 'all';
+if ($approval_status === 'pending') {
+    $date_condition .= " AND is_approved = 0";
+} elseif ($approval_status === 'approved') {
+    $date_condition .= " AND is_approved = 1";
+}
+
 $success_message = '';
 $edit_mode = false;
 $edit_data = [];
