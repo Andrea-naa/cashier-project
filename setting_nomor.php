@@ -444,43 +444,44 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
             margin-top: 30px;
         }
 
-        .btn {
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            border: none;
-            font-size: 18px;
-            font-weight: 650;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            text-decoration: none;
-            font-family: 'Inter', sans-serif;
+         .button-group { 
+            display: flex; 
+            gap: 15px; 
+            margin-top: 10px; 
+            margin-bottom: 30px; 
+        }
+        .btn { 
+            padding: 13px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            border: none; 
+            transition: 0.25s; 
             flex: 1; 
+            font-size: 14px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
+            text-decoration: none; 
         }
 
-        .btn-primary {
-            background: #2d7a3e;
-            color: white;
-            box-shadow: 0 2px 8px rgba(45, 122, 62, 0.3);
+        .btn-primary { 
+            background-color: #009844; 
+            color: white; 
         }
 
-        .btn-primary:hover {
-            background: #236030;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(45, 122, 62, 0.4);
+        .btn-primary:hover { 
+            background-color: #017033FF; 
         }
 
-        .btn-secondary {
-            background: white;
-            border: 2px solid #2d7a3e;
-            color: #2d7a3e;
+        .btn-secondary { 
+            background-color: #dcdcdc; 
+            color: #333; 
         }
 
-        .btn-secondary:hover {
-            background: #f7fafc;
+        .btn-secondary:hover { 
+            background-color: #c7c7c7; 
         }
 
         @media (max-width: 768px) {
@@ -634,7 +635,7 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
                         <h3>Informasi Perusahaan</h3>
                         
                         <div class="form-group">
-                            <label><i class="fas fa-building"></i> Kode Perusahaan *</label>
+                            <label><i class=""></i> Kode Perusahaan *</label>
                             <input type="text" name="kode_perusahaan" 
                                    value="<?php echo htmlspecialchars($config['kode_perusahaan'] ?? 'KSK'); ?>" 
                                    required maxlength="10" pattern="[A-Z]{2,10}"
@@ -643,31 +644,31 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
                         </div>
 
                         <div class="form-group">
-                            <label><i class="fas fa-building"></i> Nama Perusahaan *</label>
+                            <label><i class=""></i> Nama Perusahaan *</label>
                             <input type="text" name="nama_perusahaan" 
                                    value="<?php echo htmlspecialchars($config['nama_perusahaan'] ?? ''); ?>" 
                                    required>
                         </div>
 
                         <div class="form-group">
-                            <label><i class="fas fa-map-marker-alt"></i> Alamat</label>
+                            <label><i class=""></i> Alamat</label>
                             <textarea name="alamat"><?php echo htmlspecialchars($config['alamat'] ?? ''); ?></textarea>
                         </div>
 
                         <div class="form-group">
-                            <label><i class="fas fa-city"></i> Kota</label>
+                            <label><i class=""></i> Kota</label>
                             <input type="text" name="kota" 
                                    value="<?php echo htmlspecialchars($config['kota'] ?? ''); ?>">
                         </div>
 
                         <div class="form-group">
-                            <label><i class="fas fa-phone"></i> Telepon</label>
+                            <label><i class=""></i> Telepon</label>
                             <input type="text" name="telepon" 
                                    value="<?php echo htmlspecialchars($config['telepon'] ?? ''); ?>">
                         </div>
 
                         <div class="form-group">
-                            <label><i class="fas fa-envelope"></i> Email</label>
+                            <label><i class=""></i> Email</label>
                             <input type="email" name="email" 
                                    value="<?php echo htmlspecialchars($config['email'] ?? ''); ?>">
                         </div>
