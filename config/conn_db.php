@@ -245,4 +245,36 @@ function approve_data($table, $id, $admin_id, $admin_username) {
     
     return $success;
 }
+
+// bagian untuk nolak data
+function reject_data($table, $id, $admin_id, $admin_username, $reason = '') {
+    global $conn;
+
+    $stmt = $conn->prepare("UPDATE $table SET is_rejected = 1, rejected_by = ?, rejected_at = NOW(), reject_reaseon = ? WHERE id = ?");
+    $stmt->bind_param("isi",$admin_id, $reason, $id);
+    $succes = $stmt->execute();
+    $stmt->close();
+
+    if ($succes) {
+        log_audit($admin_id, $admin_username, "Data di tolak dari tabel $table ID: $id - Reason: $reason");
+    }
+    
+    return $succes;
+}
+
+// bagian untuk membatalkan data yang ditolak
+function unreject_data($table, $id, $admin_id, $admin_username) {
+    global $conn;
+
+    $stmt = $conn->prepare("UPDATE $table SET is_rejected = 0, rejected_by = NULL, rejected_at = NULL, reject_reason = NULL WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $succes = $stmt->execute();
+    $stmt->close();
+
+    if ($succes) {
+        log_audit($admin_id, $admin_username, "Batalkan data yang ditolak dari tabel $table ID: $id");
+    }
+
+    return $success;
+}
 ?>

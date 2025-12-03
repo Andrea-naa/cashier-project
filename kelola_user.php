@@ -742,10 +742,10 @@ $users = mysqli_query($conn, "SELECT id, username, nama_lengkap, role, created_a
                     <h2><i class="fas fa-users-cog"></i> Kelola User</h2>
                     <div class="page-actions">
                         <button id="btnShowAdd" class="btn btn-primary">
-                            <i class=""></i> Tambah User
+                            <i class=""></i>Tambah User
                         </button>
                         <a href="dashboard.php" class="btn btn-secondary">
-                            <i class=""></i> Kembali
+                            <i class=""></i>Kembali
                         </a>
                     </div>
                 </div>

@@ -16,19 +16,29 @@ $user_id = $_SESSION['user_id'] ?? 0;
 $username = $_SESSION['username'] ?? 'Guest';
 $nama_lengkap = $_SESSION['nama_lengkap'] ?? $_SESSION['username'] ?? 'User';
 $role = $_SESSION['role'] ?? 'Kasir';
+$is_admin = (stripos($role, 'Administrator') !== false);
+
 
 // bagian filter data tanggal transaksi
 $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
 $date_condition = '';
 
-$is_admin = (stripos($role, 'Administrator') !== false);
+switch($filter) {
+    case 'today':
+        $date_condition = " AND DATE(tanggal_opname) = CURDATE()";
+        break;
+    case '7days':
+        $date_condition = " AND DATE(tanggal_opname) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+        break;
+    case 'month':
+        $date_condition = " AND MONTH(tanggal_opname) = MONTH(CURDATE()) AND YEAR(tanggal_opname) = YEAR(CURDATE())";
+        break;
+    default:
+        $date_condition = '';
+}
 
 // Filter approval status
 $approval_filter = '';
-if (!$is_admin) {
-    $approval_filter = " AND (is_approved = 0 OR user_id = $user_id)";
-}
-
 $approval_status = isset($_GET['approval_status']) ? $_GET['approval_status'] : 'all';
 if ($approval_status === 'pending') {
     $approval_filter .= " AND is_approved = 0";
@@ -36,52 +46,58 @@ if ($approval_status === 'pending') {
     $approval_filter .= " AND is_approved = 1";
 }
 
-switch($filter) {
-    case 'today':
-        $date_condition = " WHERE DATE(tanggal_opname) = CURDATE()";
-        break;
-    case '7days':
-        $date_condition = " WHERE DATE(tanggal_opname) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
-        break;
-    case 'month':
-        $date_condition = " WHERE MONTH(tanggal_opname) = MONTH(CURDATE()) AND YEAR(tanggal_opname) = YEAR(CURDATE())";
-        break;
-    default:
-        $date_condition = '';
-}
+$success_massage = '';
+$edit_mode = false;
+$edit_data = [];
 
 // bagian hapus data
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
     $del_id = intval($_POST['delete_id']);
-    $stmt = mysqli_prepare($conn, "DELETE FROM stok_opname WHERE id = ?");
-    if ($stmt) {
-        mysqli_stmt_bind_param($stmt, 'i', $del_id);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
+    
+    // ngecek izin
+    $check_stmt = mysqli_prepare($conn, "SELECT user_id, is_approved FROM stok_opname WHERE id = ?");
+    mysqli_stmt_bind_param($check_stmt, 'i', $del_id);
+    mysqli_stmtm_execute($check_stmt);
+    $check_result = mysqli_stmt_get_result($check_stmt);
+    $check_data = mysqli_fetch_assoc($check_result);
+    mysqli_stmt_close($check_stmt);
+
+    $can_delete = false;
+
+    if ($is_admin) {
+        $can_delete = true;
+    } elseif ($check_data && $check_data['user_id'] == $user_id) {
+        if ($check_data['is_approved'] == 0) {
+            $can_delete = true;
+        } else {
+            header("Location: tabel_stok_opname.php>error=approved_delete");
+            exit;
+        }
+    } else {
+        header("Location: tabel_stok_opname.php?error=unauthorized_delete");
+        exit;
     }
-    header("Location: tabel_stok_opname.php?deleted=1");
-    exit;
+    
+    if ($can_delete) {
+        $stmt = mysqli_prepare($conn, "DELETE FROM stok_opname WHERE id = ?");
+        if ($stmt) {
+            mysqli_stmt_bind_param($stmt, 'i', $del_id);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
+        }
+        header("Location: tabel_stok_opname.php?deleted=1");
+        exit;
+    }
 }
 
-// Pagination setup
+// pagination 
 $limit = 10;
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $start = ($page - 1) * $limit;
 
-// ngitung total data
-$qCount = mysqli_query($conn, "SELECT COUNT(*) as total FROM stok_opname WHERE 1=1 $date_condition $approval_filter");
-$total = 0;
-if ($qCount) {
-    $resultCount = mysqli_fetch_assoc($qCount);
-    $total = $resultCount['total'] ?? 0;
-    mysqli_free_result($qCount);
-}
-$totalPages = max(1, ceil($total / $limit));
-
 // ngambil data stok opname dengan pagination
 $rows = [];
-$query = "SELECT s.*, u.nama_lengkap as approved_by_name FROM stok_opname s LEFT JOIN users u ON s.approved_by = u.id WHERE 1=1 $date_condition $approval_filter ORDER BY s.tanggal_opname DESC LIMIT ?, ?";
-$stmt = mysqli_prepare($conn, $query);
+$query = "SELECT s.*, u.nama_lengkap as approved_by_name FROM stok_opname s LEFT JOIN users u ON s.approved_by = u.id WHERE 1=1 $date_condition $approval_filter ORDER BY s.tanggal_opname DESC LIMIT ?, ?";$stmt = mysqli_prepare($conn, $query);
 if ($stmt) {
     mysqli_stmt_bind_param($stmt, 'ii', $start, $limit);
     mysqli_stmt_execute($stmt);
@@ -93,6 +109,45 @@ if ($stmt) {
     }
     mysqli_stmt_close($stmt);
 }
+
+// ngitung total data
+$qCount = mysqli_query($conn, "SELECT COUNT(*) as total FROM stok_opname WHERE 1=1 $date_condition $approval_filter");
+$total = 0;
+if ($qCount) {
+    $resultCount = mysqli_fetch_assoc($qCount);
+    $total = $resultCount['total'] ?? 0;
+    mysqli_free_result($qCount);
+}
+$totalPages = max(1, ceil($total / $limit));
+
+// filter approval
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['approve_id'])) {
+    if ($is_admin) {
+        $approve_id = intval($_POST['approve_id']);
+        $stmt = mysqli_prepare($conn, "UPDATE stok_opname SET is_approved = 1, approved_by = ?, approved_at = NOW() WHERE id = ?");
+        mysqli_stmt_bind_param($stmt, 'ii', $user_id, $approve_id);
+
+        if (mysqli_stmt_execute($stmt)) {
+            log_audit($user_id, $username, "Approve Stok Opname #$approve_id");
+            mysqli_stmt_close($stmt);
+            header('Location: tabel_stok_opname.php?approved=1');
+            exit;
+        }
+        mysqli_stmt_close($stmt);
+    }
+}
+
+if (isset($_GET['error'])) {
+    switch ($_GET['error']) {
+        case 'approved_delete':
+            $success_massage = '<div class="notice" style="background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;">Data sudah di approve, kamu tidak dapat menghapus data ini!</div>';
+            break;
+        case 'unauthorized_delete':
+            $success_massage = '<div class="notice" style="background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;">Kamu tidak memiliki akses untuk menghapus data ini!</div>';
+            break;
+    }
+}
+
 ?>
 
 <!doctype html>
@@ -307,7 +362,7 @@ if ($stmt) {
         
         /* bagian filter*/
         .filter-container {
-            max-width: 860px;
+            max-width: 1000px;
             margin: 20px auto 20px;
             background: white;
             padding: 20px;
@@ -669,6 +724,7 @@ if ($stmt) {
                 font-size: 18px;
             }
         }
+
     </style>
 </head>
 <body>
@@ -756,30 +812,38 @@ if ($stmt) {
             </div>
         </div>
 
+        <!-- bagian filter -->
         <div class="content-wrapper">
-            <!-- bagian filter -->
             <div class="filter-container">
                 <div class="filter-wrapper">
                     <span class="filter-label">Filter:</span>
-                    <a href="tabel_stok_opname.php?filter=today&page=<?= $page; ?>" 
-                       class="btn-filter <?php echo $filter === 'today' ? 'active' : ''; ?>">
-                        <i class="fas fa-calendar-day"></i>
-                        <span>Hari Ini</span>
+                    <a href="tabel_stok_opname.php?filter=today&approval_status=<?= $approval_status ?>&page=<?= $page; ?>" 
+                    class="btn btn-filter btn-sm <?php echo $filter === 'today' ? 'btn-primary' : 'btn-secondary'; ?>">
+                        <i class="fas fa-calendar-day"></i> Hari Ini
                     </a>
-                    <a href="tabel_stok_opname.php?filter=7days&page=<?= $page; ?>" 
-                       class="btn-filter <?php echo $filter === '7days' ? 'active' : ''; ?>">
-                        <i class="fas fa-calendar-week"></i>
-                        <span>7 Hari Terakhir</span>
+                    <a href="tabel_stok_opname.php?filter=7days&approval_status=<?= $approval_status ?>&page=<?= $page; ?>" 
+                    class="btn btn-filter btn-sm <?php echo $filter === '7days' ? 'btn-primary' : 'btn-secondary'; ?>">
+                        <i class="fas fa-calendar-week"></i> 7 Hari Terakhir
                     </a>
-                    <a href="tabel_stok_opname.php?filter=month&page=<?= $page; ?>" 
-                       class="btn-filter <?php echo $filter === 'month' ? 'active' : ''; ?>">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span>Bulan Ini</span>
+                    <a href="tabel_stok_opname.php?filter=month&approval_status=<?= $approval_status ?>&page=<?= $page; ?>" 
+                    class="btn btn-filter btn-sm <?php echo $filter === 'month' ? 'btn-primary' : 'btn-secondary'; ?>">
+                        <i class="fas fa-calendar-alt"></i> Bulan Ini
                     </a>
-                    <a href="tabel_stok_opname.php?page=<?= $page; ?>" 
-                       class="btn-filter <?php echo $filter === 'all' ? 'active' : ''; ?>">
-                        <i class="fas fa-list"></i>
-                        <span>Semua</span>
+                    
+                    <?php if ($is_admin): ?>
+                        <a href="tabel_stok_opname.php?filter=<?= $filter ?>&approval_status=pending&page=<?= $page; ?>" 
+                        class="btn btn-filter btn-sm <?php echo $approval_status === 'pending' ? 'btn-primary' : 'btn-secondary'; ?>">
+                            <i class="fas fa-clock"></i> Pending Approval
+                        </a>
+                        <a href="tabel_stok_opname.php?filter=<?= $filter ?>&approval_status=approved&page=<?= $page; ?>" 
+                        class="btn btn-filter btn-sm <?php echo $approval_status === 'approved' ? 'btn-primary' : 'btn-secondary'; ?>">
+                            <i class="fas fa-check-circle"></i> Sudah Approved
+                        </a>
+                    <?php endif; ?>
+                    
+                    <a href="tabel_stok_opname.php?filter=all&approval_status=all&page=<?= $page; ?>" 
+                    class="btn btn-filter btn-sm <?php echo ($filter === 'all' && $approval_status === 'all') ? 'btn-primary' : 'btn-secondary'; ?>">
+                        <i class="fas fa-list"></i> Semua
                     </a>
                 </div>
             </div>
@@ -794,6 +858,9 @@ if ($stmt) {
                 <?php endif; ?>
                 <?php if (isset($_GET['updated'])): ?>
                     <div class="notice">âœ“ Data berhasil diupdate.</div>
+                <?php endif; ?>
+                <?php if (isset($_GET['approved'])): ?>
+                    <div class="notice">✓ Stok opname berhasil di-approve.</div>
                 <?php endif; ?>
 
                 <div class="button-group">
@@ -819,12 +886,13 @@ if ($stmt) {
                                 <th>Saldo Sistem</th>
                                 <th>Selisih</th>
                                 <th style="width:220px; text-align:center;">Aksi</th>
+                                <th style="width:150px; text-align:center;">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (empty($rows)): ?>
                                 <tr>
-                                    <td colspan="9" style="text-align:center; padding:20px;">Belum ada data stok opname</td>
+                                    <td colspan="10" style="text-align:center; padding:20px;">Belum ada data stok opname</td>
                                 </tr>
                             <?php else: ?>
                                 <?php foreach ($rows as $r): ?>
@@ -856,18 +924,32 @@ if ($stmt) {
                                             </a>
                                         </div>
                                     </td>
-                                </tr>
+                                      
+                                        <!-- tampilan status -->
+                                            <td style="text-align:center;">
+                                                <?php if ($r['is_approved'] == 1): ?>
+                                                    <span style="background:#d4edda; color:#155724; padding:4px 8px; border-radius:4px; font-size:11px;">
+                                                         Approved
+                                                    </span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
 
-                <!-- Pagination -->
+                <!-- pagination -->
                 <?php if ($totalPages > 1): ?>
                 <div class="pager">
-                    <?php for ($p = 1; $p <= $totalPages; $p++): ?>
-                        <a href="?page=<?= $p; ?>&filter=<?= $filter; ?>" <?= ($p == $page) ? 'class="active"' : ''; ?>><?= $p; ?></a>
+                    <?php 
+                    $baseUrl = 'tabel_stok_opname.php?filter=' . $filter . '&approval_status=' . $approval_status . '&page=';
+                    
+                    for ($p = 1; $p <= $totalPages; $p++): 
+                    ?>
+
+                        <a href="<?= $baseUrl . $p; ?>" <?= ($p == $page) ? 'class="active"' : ''; ?>><?= $p; ?></a>
                     <?php endfor; ?>
                 </div>
                 <?php endif; ?>
