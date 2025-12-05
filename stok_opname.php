@@ -116,16 +116,18 @@ if ($edit_id > 0) {
             $nomor_data = get_next_nomor_surat('STOK');
             $nomor_surat = $nomor_data['nomor'];
 
+            $is_approved = $is_admin ? 1 : 0;
+
             $stmt = mysqli_prepare($conn,
                 "INSERT INTO stok_opname
-                    (nomor_surat, user_id, username, subtotal_fisik, bon_sementara, uang_rusak, materai, lainnya, fisik_total, saldo_sistem, selisih)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?)"
+                    (nomor_surat, user_id, username, subtotal_fisik, bon_sementara, uang_rusak, materai, lainnya, fisik_total, saldo_sistem, selisih, is_approved)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"
             );
             mysqli_stmt_bind_param(
                 $stmt,
-                'sisdddddddd',
+                'sisddddddddi',
                 $nomor_surat, $user_id, $username, $subtotal_fisik, $bon_sementara, $uang_rusak,
-                $materai, $lain_lain, $fisik_total, $saldo_sistem, $selisih
+                $materai, $lain_lain, $fisik_total, $saldo_sistem, $selisih, $is_approved
             );
             mysqli_stmt_execute($stmt);
             $insert_id = mysqli_insert_id($conn);

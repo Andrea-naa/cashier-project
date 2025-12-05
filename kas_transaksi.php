@@ -156,7 +156,7 @@ if ($qCount_masuk) {
 }
 $totalPages_masuk = max(1, ceil($total_masuk / $limit_masuk));
 
-// ngambil data kas masuk DENGAN LIMIT
+// ngambil data kas masuk
 $data_kas_masuk = [];
 $res_masuk = mysqli_query($conn, "SELECT t.*, u.nama_lengkap as approved_by_name 
     FROM transaksi t 
@@ -186,7 +186,7 @@ if ($qCount_keluar) {
 }
 $totalPages_keluar = max(1, ceil($total_keluar / $limit_keluar));
 
-// ngambil data kas keluar DENGAN LIMIT
+// ngambil data kas keluar
 $data_kas_keluar = [];
 $res_keluar = mysqli_query($conn, "SELECT t.*, u.nama_lengkap as approved_by_name 
     FROM transaksi t 
@@ -690,7 +690,7 @@ if ($res_keluar) {
         }
 
         th:nth-child(8), td:nth-child(8) { 
-            width: 100px; 
+            width: 150px; 
         } 
 
         td:nth-child(5) {
@@ -1157,7 +1157,16 @@ if ($res_keluar) {
                                                 </div>
                                             </td>
                                             <td style="text-align:center;">
-                                                <?php if ($row['is_approved'] == 1): ?>
+                                                <?php if ($row['is_rejected'] == 1): ?>
+                                                    <span style="background: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 4px; font-size: 11px; display: block; margin-bottom: 4px">
+                                                        Rejected
+                                                    </span>
+                                                <!-- <?php if (!empty($row['reject_reason'])) : ?>
+                                                    <small style="color: #666; font-size: 10px">
+                                                        <?php echo htmlspecialchars($row['reject_reason']); ?>
+                                                    </small> -->
+                                            <?php endif; ?>
+                                                <?php elseif ($row['is_approved'] == 1): ?>
                                                     <span style="background:#d4edda; color:#155724; padding:4px 8px; border-radius:4px; font-size:11px;">
                                                         Approved
                                                     </span>

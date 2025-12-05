@@ -848,7 +848,7 @@ if (isset($_GET['error'])) {
                 </div>
             </div>
 
-            <!-- NOTIFIKASI ERROR - DI LUAR CONTAINER -->
+            <!-- notif -->
             <?php if ($success_massage): ?>
                 <div style="max-width: 1400px; width: 95%; margin: 20px auto 0;">
                     <?= $success_massage; ?>
@@ -856,7 +856,6 @@ if (isset($_GET['error'])) {
             <?php endif; ?>
 
             <div class="container">
-                <!-- notif SUCCESS - DI DALAM CONTAINER -->
                 <?php if (isset($_GET['success'])): ?>
                     <div class="notice">✓ Data berhasil disimpan.</div>
                 <?php endif; ?>
@@ -934,7 +933,16 @@ if (isset($_GET['error'])) {
                                       
                                         <!-- tampilan status -->
                                             <td style="text-align:center;">
-                                                <?php if ($r['is_approved'] == 1): ?>
+                                                <?php if ($r['is_rejected'] == 1): ?>
+                                                    <span style="background: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 4px; font-size: 11px; display: block; margin-bottom: 4px">
+                                                        Rejected
+                                                    </span>
+                                                <!-- <?php if (!empty($r['reject_reason'])) : ?>
+                                                    <small style="color: #666; font-size: 10px">
+                                                        <?php echo htmlspecialchars($r['reject_reason']); ?>
+                                                    </small> -->
+                                            <?php endif; ?>
+                                                <?php elseif ($r['is_approved'] == 1): ?>
                                                     <span style="background:#d4edda; color:#155724; padding:4px 8px; border-radius:4px; font-size:11px;">
                                                          Approved
                                                     </span>

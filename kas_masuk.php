@@ -656,7 +656,7 @@ if ($res) {
         }
 
         th:nth-child(8), td:nth-child(8) { 
-            width: 100px; 
+            width: 150px; 
         } 
 
         td:nth-child(5) {
@@ -1098,7 +1098,16 @@ if ($res) {
                                             
                                             <!-- tampilan status -->
                                             <td style="text-align:center;">
-                                                <?php if ($row['is_approved'] == 1): ?>
+                                                <?php if ($row['is_rejected'] == 1): ?>
+                                                    <span style="background: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 4px; font-size: 11px; display: block; margin-bottom: 4px">
+                                                        Rejected
+                                                    </span>
+                                                <!-- <?php if (!empty($row['reject_reason'])) : ?>
+                                                    <small style="color: #666; font-size: 10px">
+                                                        <?php echo htmlspecialchars($row['reject_reason']); ?>
+                                                    </small> -->
+                                                <?php endif; ?>
+                                                <?php elseif ($row['is_approved'] == 1): ?>
                                                     <span style="background:#d4edda; color:#155724; padding:4px 8px; border-radius:4px; font-size:11px;">
                                                          Approved
                                                     </span>
