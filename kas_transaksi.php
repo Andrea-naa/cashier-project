@@ -8,6 +8,7 @@ $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
 $nama_lengkap = $_SESSION['nama_lengkap'];
 $role = $_SESSION['role'] ?? 'Kasir';
+$is_admin = (stripos($role, 'Administrator') !== false);
 
 // bagian filter tanggal transaksi
 $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
@@ -140,9 +141,29 @@ if (isset($_GET['success'])) {
     }
 }
 
-// ngambil data kas masuk
+// bagian pagination untuk kas masuk
+$limit_masuk = 5;
+$page_masuk = isset($_GET['page_masuk']) ? max(1, intval($_GET['page_masuk'])) : 1;
+$start_masuk = ($page_masuk - 1) * $limit_masuk;
+
+// hitung total data kas masuk
+$qCount_masuk = mysqli_query($conn, "SELECT COUNT(*) as total FROM transaksi WHERE jenis_transaksi = 'kas_terima' $date_condition");
+$total_masuk = 0;
+if ($qCount_masuk) {
+    $resultCount_masuk = mysqli_fetch_assoc($qCount_masuk);
+    $total_masuk = $resultCount_masuk['total'] ?? 0;
+    mysqli_free_result($qCount_masuk);
+}
+$totalPages_masuk = max(1, ceil($total_masuk / $limit_masuk));
+
+// ngambil data kas masuk DENGAN LIMIT
 $data_kas_masuk = [];
-$res_masuk = mysqli_query($conn, "SELECT * FROM transaksi WHERE jenis_transaksi = 'kas_terima' $date_condition ORDER BY tanggal_transaksi DESC");
+$res_masuk = mysqli_query($conn, "SELECT t.*, u.nama_lengkap as approved_by_name 
+    FROM transaksi t 
+    LEFT JOIN users u ON t.approved_by = u.id 
+    WHERE t.jenis_transaksi = 'kas_terima' $date_condition 
+    ORDER BY t.tanggal_transaksi DESC 
+    LIMIT $start_masuk, $limit_masuk");
 if ($res_masuk) {
     while ($r = mysqli_fetch_assoc($res_masuk)) {
         $data_kas_masuk[] = $r;
@@ -150,15 +171,36 @@ if ($res_masuk) {
     mysqli_free_result($res_masuk);
 }
 
-// ngambil data kas keluar
+// bagian pagination untuk kas keluar
+$limit_keluar = 5;
+$page_keluar = isset($_GET['page_keluar']) ? max(1, intval($_GET['page_keluar'])) : 1;
+$start_keluar = ($page_keluar - 1) * $limit_keluar;
+
+// hitung total data kas keluar
+$qCount_keluar = mysqli_query($conn, "SELECT COUNT(*) as total FROM transaksi WHERE jenis_transaksi = 'kas_keluar' $date_condition");
+$total_keluar = 0;
+if ($qCount_keluar) {
+    $resultCount_keluar = mysqli_fetch_assoc($qCount_keluar);
+    $total_keluar = $resultCount_keluar['total'] ?? 0;
+    mysqli_free_result($qCount_keluar);
+}
+$totalPages_keluar = max(1, ceil($total_keluar / $limit_keluar));
+
+// ngambil data kas keluar DENGAN LIMIT
 $data_kas_keluar = [];
-$res_keluar = mysqli_query($conn, "SELECT * FROM transaksi WHERE jenis_transaksi = 'kas_keluar' $date_condition ORDER BY tanggal_transaksi DESC");
+$res_keluar = mysqli_query($conn, "SELECT t.*, u.nama_lengkap as approved_by_name 
+    FROM transaksi t 
+    LEFT JOIN users u ON t.approved_by = u.id 
+    WHERE t.jenis_transaksi = 'kas_keluar' $date_condition 
+    ORDER BY t.tanggal_transaksi DESC 
+    LIMIT $start_keluar, $limit_keluar");
 if ($res_keluar) {
     while ($r = mysqli_fetch_assoc($res_keluar)) {
         $data_kas_keluar[] = $r;
     }
     mysqli_free_result($res_keluar);
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -427,7 +469,7 @@ if ($res_keluar) {
 
         .container {
             width: 90%;
-            max-width: 900px;
+            max-width: 1400px;
             margin: 40px auto;
             background-color: white;
             padding: 40px;
@@ -612,26 +654,72 @@ if ($res_keluar) {
             margin-top: 20px;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            min-width: auto;
         }
 
-        thead {
-            background: #f2f2f2;
+        th:nth-child(1), td:nth-child(1) { 
+            width: 50px; 
         }
 
-        th {
-            padding: 12px 10px;
-            text-align: center;
-            font-weight: 600;
-            border: 1px solid #ddd;
+        th:nth-child(2), td:nth-child(2) { 
+            width: 170px; 
+        } 
+
+        th:nth-child(3), td:nth-child(3) {
+            width: 110px; 
+        } 
+
+        th:nth-child(4), td:nth-child(4) { 
+            width: auto; 
+            min-width: 200px; 
+        } 
+
+        th:nth-child(5), td:nth-child(5) {
+            width: 150px; 
+            } 
+
+        th:nth-child(6), td:nth-child(6) { 
+            width: 120px; 
+        } 
+
+        th:nth-child(7), td:nth-child(7) {
+            width: 280px; 
         }
 
-        td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            font-size: 13px;
+        th:nth-child(8), td:nth-child(8) { 
+            width: 100px; 
+        } 
+
+        td:nth-child(5) {
+            text-align: right;
+            padding-right: 15px;
+            white-space: nowrap;
+        }
+
+        .table-wrapper { 
+            overflow-x: visible;
+            margin-top: 20px; 
+        }
+
+
+        thead { 
+            background: #f2f2f2; 
+        }
+
+        th { 
+            padding: 12px 10px; 
+            text-align: center; 
+            font-weight: 600; 
+            border: 1px solid #ddd; 
+        }
+
+        td { 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            font-size: 13px; 
         }
 
         tbody tr:hover {
@@ -773,6 +861,72 @@ if ($res_keluar) {
                 overflow-x: auto;
             }
         }
+
+       /* pagination */
+        .pagination-wrapper {
+            margin-top: 20px;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 15px 0;
+        }
+
+        .pagination-btn {
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            border: none;
+            transition: all 0.3s ease;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+            min-width: 38px;
+            height: 38px;
+        }
+
+        .pagination-btn.active {
+            background-color: #009844;
+            color: white;
+            cursor: default;
+            box-shadow: 0 2px 6px rgba(0, 152, 68, 0.3);
+        }
+
+        .pagination-btn.inactive {
+            background-color: #dcdcdc;
+            color: #333
+        }
+
+        .pagination-btn.inactive:hover {
+            background-color: #c7c7c7;
+            transform: translateY(-2px);
+        }
+
+        .pagination-btn.active:hover {
+            transform: none;
+        }
+
+        .pagination-arrow {
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .pagination-wrapper {
+                gap: 6px;
+            }
+
+            .pagination-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+                min-width: 34px;
+                height: 34px;
+            }
+        } 
     </style>
 </head>
 
@@ -859,33 +1013,46 @@ if ($res_keluar) {
             </div>
         </div>
 
-    <!-- bagian filter -->
-    <div class="content-wrapper">
-        <div class="filter-container">
-            <div class="filter-wrapper">
-                <span class="filter-label">Filter:</span>
-                <a href="kas_masuk.php?filter=today<?php echo $edit_mode ? '&edit='.$edit_data['id'] : ''; ?>" 
-                    class="btn btn-filter btn-sm <?php echo $filter === 'today' ? 'btn-primary' : 'btn-secondary'; ?>">
-                    <i class="fas fa-calendar-day"></i> Hari Ini
-                </a>
-                <a href="kas_masuk.php?filter=7days<?php echo $edit_mode ? '&edit='.$edit_data['id'] : ''; ?>" 
-                    class="btn btn-filter btn-sm <?php echo $filter === '7days' ? 'btn-primary' : 'btn-secondary'; ?>">
-                    <i class="fas fa-calendar-week"></i> 7 Hari Terakhir
-                </a>
-                <a href="kas_masuk.php?filter=month<?php echo $edit_mode ? '&edit='.$edit_data['id'] : ''; ?>" 
-                    class="btn btn-filter btn-sm <?php echo $filter === 'month' ? 'btn-primary' : 'btn-secondary'; ?>">
-                    <i class="fas fa-calendar-alt"></i> Bulan Ini
-                </a>
-                 <a href="kas_masuk.php<?php echo $edit_mode ? '?edit='.$edit_data['id'] : ''; ?>" 
-                    class="btn btn-filter btn-sm <?php echo $filter === 'all' ? 'btn-primary' : 'btn-secondary'; ?>">
-                    <i class="fas fa-list"></i> Semua
-                </a>
+        <!-- bagian filter -->
+        <div class="content-wrapper">
+             <div class="filter-container">
+                <div class="filter-wrapper">
+                    <span class="filter-label">Filter:</span>
+                    <a href="kas_transaksi.php?tab=<?= $active_tab ?>&filter=today<?php echo $edit_mode ? '&edit='.$edit_data['id'] : ''; ?>" 
+                        class="btn btn-filter btn-sm <?php echo $filter === 'today' ? 'btn-primary' : 'btn-secondary'; ?>">
+                        <i class="fas fa-calendar-day"></i> Hari Ini
+                    </a>
+                    <a href="kas_transaksi.php?tab=<?= $active_tab ?>&filter=7days<?php echo $edit_mode ? '&edit='.$edit_data['id'] : ''; ?>" 
+                        class="btn btn-filter btn-sm <?php echo $filter === '7days' ? 'btn-primary' : 'btn-secondary'; ?>">
+                        <i class="fas fa-calendar-week"></i> 7 Hari Terakhir
+                    </a>
+                    <a href="kas_transaksi.php?tab=<?= $active_tab ?>&filter=month<?php echo $edit_mode ? '&edit='.$edit_data['id'] : ''; ?>" 
+                        class="btn btn-filter btn-sm <?php echo $filter === 'month' ? 'btn-primary' : 'btn-secondary'; ?>">
+                        <i class="fas fa-calendar-alt"></i> Bulan Ini
+                    </a>
+                    
+                    <!-- Filter Approval untuk Admin - HARUS DI DALAM filter-wrapper -->
+                    <?php if ($is_admin): ?>
+                        <a href="kas_transaksi.php?tab=<?= $active_tab ?>&filter=<?= $filter ?>&approval_status=pending" 
+                        class="btn btn-filter btn-sm <?php echo $approval_status === 'pending' ? 'btn-primary' : 'btn-secondary'; ?>">
+                            <i class="fas fa-clock"></i> Pending Approval
+                        </a>
+                        <a href="kas_transaksi.php?tab=<?= $active_tab ?>&filter=<?= $filter ?>&approval_status=approved" 
+                        class="btn btn-filter btn-sm <?php echo $approval_status === 'approved' ? 'btn-primary' : 'btn-secondary'; ?>">
+                            <i class="fas fa-check-circle"></i> Sudah Approved
+                        </a>
+                    <?php endif; ?>
+                    
+                    <a href="kas_transaksi.php?tab=<?= $active_tab ?><?php echo $edit_mode ? '&edit='.$edit_data['id'] : ''; ?>" 
+                        class="btn btn-filter btn-sm <?php echo $filter === 'all' ? 'btn-primary' : 'btn-secondary'; ?>">
+                        <i class="fas fa-list"></i> Semua
+                    </a>
+                </div>
             </div>
-        </div>
 
-            <?php if ($success_message): ?>
-                <?php echo $success_message; ?>
-            <?php endif; ?>
+    <?php if ($success_message): ?>
+        <?php echo $success_message; ?>
+    <?php endif; ?>
 
             <div class="container">
                 <!-- menu tab navigasi -->
@@ -942,6 +1109,7 @@ if ($res_keluar) {
                                     <i class="" aria-hidden="true"></i> Kembali
                                 </a>
                             <?php endif; ?>
+                        
                         </div>
                     </form>
 
@@ -956,30 +1124,31 @@ if ($res_keluar) {
                                         <th style="width:130px;">TANGGAL</th>
                                         <th>KETERANGAN</th>
                                         <th style="width:130px;">JUMLAH</th>
+                                        <th style="width:150px;">USERNAME</th>
                                         <th style="width:220px;">AKSI</th>
+                                        <th style="width:100px;">STATUS</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                 <?php if (!empty($data_kas_masuk)): ?>
-                                    <?php $i = 1; foreach ($data_kas_masuk as $row): ?>
+                                    <?php $i = $start_masuk + 1; foreach ($data_kas_masuk as $row): ?>
                                         <tr>
                                             <td style="text-align:center;"><?php echo $i; ?></td>
                                             <td style="text-align:center;"><?php echo htmlspecialchars($row['nomor_surat'] ?? '-'); ?></td>
                                             <td style="text-align:center;"><?php echo date('d-M-Y', strtotime($row['tanggal_transaksi'])); ?></td>
                                             <td><?php echo htmlspecialchars($row['keterangan']); ?></td>
                                             <td style="text-align:right;">Rp. <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
+                                            <td style="text-align:center;"><strong><?php echo htmlspecialchars($row['username']); ?></strong></td>
                                             <td style="text-align:center;">
                                                 <div class="action-buttons">
                                                     <a href="kas_transaksi.php?tab=masuk&edit=<?php echo $row['id']; ?>" class="btn btn-edit btn-sm" title="Edit">
                                                         Edit
                                                     </a>
-
                                                     <a href="kas_transaksi.php?tab=masuk&delete=<?php echo $row['id']; ?>" class="btn btn-delete btn-sm"
-                                                       onclick="return confirm('Yakin ingin menghapus data ini?')" title="Hapus">
+                                                    onclick="return confirm('Yakin ingin menghapus data ini?')" title="Hapus">
                                                         Delete
                                                     </a>
-
-                                                     <a href="export_pdf.php?type=kas_masuk&id=<?php echo $row['id']; ?>&print=1" 
+                                                    <a href="export_pdf.php?type=kas_masuk&id=<?php echo $row['id']; ?>&print=1" 
                                                     target="_blank" 
                                                     class="btn btn-pdf btn-sm" 
                                                     title="Cetak PDF">
@@ -987,11 +1156,18 @@ if ($res_keluar) {
                                                     </a>
                                                 </div>
                                             </td>
+                                            <td style="text-align:center;">
+                                                <?php if ($row['is_approved'] == 1): ?>
+                                                    <span style="background:#d4edda; color:#155724; padding:4px 8px; border-radius:4px; font-size:11px;">
+                                                        Approved
+                                                    </span>
+                                                <?php endif; ?>
+                                            </td>
                                         </tr>
                                     <?php $i++; endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="6" style="text-align:center; padding:20px; color:#999;">
+                                        <td colspan="8" style="text-align:center; padding:20px; color:#999;">
                                             Belum ada data kas masuk
                                         </td>
                                     </tr>
@@ -999,7 +1175,49 @@ if ($res_keluar) {
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+
+                        <?php if ($totalPages_masuk > 1): ?>
+                        <div class="pagination-wrapper">
+                            <?php
+                            $baseUrl_masuk = 'kas_transaksi.php?tab=masuk&filter=' . $filter . '&approval_status=' . $approval_status . ($edit_mode ? '&edit='.$edit_data['id'] : '') . '&page_masuk=';
+
+                            if ($page_masuk > 1) {
+                                echo '<a class="pagination-btn inactive" href="' . $baseUrl_masuk . ($page_masuk-1) . '">
+                                        <i class="fas fa-chevron-left pagination-arrow"></i>
+                                    </a>';
+                            }
+
+                            echo '<a class="pagination-btn ' . ($page_masuk == 1 ? 'active' : 'inactive') . '" href="' . $baseUrl_masuk . '1">1</a>';
+                            
+                            if ($page_masuk > 3) {
+                                echo '<span class="pagination-btn inactive" style="cursor: default;">...</span>';
+                            }
+                            
+                            for ($p = max(2, $page_masuk - 1); $p <= min($totalPages_masuk - 1, $page_masuk + 1); $p++) {
+                                if ($p == $page_masuk) {
+                                    echo '<span class="pagination-btn active">' . $p . '</span>';
+                                } else {
+                                    echo '<a class="pagination-btn inactive" href="' . $baseUrl_masuk . $p . '">' . $p . '</a>';
+                                }
+                            }
+                            
+                            if ($page_masuk < $totalPages_masuk - 2) {
+                                echo '<span class="pagination-btn inactive" style="cursor: default;">...</span>';
+                            }
+                            
+                            if ($totalPages_masuk > 1) {
+                                echo '<a class="pagination-btn ' . ($page_masuk == $totalPages_masuk ? 'active' : 'inactive') . '" href="' . $baseUrl_masuk . $totalPages_masuk . '">' . $totalPages_masuk . '</a>';
+                            }
+
+                            if ($page_masuk < $totalPages_masuk) {
+                                echo '<a class="pagination-btn inactive" href="' . $baseUrl_masuk . ($page_masuk+1) . '">
+                                        <i class="fas fa-chevron-right pagination-arrow"></i>
+                                    </a>';
+                            }
+                            ?>
+                        </div>
+                        <?php endif; ?>
+                    </div> 
                 </div>
 
                 <!-- bagian kas keluar -->
@@ -1047,43 +1265,54 @@ if ($res_keluar) {
                                 <thead>
                                     <tr>
                                         <th style="width:50px;">NO</th>
-                                        <th style="width:130px;">NOMOR SURAT</th>
-                                        <th style="width:130px;">TANGGAL</th>
+                                        <th style="width:170px;">NOMOR SURAT</th>
+                                        <th style="width:110px;">TANGGAL</th>
                                         <th>KETERANGAN</th>
-                                        <th style="width:130px;">JUMLAH</th>
-                                        <th style="width:220px;">AKSI</th>
+                                        <th style="width:150px;">JUMLAH</th>
+                                        <th style="width:120px;">USERNAME</th>
+                                        <th style="width:280px;">AKSI</th>
+                                        <th style="width:100px;">STATUS</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                 <?php if (!empty($data_kas_keluar)): ?>
-                                    <?php $i = 1; foreach ($data_kas_keluar as $row): ?>
+                                    <?php $i = $start_keluar + 1; foreach ($data_kas_keluar as $row): ?>
                                         <tr>
                                             <td style="text-align:center;"><?php echo $i; ?></td>
                                             <td style="text-align:center;"><?php echo htmlspecialchars($row['nomor_surat'] ?? '-'); ?></td>
                                             <td style="text-align:center;"><?php echo date('d-M-Y', strtotime($row['tanggal_transaksi'])); ?></td>
                                             <td><?php echo htmlspecialchars($row['keterangan']); ?></td>
-                                            <td style="text-align:right;">Rp. <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
+                                            <td style="text-align:right; padding-right:15px; white-space:nowrap;">Rp. <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
+                                            <td style="text-align:center;"><strong><?php echo htmlspecialchars($row['username']); ?></strong></td>
                                             <td style="text-align:center;">
                                                 <div class="action-buttons">
                                                     <a href="kas_transaksi.php?tab=keluar&edit=<?php echo $row['id']; ?>" class="btn btn-edit btn-sm" title="Edit">
                                                         Edit
                                                     </a>
-
                                                     <a href="kas_transaksi.php?tab=keluar&delete=<?php echo $row['id']; ?>" class="btn btn-delete btn-sm"
                                                        onclick="return confirm('Yakin ingin menghapus data ini?')" title="Hapus">
                                                         Delete
                                                     </a>
-
-                                                    <a href="export_pdf.php?type=kas_keluar&id=<?php echo $row['id']; ?>" target="_blank" class="btn btn-pdf btn-sm" title="Export PDF">
+                                                    <a href="export_pdf.php?type=kas_keluar&id=<?php echo $row['id']; ?>&print=1" 
+                                                       target="_blank" 
+                                                       class="btn btn-pdf btn-sm" 
+                                                       title="Cetak PDF">
                                                         PDF
                                                     </a>
                                                 </div>
+                                            </td>
+                                            <td style="text-align:center;">
+                                                <?php if ($row['is_approved'] == 1): ?>
+                                                    <span style="background:#d4edda; color:#155724; padding:4px 8px; border-radius:4px; font-size:11px;">
+                                                        Approved
+                                                    </span>
+                                                <?php endif; ?>
                                             </td>
                                         </tr>
                                     <?php $i++; endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="6" style="text-align:center; padding:20px; color:#999;">
+                                        <td colspan="8" style="text-align:center; padding:20px; color:#999;">
                                             Belum ada data kas keluar
                                         </td>
                                     </tr>
@@ -1091,6 +1320,48 @@ if ($res_keluar) {
                                 </tbody>
                             </table>
                         </div>
+
+                        <?php if ($totalPages_keluar > 1): ?>
+                        <div class="pagination-wrapper">
+                            <?php
+                            $baseUrl_keluar = 'kas_transaksi.php?tab=keluar&filter=' . $filter . '&approval_status=' . $approval_status . ($edit_mode ? '&edit='.$edit_data['id'] : '') . '&page_keluar=';
+
+                            if ($page_keluar > 1) {
+                                echo '<a class="pagination-btn inactive" href="' . $baseUrl_keluar . ($page_keluar-1) . '">
+                                        <i class="fas fa-chevron-left pagination-arrow"></i>
+                                    </a>';
+                            }
+
+                            echo '<a class="pagination-btn ' . ($page_keluar == 1 ? 'active' : 'inactive') . '" href="' . $baseUrl_keluar . '1">1</a>';
+                            
+                            if ($page_keluar > 3) {
+                                echo '<span class="pagination-btn inactive" style="cursor: default;">...</span>';
+                            }
+                            
+                            for ($p = max(2, $page_keluar - 1); $p <= min($totalPages_keluar - 1, $page_keluar + 1); $p++) {
+                                if ($p == $page_keluar) {
+                                    echo '<span class="pagination-btn active">' . $p . '</span>';
+                                } else {
+                                    echo '<a class="pagination-btn inactive" href="' . $baseUrl_keluar . $p . '">' . $p . '</a>';
+                                }
+                            }
+                            
+                            if ($page_keluar < $totalPages_keluar - 2) {
+                                echo '<span class="pagination-btn inactive" style="cursor: default;">...</span>';
+                            }
+                            
+                            if ($totalPages_keluar > 1) {
+                                echo '<a class="pagination-btn ' . ($page_keluar == $totalPages_keluar ? 'active' : 'inactive') . '" href="' . $baseUrl_keluar . $totalPages_keluar . '">' . $totalPages_keluar . '</a>';
+                            }
+
+                            if ($page_keluar < $totalPages_keluar) {
+                                echo '<a class="pagination-btn inactive" href="' . $baseUrl_keluar . ($page_keluar+1) . '">
+                                        <i class="fas fa-chevron-right pagination-arrow"></i>
+                                    </a>';
+                            }
+                            ?>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

@@ -250,7 +250,7 @@ function approve_data($table, $id, $admin_id, $admin_username) {
 function reject_data($table, $id, $admin_id, $admin_username, $reason = '') {
     global $conn;
 
-    $stmt = $conn->prepare("UPDATE $table SET is_rejected = 1, rejected_by = ?, rejected_at = NOW(), reject_reaseon = ? WHERE id = ?");
+    $stmt = $conn->prepare("UPDATE $table SET is_rejected = 1, rejected_by = ?, rejected_at = NOW(), reject_reason = ? WHERE id = ?");
     $stmt->bind_param("isi",$admin_id, $reason, $id);
     $succes = $stmt->execute();
     $stmt->close();

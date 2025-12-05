@@ -55,128 +55,150 @@ if ($edit_id > 0) {
     }
 }
 
-// aksi simpan data
-if (isset($_POST['simpan'])) {
-
-    // hitung pecahan uang kas
-    $subtotal_fisik = 0;
-    $jumlah_items   = [];
-
-    foreach ($fisik_uang_kas as $item) {
-        $jumlah = floatval($_POST["jumlah_{$item['no']}"] ?? 0);
-
-        $jumlah_items[] = [
-            'no'     => $item['no'],
-            'uraian' => $item['uraian'],
-            'satuan' => $item['satuan'],
-            'jumlah' => $jumlah,
-            'nilai'  => $item['nominal']
-        ];
-
-        $subtotal_fisik += ($jumlah * $item['nominal']);
-    }
-
-    // bagian input lain lainnya
-    $bon_sementara = floatval($_POST['bon_sementara'] ?? 0);
-    $uang_rusak    = floatval($_POST['uang_rusak'] ?? 0);
-    $materai = floatval($_POST['material'] ?? 0); // Simpan jumlah lembar
-    $lain_lain     = floatval($_POST['lain_lain'] ?? 0);
-
-    // materai dikali 10.000
-    $fisik_total = $subtotal_fisik + $bon_sementara + $uang_rusak + ($materai * 10000) + $lain_lain;
-
-    // selisih
-    $selisih = $saldo_sistem - $fisik_total;
-
-    // aksi simpan ke database
-    if (!$edit_mode) {
-
-        $nomor_data = get_next_nomor_surat('STOK');
-        $nomor_surat = $nomor_data['nomor'];
-
-        $stmt = mysqli_prepare($conn,
-            "INSERT INTO stok_opname
-                (nomor_surat, user_id, username, subtotal_fisik, bon_sementara, uang_rusak, materai, lainnya, fisik_total, saldo_sistem, selisih)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?)"
-        );
-        mysqli_stmt_bind_param(
-            $stmt,
-            'sisdddddddd',
-            $nomor_surat, $user_id, $username, $subtotal_fisik, $bon_sementara, $uang_rusak,
-            $materai, $lain_lain, $fisik_total, $saldo_sistem, $selisih
-        );
-        mysqli_stmt_execute($stmt);
-        $insert_id = mysqli_insert_id($conn);
-        mysqli_stmt_close($stmt);
-
-        // bagian input detail
-        $stmt2 = mysqli_prepare($conn,
-            "INSERT INTO stok_opname_detail
-                (stok_opname_id, no_urut, uraian, satuan, jumlah, nilai)
-             VALUES (?,?,?,?,?,?)"
-        );
-
-        foreach ($jumlah_items as $it) {
-            mysqli_stmt_bind_param(
-                $stmt2,
-                'iissid',
-                $insert_id,
-                $it['no'],
-                $it['uraian'],
-                $it['satuan'],
-                $it['jumlah'],
-                $it['nilai']
-            );
-            mysqli_stmt_execute($stmt2);
+    // aksi simpan data
+    if (isset($_POST['simpan'])) {
+        
+        // Validasi: cek apakah ada data yang diinput
+        $ada_data = false;
+        
+        // Cek pecahan uang kas
+        foreach ($fisik_uang_kas as $item) {
+            $jumlah = floatval($_POST["jumlah_{$item['no']}"] ?? 0);
+            if ($jumlah > 0) {
+                $ada_data = true;
+                break;
+            }
         }
-        mysqli_stmt_close($stmt2);
-
-    }
-    // aksi update data
-    else {
-
-        mysqli_query($conn,
-            "UPDATE stok_opname SET
-                subtotal_fisik=$subtotal_fisik,
-                bon_sementara=$bon_sementara,
-                uang_rusak=$uang_rusak,
-                materai=$materai,
-                lainnya=$lain_lain,
-                fisik_total=$fisik_total,
-                saldo_sistem=$saldo_sistem,
-                selisih=$selisih
-             WHERE id=$edit_id"
-        );
-
-        // bagian buat hapus detail lama
-        mysqli_query($conn, "DELETE FROM stok_opname_detail WHERE stok_opname_id=$edit_id");
-
-        // bagian input ulang data detail
-        $stmt3 = mysqli_prepare($conn,
-            "INSERT INTO stok_opname_detail
-                (stok_opname_id, no_urut, uraian, satuan, jumlah, nilai)
-             VALUES (?,?,?,?,?,?)"
-        );
-
-        foreach ($jumlah_items as $it) {
-            mysqli_stmt_bind_param(
-                $stmt3,
-                'iissid',
-                $edit_id,
-                $it['no'],
-                $it['uraian'],
-                $it['satuan'],
-                $it['jumlah'],
-                $it['nilai']
-            );
-            mysqli_stmt_execute($stmt3);
+        
+        // Cek input lainnya
+        $bon_sementara = floatval($_POST['bon_sementara'] ?? 0);
+        $uang_rusak    = floatval($_POST['uang_rusak'] ?? 0);
+        $materai       = floatval($_POST['material'] ?? 0);
+        $lain_lain     = floatval($_POST['lain_lain'] ?? 0);
+        
+        if ($bon_sementara > 0 || $uang_rusak > 0 || $materai > 0 || $lain_lain > 0) {
+            $ada_data = true;
         }
-        mysqli_stmt_close($stmt3);
-    }
+        
+        // Jika tidak ada data, redirect dengan pesan error
+        if (!$ada_data) {
+            header("Location: kas_stok_opname.php?error=empty");
+            exit;
+        }
+        
+        // Lanjutkan proses simpan - hitung pecahan uang kas
+        $subtotal_fisik = 0;
+        $jumlah_items   = [];
 
-    header("Location: tabel_stok_opname.php?saved=1");
-    exit;
-}
+        foreach ($fisik_uang_kas as $item) {
+            $jumlah = floatval($_POST["jumlah_{$item['no']}"] ?? 0);
+
+            $jumlah_items[] = [
+                'no'     => $item['no'],
+                'uraian' => $item['uraian'],
+                'satuan' => $item['satuan'],
+                'jumlah' => $jumlah,
+                'nilai'  => $item['nominal']
+            ];
+
+            $subtotal_fisik += ($jumlah * $item['nominal']);
+        }
+
+        // materai dikali 10.000
+        $fisik_total = $subtotal_fisik + $bon_sementara + $uang_rusak + ($materai * 10000) + $lain_lain;
+
+        // selisih
+        $selisih = $saldo_sistem - $fisik_total;
+
+        // aksi simpan ke database
+        if (!$edit_mode) {
+
+            $nomor_data = get_next_nomor_surat('STOK');
+            $nomor_surat = $nomor_data['nomor'];
+
+            $stmt = mysqli_prepare($conn,
+                "INSERT INTO stok_opname
+                    (nomor_surat, user_id, username, subtotal_fisik, bon_sementara, uang_rusak, materai, lainnya, fisik_total, saldo_sistem, selisih)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?)"
+            );
+            mysqli_stmt_bind_param(
+                $stmt,
+                'sisdddddddd',
+                $nomor_surat, $user_id, $username, $subtotal_fisik, $bon_sementara, $uang_rusak,
+                $materai, $lain_lain, $fisik_total, $saldo_sistem, $selisih
+            );
+            mysqli_stmt_execute($stmt);
+            $insert_id = mysqli_insert_id($conn);
+            mysqli_stmt_close($stmt);
+
+            // bagian input detail
+            $stmt2 = mysqli_prepare($conn,
+                "INSERT INTO stok_opname_detail
+                    (stok_opname_id, no_urut, uraian, satuan, jumlah, nilai)
+                VALUES (?,?,?,?,?,?)"
+            );
+
+            foreach ($jumlah_items as $it) {
+                mysqli_stmt_bind_param(
+                    $stmt2,
+                    'iissid',
+                    $insert_id,
+                    $it['no'],
+                    $it['uraian'],
+                    $it['satuan'],
+                    $it['jumlah'],
+                    $it['nilai']
+                );
+                mysqli_stmt_execute($stmt2);
+            }
+            mysqli_stmt_close($stmt2);
+
+        }
+        // aksi update data
+        else {
+
+            mysqli_query($conn,
+                "UPDATE stok_opname SET
+                    subtotal_fisik=$subtotal_fisik,
+                    bon_sementara=$bon_sementara,
+                    uang_rusak=$uang_rusak,
+                    materai=$materai,
+                    lainnya=$lain_lain,
+                    fisik_total=$fisik_total,
+                    saldo_sistem=$saldo_sistem,
+                    selisih=$selisih
+                WHERE id=$edit_id"
+            );
+
+            // bagian buat hapus detail lama
+            mysqli_query($conn, "DELETE FROM stok_opname_detail WHERE stok_opname_id=$edit_id");
+
+            // bagian input ulang data detail
+            $stmt3 = mysqli_prepare($conn,
+                "INSERT INTO stok_opname_detail
+                    (stok_opname_id, no_urut, uraian, satuan, jumlah, nilai)
+                VALUES (?,?,?,?,?,?)"
+            );
+
+            foreach ($jumlah_items as $it) {
+                mysqli_stmt_bind_param(
+                    $stmt3,
+                    'iissid',
+                    $edit_id,
+                    $it['no'],
+                    $it['uraian'],
+                    $it['satuan'],
+                    $it['jumlah'],
+                    $it['nilai']
+                );
+                mysqli_stmt_execute($stmt3);
+            }
+            mysqli_stmt_close($stmt3);
+        }
+
+        header("Location: tabel_stok_opname.php?saved=1");
+        exit;
+    }
 ?>
 
 <!DOCTYPE html>
@@ -416,7 +438,7 @@ if (isset($_POST['simpan'])) {
 
         td {
             padding: 8px 10px;
-            font-size: 11px;
+            font-size: 14px;
             border-bottom: 1px solid #f0f0f0;
         }
 
@@ -753,22 +775,18 @@ if (isset($_POST['simpan'])) {
                     <span>Audit Log</span>
                 </a>
             </li>
-            <?php if ($role === 'Administrator'): ?>
             <li class="menu-item">
                 <a href="setting_nomor.php">
                     <img src="assets/gambar/icon/settings.png" class="menu-icon">
                     <span>Letter Formatting</span>
                 </a>
             </li>
-            <?php endif; ?>
-                        <?php if ($role === 'Administrator'): ?>
             <li class="menu-item">
                 <a href="approval.php">
                     <img src="assets/gambar/icon/approve.png" class="menu-icon">
                     <span>Approval</span>
                 </a>
             </li>
-            <?php endif; ?>
             <li class="menu-item">
                 <a href="kelola_user.php">
                     <img src="assets/gambar/icon/kelola_user.png" class="menu-icon">
@@ -810,6 +828,12 @@ if (isset($_POST['simpan'])) {
         <div class="content-wrapper">
             <div class="container">
                 <form method="POST" action="">
+                    <?php if (isset($_GET['error']) && $_GET['error'] == 'empty'): ?>
+                    <div style="background-color: #ffebee; color: #c62828; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #c62828;">
+                        <strong>Error:</strong> Tidak ada data yang diinput! Mohon isi minimal satu data untuk melakukan stok opname.
+                    </div>
+                    <?php endif; ?>
+                    
                     <div class="section-title">I. Pemeriksaan Fisik Uang Kas</div>
                     
                     <table>
@@ -962,6 +986,38 @@ if (isset($_POST['simpan'])) {
         window.addEventListener('resize', () => {
             if (window.innerWidth > 768 && sidebar.classList.contains('active')) {
                 toggleSidebar();
+            }
+        });
+
+        // Validasi form sebelum submit
+        document.querySelector('form').addEventListener('submit', function(e) {
+            let totalFisik = 0;
+            let adaInputan = false;
+            
+            // Cek apakah ada inputan di pecahan uang
+            <?php foreach($fisik_uang_kas as $item): ?>
+            let jumlah<?php echo $item['no']; ?> = parseFloat(document.getElementsByName('jumlah_<?php echo $item['no']; ?>')[0].value) || 0;
+            if (jumlah<?php echo $item['no']; ?> > 0) {
+                adaInputan = true;
+            }
+            totalFisik += jumlah<?php echo $item['no']; ?> * <?php echo $item['nominal']; ?>;
+            <?php endforeach; ?>
+            
+            // Cek input lainnya
+            let bonSementara = parseFloat(document.getElementsByName('bon_sementara')[0].value) || 0;
+            let uangRusak = parseFloat(document.getElementsByName('uang_rusak')[0].value) || 0;
+            let material = parseFloat(document.getElementsByName('material')[0].value) || 0;
+            let lainLain = parseFloat(document.getElementsByName('lain_lain')[0].value) || 0;
+            
+            if (bonSementara > 0 || uangRusak > 0 || material > 0 || lainLain > 0) {
+                adaInputan = true;
+            }
+            
+            // Jika tidak ada inputan sama sekali
+            if (!adaInputan && totalFisik === 0) {
+                e.preventDefault();
+                alert('Tidak ada data yang diinput! Mohon isi minimal satu data untuk melakukan stok opname.');
+                return false;
             }
         });
     </script>

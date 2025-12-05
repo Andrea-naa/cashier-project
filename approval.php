@@ -98,7 +98,7 @@ if ($res_stok) {
     }
 }
 
-$total_pending = count($pending_transaksi) + count($pending_stok)
+$total_pending = count($pending_transaksi) + count($pending_stok); // DIPERBAIKI: Tambah semicolon
 
 ?>
 <!DOCTYPE html>
@@ -941,10 +941,10 @@ $total_pending = count($pending_transaksi) + count($pending_stok)
                     <i class="fas fa-list"></i> Semua
                 </a>
                 <a href="approval.php?jenis=kas_terima" class="btn btn-filter <?php echo $jenis_filter == 'kas_terima' ? 'btn-primary' : 'btn-secondary'; ?>">
-                    <i class="fas fa-arrow-down"></i> Kas Masuk
+                    <i class=""></i> Kas Masuk
                 </a>
                 <a href="approval.php?jenis=kas_keluar" class="btn btn-filter <?php echo $jenis_filter == 'kas_keluar' ? 'btn-primary' : 'btn-secondary'; ?>">
-                    <i class="fas fa-arrow-up"></i> Kas Keluar
+                    <i class=""></i> Kas Keluar
                 </a>
             </div>
         </div>
@@ -1093,7 +1093,8 @@ function openRejectModal(type) {
     const checkboxes = form.querySelectorAll('input[name="approve_ids[]"]:checked');
 
     if (checkboxes.length === 0) {
-        alert('Pilih minimal satu data untuk di tolak')
+        alert('Pilih minimal satu data untuk ditolak');
+        return; // PENTING: Tambahkan return untuk menghentikan eksekusi
     }
 
     // set nama tabel
@@ -1118,7 +1119,7 @@ function openRejectModal(type) {
 
 function closeRejectModal() {
     document.getElementById('rejectModal').classList.remove('active');
-    document.getElementById('reject_reaseon').value = '';
+    document.getElementById('reject_reason').value = '';
     document.getElementById('rejectIdsContainer').innerHTML = '';
 }
 

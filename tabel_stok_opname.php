@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
     // ngecek izin
     $check_stmt = mysqli_prepare($conn, "SELECT user_id, is_approved FROM stok_opname WHERE id = ?");
     mysqli_stmt_bind_param($check_stmt, 'i', $del_id);
-    mysqli_stmtm_execute($check_stmt);
+    mysqli_stmt_execute($check_stmt);
     $check_result = mysqli_stmt_get_result($check_stmt);
     $check_data = mysqli_fetch_assoc($check_result);
     mysqli_stmt_close($check_stmt);
@@ -65,16 +65,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
     $can_delete = false;
 
     if ($is_admin) {
-        $can_delete = true;
+    $can_delete = true;
     } elseif ($check_data && $check_data['user_id'] == $user_id) {
         if ($check_data['is_approved'] == 0) {
             $can_delete = true;
         } else {
-            header("Location: tabel_stok_opname.php>error=approved_delete");
+            header("Location: tabel_stok_opname.php?filter=$filter&approval_status=$approval_status&page=$page&error=approved_delete");
             exit;
         }
     } else {
-        header("Location: tabel_stok_opname.php?error=unauthorized_delete");
+        header("Location: tabel_stok_opname.php?filter=$filter&approval_status=$approval_status&page=$page&error=unauthorized_delete");
         exit;
     }
     
@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
             mysqli_stmt_execute($stmt);
             mysqli_stmt_close($stmt);
         }
-        header("Location: tabel_stok_opname.php?deleted=1");
+        header("Location: tabel_stok_opname.php?filter=$filter&approval_status=$approval_status&page=$page&deleted=1");
         exit;
     }
 }
@@ -848,16 +848,23 @@ if (isset($_GET['error'])) {
                 </div>
             </div>
 
+            <!-- NOTIFIKASI ERROR - DI LUAR CONTAINER -->
+            <?php if ($success_massage): ?>
+                <div style="max-width: 1400px; width: 95%; margin: 20px auto 0;">
+                    <?= $success_massage; ?>
+                </div>
+            <?php endif; ?>
+
             <div class="container">
-                <!-- notif -->
+                <!-- notif SUCCESS - DI DALAM CONTAINER -->
                 <?php if (isset($_GET['success'])): ?>
-                    <div class="notice">âœ“ Data berhasil disimpan.</div>
+                    <div class="notice">✓ Data berhasil disimpan.</div>
                 <?php endif; ?>
                 <?php if (isset($_GET['deleted'])): ?>
-                    <div class="notice">âœ“ Data berhasil dihapus.</div>
+                    <div class="notice">✓ Data berhasil dihapus.</div>
                 <?php endif; ?>
                 <?php if (isset($_GET['updated'])): ?>
-                    <div class="notice">âœ“ Data berhasil diupdate.</div>
+                    <div class="notice">✓ Data berhasil diupdate.</div>
                 <?php endif; ?>
                 <?php if (isset($_GET['approved'])): ?>
                     <div class="notice">✓ Stok opname berhasil di-approve.</div>

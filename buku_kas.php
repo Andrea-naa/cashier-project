@@ -400,12 +400,12 @@ $balance = $total_debet;
             padding: 12px;
             border: 1px solid #D3D3D3;
             color: #333;
-            text-align: center;
+            text-align: right;
             vertical-align: middle;
         }
 
         td:nth-child(1) {
-            text-align: left;
+            text-align: center;
         }
 
         td:nth-child(2) {
@@ -416,7 +416,7 @@ $balance = $total_debet;
             text-align: left; 
         }
         td:nth-child(4) {
-            text-align: center;
+            text-align: right;
         }
 
         tbody tr:nth-child(even) {
@@ -797,7 +797,7 @@ $balance = $total_debet;
 
         <div class="content-wrapper">
             <div class="container">
-                <h2 class="page-title">BUKU KAS HARIAN</h2>
+                <h2 class="page-title">DATA BUKU KAS</h2>
 
                 <!-- bagian filter -->
                 <div class="filter-section">
@@ -840,8 +840,8 @@ $balance = $total_debet;
                                     <td><?php echo htmlspecialchars($row['nomor_surat'] ?? '-'); ?></td>
                                     <td><?php echo date('d-M-Y', strtotime($row['tanggal_transaksi'])); ?></td>
                                     <td><?php echo htmlspecialchars($row['keterangan']); ?></td>
-                                    <td><?php echo ($row['jenis_transaksi'] == 'kas_terima') ? number_format($row['nominal'], 2, ',', '.') : '-'; ?></td>
-                                    <td><?php echo ($row['jenis_transaksi'] == 'kas_keluar') ? number_format($row['nominal'], 2, ',', '.') : '-'; ?></td>
+                                    <td><?php echo ($row['jenis_transaksi'] == 'kas_terima') ? 'Rp. ' . number_format($row['nominal'], 2, ',', '.') : '-'; ?></td>
+                                    <td><?php echo ($row['jenis_transaksi'] == 'kas_keluar') ? 'Rp. ' . number_format($row['nominal'], 2, ',', '.') : '-'; ?></td>
                                 </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>
@@ -881,10 +881,10 @@ $balance = $total_debet;
                         <span class="summary-label" style="font-size: 15px;">Jumlah Transaksi</span>
                         <div style="display: flex; gap: 100px;">
                             <span class="summary-value" id="totalDebet" style="min-width: 180px; text-align: right;">
-                                <?php echo number_format($total_debet, 2, ',', '.'); ?>
+                                Rp. <?php echo number_format($total_debet, 2, ',', '.'); ?>
                             </span>
                             <span class="summary-value" id="totalKredit" style="min-width: 180px; text-align: right;">
-                                <?php echo number_format($total_kredit, 2, ',', '.'); ?>
+                                Rp. <?php echo number_format($total_kredit, 2, ',', '.'); ?>
                             </span>
                         </div>
                     </div>
@@ -894,7 +894,7 @@ $balance = $total_debet;
                         <div style="display: flex; gap: 100px;">
                             <span class="summary-value" style="min-width: 180px;"></span>
                             <span class="summary-value" id="saldo" style="min-width: 180px; text-align: right;">
-                                <?php echo number_format($saldo, 2, ',', '.'); ?>
+                                Rp. <?php echo number_format($saldo, 2, ',', '.'); ?>
                             </span>
                         </div>
                     </div>

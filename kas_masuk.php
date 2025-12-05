@@ -1074,13 +1074,11 @@ if ($res) {
                                     <?php $i = 1; foreach ($data_kas as $row): ?>
                                         <tr>
                                             <td style="text-align:center;"><?php echo $i; ?></td>
-                                            <td style="text-align:left;"><?php echo htmlspecialchars($row['nomor_surat'] ?? '-'); ?></td>
+                                            <td style="text-align:center;"><?php echo htmlspecialchars($row['nomor_surat'] ?? '-'); ?></td>
                                             <td style="text-align:center;"><?php echo date('d-M-Y', strtotime($row['tanggal_transaksi'])); ?></td>
                                             <td><?php echo htmlspecialchars($row['keterangan']); ?></td>
-                                            <td style="text-align:center; padding-right:15px white-space:nowrap;">
-                                                Rp <?php echo number_format($row['nominal'], 0, ',', '.'); ?>
-                                            </td>
-                                            <td><strong><?php echo htmlspecialchars($row['username']); ?></strong></td>
+                                            <td style="text-align:right;">Rp. <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
+                                            <td style="text-align:center;"><strong><?php echo htmlspecialchars($row['username']); ?></strong></td>
                                             <td style="text-align:center;">
                                                 <div class="action-buttons">
                                                     <a href="kas_masuk.php?edit=<?php echo $row['id']; ?>" 
