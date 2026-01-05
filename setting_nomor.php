@@ -119,17 +119,6 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
             display: flex;
             flex-direction: column;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            position: fixed;
-            left: -280px;
-            top: 0;
-            height: 100vh;
-            transition: left 0.3s ease;
-            z-index: 1000;
-            overflow-y: auto;
-        }
-        
-        .sidebar.active {
-            left: 0;
         }
         
         .sidebar-header {
@@ -202,21 +191,6 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
             justify-content: center;
             font-size: 16px;
         }
-        
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-        }
-        
-        .sidebar-overlay.active {
-            display: block;
-        }
 
         .main-wrapper {
             flex: 1;
@@ -238,16 +212,6 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
             display: flex;
             align-items: center;
             gap: 15px;
-        }
-
-        .menu-burger {
-            font-size: 26px;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .menu-burger:hover {
-            transform: scale(1.1);
         }
 
         .header h1 {
@@ -512,8 +476,7 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
 
 <body>
     <!-- buat menu burger -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-    <div class="sidebar" id="sidebar">
+    <div class="sidebar">
         <div class="sidebar-header">
             <img src="assets/gambar/logoksk.jpg" alt="KSK Logo"
                  onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%232e7d32%22 rx=%228%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2220%22 fill=%22white%22 font-weight=%22bold%22%3EKSK%3C/text%3E%3C/svg%3E'">
@@ -581,7 +544,6 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
     <div class="main-wrapper">
         <div class="header">
             <div class="header-left">
-                <i class="fas fa-bars menu-burger" id="menuBurger"></i>
                 <h1>PENGATURAN NOMOR SURAT</h1>
             </div>
             <div class="user-info">
@@ -718,33 +680,6 @@ $contoh_stok_opname = sprintf('001/STOK-%s/%s/%04d', $kode, $bulan_romawi[$bulan
     </div>
 
     <script>
-        // script menu burger
-        const menuBurger = document.getElementById('menuBurger');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
-
-        function toggleSidebar() {
-            sidebar.classList.toggle('active');
-            sidebarOverlay.classList.toggle('active');
-        }
-
-        menuBurger.addEventListener('click', toggleSidebar);
-        sidebarOverlay.addEventListener('click', toggleSidebar);
-
-        const menuItems = document.querySelectorAll('.menu-item a');
-        menuItems.forEach(item => {
-            item.addEventListener('click', () => {
-                if (window.innerWidth <= 768) {
-                    toggleSidebar();
-                }
-            });
-        });
-
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 768 && sidebar.classList.contains('active')) {
-                toggleSidebar();
-            }
-        });
         // input kode perusahaan kapita secara otomatis
         const kodeInput = document.querySelector('input[name="kode_perusahaan"]');
         if (kodeInput) {

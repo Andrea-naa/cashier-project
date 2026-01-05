@@ -1,6 +1,7 @@
 <?php
 // koneksi ke databse
 require_once 'config/conn_db.php';
+require_once 'api/ApiTransaksi.php';
 
 check_login();
 // ngambil sesi serta role user
@@ -9,6 +10,9 @@ $username = $_SESSION['username'];
 $nama_lengkap = $_SESSION['nama_lengkap'];
 $role = $_SESSION['role'] ?? 'Kasir';
 $is_admin = (stripos($role, 'Administrator') !== false);
+
+// inisialisasi api transaksi
+$api = new ApiTransaksi();
 
 // bagian filter tanggal transaksi
 $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
@@ -43,16 +47,11 @@ $active_tab = $_GET['tab'] ?? 'masuk';
 // bagian tombol edit
 if (isset($_GET['edit']) && intval($_GET['edit']) > 0) {
     $edit_id = intval($_GET['edit']);
-    $jenis = $_GET['tab'] === 'keluar' ? 'kas_keluar' : 'kas_terima';
-
-    $stmt = mysqli_prepare($conn, "SELECT * FROM transaksi WHERE id = ? AND jenis_transaksi = ? LIMIT 1");
-    mysqli_stmt_bind_param($stmt, 'is', $edit_id, $jenis);
-    mysqli_stmt_execute($stmt);
-    $res = mysqli_stmt_get_result($stmt);
-    $edit_data = mysqli_fetch_assoc($res);
-    mysqli_stmt_close($stmt);
-
-    if ($edit_data) {
+    
+    $result = $api->getById($edit_id);
+    
+    if ($result['success'] && isset($result['data'])) {
+        $edit_data = $result['data'];
         $edit_mode = true;
     } else {
         $success_message = '<div class="alert alert-error">Data tidak ditemukan!</div>';
@@ -73,35 +72,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
         if ($edit_mode && isset($_POST['edit_id'])) {
             // bagian tombol update
             $edit_id = intval($_POST['edit_id']);
-            $stmt = mysqli_prepare($conn, "UPDATE transaksi SET nominal = ?, keterangan = ? WHERE id = ? AND jenis_transaksi = ?");
-            mysqli_stmt_bind_param($stmt, 'dsis', $jumlah, $keterangan, $edit_id, $jenis_transaksi);
+            
+            $update_data = [
+                'id' => $edit_id,
+                'nominal' => $jumlah,
+                'keterangan' => $keterangan
+            ];
+            
+            $result = $api->update($update_data);
 
-            if (mysqli_stmt_execute($stmt)) {
+            if ($result['success']) {
                 $tab = $jenis_transaksi === 'kas_terima' ? 'masuk' : 'keluar';
                 log_audit($user_id, $username, "Update " . ($jenis_transaksi === 'kas_terima' ? 'Kas Masuk' : 'Kas Keluar') . " #$edit_id: " . rupiah_fmt($jumlah));
-                mysqli_stmt_close($stmt);
                 header("Location: kas_transaksi.php?tab=$tab&success=2");
                 exit();
             }
-            mysqli_stmt_close($stmt);
 
         } else {
             // bagian tombol simpan
-            $prefix = $jenis_transaksi === 'kas_terima' ? 'KT-KSK' : 'KK-KSK';
-            $nomor_data = get_next_nomor_surat($prefix);
-            $nomor_surat = $nomor_data['nomor'];
+            $is_approved = $is_admin ? 1 : 0;
+            
+            $create_data = [
+                'user_id' => $user_id,
+                'username' => $username,
+                'jenis_transaksi' => $jenis_transaksi,
+                'nominal' => $jumlah,
+                'keterangan' => $keterangan,
+                'is_approved' => $is_approved
+            ];
+            
+            $result = $api->create($create_data);
 
-            $stmt = mysqli_prepare($conn, "INSERT INTO transaksi (user_id, username, jenis_transaksi, nominal, keterangan, nomor_surat, tanggal_transaksi) VALUES (?, ?, ?, ?, ?, ?, NOW())");
-            mysqli_stmt_bind_param($stmt, 'issdss', $user_id, $username, $jenis_transaksi, $jumlah, $keterangan, $nomor_surat);
-
-            if (mysqli_stmt_execute($stmt)) {
+            if ($result['success']) {
                 $tab = $jenis_transaksi === 'kas_terima' ? 'masuk' : 'keluar';
-                log_audit($user_id, $username, ($jenis_transaksi === 'kas_terima' ? 'Kas Masuk' : 'Kas Keluar') . " #$nomor_surat: " . rupiah_fmt($jumlah));
-                mysqli_stmt_close($stmt);
+                log_audit($user_id, $username, ($jenis_transaksi === 'kas_terima' ? 'Kas Masuk' : 'Kas Keluar') . " #" . $result['data']['nomor_surat'] . ": " . rupiah_fmt($jumlah));
                 header("Location: kas_transaksi.php?tab=$tab&success=1");
                 exit();
             }
-            mysqli_stmt_close($stmt);
         }
     } else {
         $success_message = '<div class="alert alert-error">Jumlah kas harus lebih dari 0!</div>';
@@ -111,19 +118,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_kas'])) {
 // bagian tombol delete
 if (isset($_GET['delete']) && intval($_GET['delete']) > 0) {
     $delete_id = intval($_GET['delete']);
-    $jenis = $_GET['tab'] === 'keluar' ? 'kas_keluar' : 'kas_terima';
 
-    $stmt = mysqli_prepare($conn, "DELETE FROM transaksi WHERE id = ? AND jenis_transaksi = ?");
-    mysqli_stmt_bind_param($stmt, 'is', $delete_id, $jenis);
+    $result = $api->delete($delete_id);
 
-    if (mysqli_stmt_execute($stmt)) {
+    if ($result['success']) {
         $tab = $_GET['tab'];
-        log_audit($user_id, $username, "Hapus " . ($jenis === 'kas_terima' ? 'Kas Masuk' : 'Kas Keluar') . " #$delete_id");
-        mysqli_stmt_close($stmt);
+        log_audit($user_id, $username, "Hapus " . ($_GET['tab'] === 'keluar' ? 'Kas Keluar' : 'Kas Masuk') . " #$delete_id");
         header("Location: kas_transaksi.php?tab=$tab&success=3");
         exit();
     }
-    mysqli_stmt_close($stmt);
 }
 
 // pesan kalo berhasil
@@ -146,61 +149,75 @@ $limit_masuk = 5;
 $page_masuk = isset($_GET['page_masuk']) ? max(1, intval($_GET['page_masuk'])) : 1;
 $start_masuk = ($page_masuk - 1) * $limit_masuk;
 
-// hitung total data kas masuk
-$qCount_masuk = mysqli_query($conn, "SELECT COUNT(*) as total FROM transaksi WHERE jenis_transaksi = 'kas_terima' $date_condition");
+// ngambil data dari API bagian kas masuk
+// Simpan nilai filter string sebelum overwrite
+$filter_string = $filter;
+
+// Konversi filter tanggal
+$date_from = '';
+$date_to = '';
+
+switch($filter_string) {
+    case 'today':
+        $date_from = date('Y-m-d');
+        $date_to = date('Y-m-d');
+        break;
+    case '7days':
+        $date_from = date('Y-m-d', strtotime('-7 days'));
+        $date_to = date('Y-m-d');
+        break;
+    case 'month':
+        $date_from = date('Y-m-01');
+        $date_to = date('Y-m-d');
+        break;
+    default:
+        $date_from = '';
+        $date_to = '';
+}
+
+$filter_masuk = [
+    'jenis_transaksi' => 'kas_terima',
+    'date_from' => $date_from,
+    'date_to' => $date_to,
+    'is_approved' => isset($_GET['approval_status']) && $_GET['approval_status'] !== 'all' ? 
+                     ($_GET['approval_status'] === 'approved' ? 1 : 0) : ''
+];
+$filter_masuk = array_filter($filter_masuk, function($value) { return $value !== ''; });
+
+$api_result_masuk = $api->getAll($filter_masuk);
+$data_kas_masuk = [];
 $total_masuk = 0;
-if ($qCount_masuk) {
-    $resultCount_masuk = mysqli_fetch_assoc($qCount_masuk);
-    $total_masuk = $resultCount_masuk['total'] ?? 0;
-    mysqli_free_result($qCount_masuk);
+
+if ($api_result_masuk['success'] && isset($api_result_masuk['data'])) {
+    $data_kas_masuk = array_slice($api_result_masuk['data'], $start_masuk, $limit_masuk);
+    $total_masuk = $api_result_masuk['count'] ?? 0;
 }
 $totalPages_masuk = max(1, ceil($total_masuk / $limit_masuk));
-
-// ngambil data kas masuk
-$data_kas_masuk = [];
-$res_masuk = mysqli_query($conn, "SELECT t.*, u.nama_lengkap as approved_by_name 
-    FROM transaksi t 
-    LEFT JOIN users u ON t.approved_by = u.id 
-    WHERE t.jenis_transaksi = 'kas_terima' $date_condition 
-    ORDER BY t.tanggal_transaksi DESC 
-    LIMIT $start_masuk, $limit_masuk");
-if ($res_masuk) {
-    while ($r = mysqli_fetch_assoc($res_masuk)) {
-        $data_kas_masuk[] = $r;
-    }
-    mysqli_free_result($res_masuk);
-}
 
 // bagian pagination untuk kas keluar
 $limit_keluar = 5;
 $page_keluar = isset($_GET['page_keluar']) ? max(1, intval($_GET['page_keluar'])) : 1;
 $start_keluar = ($page_keluar - 1) * $limit_keluar;
 
-// hitung total data kas keluar
-$qCount_keluar = mysqli_query($conn, "SELECT COUNT(*) as total FROM transaksi WHERE jenis_transaksi = 'kas_keluar' $date_condition");
+// ngambil data dari API bagian kas keluar
+$filter_keluar = [
+    'jenis_transaksi' => 'kas_keluar',
+    'date_from' => $date_from,
+    'date_to' => $date_to,
+    'is_approved' => isset($_GET['approval_status']) && $_GET['approval_status'] !== 'all' ? 
+                     ($_GET['approval_status'] === 'approved' ? 1 : 0) : ''
+];
+$filter_keluar = array_filter($filter_keluar, function($value) { return $value !== ''; });
+
+$api_result_keluar = $api->getAll($filter_keluar);
+$data_kas_keluar = [];
 $total_keluar = 0;
-if ($qCount_keluar) {
-    $resultCount_keluar = mysqli_fetch_assoc($qCount_keluar);
-    $total_keluar = $resultCount_keluar['total'] ?? 0;
-    mysqli_free_result($qCount_keluar);
+
+if ($api_result_keluar['success'] && isset($api_result_keluar['data'])) {
+    $data_kas_keluar = array_slice($api_result_keluar['data'], $start_keluar, $limit_keluar);
+    $total_keluar = $api_result_keluar['count'] ?? 0;
 }
 $totalPages_keluar = max(1, ceil($total_keluar / $limit_keluar));
-
-// ngambil data kas keluar
-$data_kas_keluar = [];
-$res_keluar = mysqli_query($conn, "SELECT t.*, u.nama_lengkap as approved_by_name 
-    FROM transaksi t 
-    LEFT JOIN users u ON t.approved_by = u.id 
-    WHERE t.jenis_transaksi = 'kas_keluar' $date_condition 
-    ORDER BY t.tanggal_transaksi DESC 
-    LIMIT $start_keluar, $limit_keluar");
-if ($res_keluar) {
-    while ($r = mysqli_fetch_assoc($res_keluar)) {
-        $data_kas_keluar[] = $r;
-    }
-    mysqli_free_result($res_keluar);
-}
-
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -1019,32 +1036,32 @@ if ($res_keluar) {
                 <div class="filter-wrapper">
                     <span class="filter-label">Filter:</span>
                     <a href="kas_transaksi.php?tab=<?= $active_tab ?>&filter=today<?php echo $edit_mode ? '&edit='.$edit_data['id'] : ''; ?>" 
-                        class="btn btn-filter btn-sm <?php echo $filter === 'today' ? 'btn-primary' : 'btn-secondary'; ?>">
+                        class="btn btn-filter btn-sm <?php echo $filter_string === 'today' ? 'btn-primary' : 'btn-secondary'; ?>">
                         <i class="fas fa-calendar-day"></i> Hari Ini
                     </a>
                     <a href="kas_transaksi.php?tab=<?= $active_tab ?>&filter=7days<?php echo $edit_mode ? '&edit='.$edit_data['id'] : ''; ?>" 
-                        class="btn btn-filter btn-sm <?php echo $filter === '7days' ? 'btn-primary' : 'btn-secondary'; ?>">
+                        class="btn btn-filter btn-sm <?php echo $filter_string === '7days' ? 'btn-primary' : 'btn-secondary'; ?>">
                         <i class="fas fa-calendar-week"></i> 7 Hari Terakhir
                     </a>
                     <a href="kas_transaksi.php?tab=<?= $active_tab ?>&filter=month<?php echo $edit_mode ? '&edit='.$edit_data['id'] : ''; ?>" 
-                        class="btn btn-filter btn-sm <?php echo $filter === 'month' ? 'btn-primary' : 'btn-secondary'; ?>">
+                        class="btn btn-filter btn-sm <?php echo $filter_string === 'month' ? 'btn-primary' : 'btn-secondary'; ?>">
                         <i class="fas fa-calendar-alt"></i> Bulan Ini
                     </a>
                     
                     <!-- Filter Approval untuk Admin - HARUS DI DALAM filter-wrapper -->
                     <?php if ($is_admin): ?>
-                        <a href="kas_transaksi.php?tab=<?= $active_tab ?>&filter=<?= $filter ?>&approval_status=pending" 
+                        <a href="kas_transaksi.php?tab=<?= $active_tab ?>&filter=<?= $filter_string ?>&approval_status=pending" 
                         class="btn btn-filter btn-sm <?php echo $approval_status === 'pending' ? 'btn-primary' : 'btn-secondary'; ?>">
                             <i class="fas fa-clock"></i> Pending Approval
                         </a>
-                        <a href="kas_transaksi.php?tab=<?= $active_tab ?>&filter=<?= $filter ?>&approval_status=approved" 
+                        <a href="kas_transaksi.php?tab=<?= $active_tab ?>&filter=<?= $filter_string ?>&approval_status=approved" 
                         class="btn btn-filter btn-sm <?php echo $approval_status === 'approved' ? 'btn-primary' : 'btn-secondary'; ?>">
                             <i class="fas fa-check-circle"></i> Sudah Approved
                         </a>
                     <?php endif; ?>
                     
                     <a href="kas_transaksi.php?tab=<?= $active_tab ?><?php echo $edit_mode ? '&edit='.$edit_data['id'] : ''; ?>" 
-                        class="btn btn-filter btn-sm <?php echo $filter === 'all' ? 'btn-primary' : 'btn-secondary'; ?>">
+                        class="btn btn-filter btn-sm <?php echo $filter_string === 'all' && $approval_status === 'all' ? 'btn-primary' : 'btn-secondary'; ?>">
                         <i class="fas fa-list"></i> Semua
                     </a>
                 </div>
@@ -1188,7 +1205,7 @@ if ($res_keluar) {
                         <?php if ($totalPages_masuk > 1): ?>
                         <div class="pagination-wrapper">
                             <?php
-                            $baseUrl_masuk = 'kas_transaksi.php?tab=masuk&filter=' . $filter . '&approval_status=' . $approval_status . ($edit_mode ? '&edit='.$edit_data['id'] : '') . '&page_masuk=';
+                            $baseUrl_masuk = 'kas_transaksi.php?tab=masuk&filter=' . urlencode(json_encode($filter)) . '&approval_status=' . urlencode($approval_status) . ($edit_mode ? '&edit='.$edit_data['id'] : '') . '&page_masuk=';
 
                             if ($page_masuk > 1) {
                                 echo '<a class="pagination-btn inactive" href="' . $baseUrl_masuk . ($page_masuk-1) . '">
@@ -1333,7 +1350,7 @@ if ($res_keluar) {
                         <?php if ($totalPages_keluar > 1): ?>
                         <div class="pagination-wrapper">
                             <?php
-                            $baseUrl_keluar = 'kas_transaksi.php?tab=keluar&filter=' . $filter . '&approval_status=' . $approval_status . ($edit_mode ? '&edit='.$edit_data['id'] : '') . '&page_keluar=';
+                            $baseUrl_keluar = 'kas_transaksi.php?tab=keluar&filter=' . urlencode(json_encode($filter)) . '&approval_status=' . urlencode($approval_status) . ($edit_mode ? '&edit='.$edit_data['id'] : '') . '&page_keluar=';
 
                             if ($page_keluar > 1) {
                                 echo '<a class="pagination-btn inactive" href="' . $baseUrl_keluar . ($page_keluar-1) . '">

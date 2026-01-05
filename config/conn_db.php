@@ -132,7 +132,7 @@ function get_last_nomor_surat($prefix = 'KT') {
 function clean_input($data) {
     $data = trim($data);
     $data = stripslashes($data);
-    $data = htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+    // Do NOT use htmlspecialchars here - only escape for display in HTML
     return $data;
 }
 
