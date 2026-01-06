@@ -999,7 +999,7 @@ $totalPages_keluar = max(1, ceil($total_keluar / $limit_keluar));
                 </a>
             </li>
             <?php endif; ?>
-            <li class="menu-item">
+            <li class="menu-item active">
                 <a href="kas_transaksi.php">
                     <img src="assets/gambar/icon/folderkas.png" class="menu-icon">
                     <span>Transaction</span>
@@ -1175,8 +1175,8 @@ $totalPages_keluar = max(1, ceil($total_keluar / $limit_keluar));
                                             </td>
                                             <td style="text-align:center;">
                                                 <?php if ($row['is_rejected'] == 1): ?>
-                                                    <span style="background: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 4px; font-size: 11px; display: block; margin-bottom: 4px">
-                                                        Rejected
+                                                    <span style="background:#f8d7da; color:#721c24; padding:4px 8px; border-radius:4px; font-size:11px;">
+                                                         Rejected
                                                     </span>
                                                 <!-- <?php if (!empty($row['reject_reason'])) : ?>
                                                     <small style="color: #666; font-size: 10px">
